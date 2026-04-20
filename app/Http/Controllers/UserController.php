@@ -50,6 +50,12 @@ class UserController extends Controller
         foreach($companies as $company) {
             $companies_arr[encrypt($company->id)] = $company->name;
         }
+
+        $users = User::all();
+        $users_arr = [];
+        foreach($users as $user) {
+            $users_arr[encrypt($user->id)] = $user->name;
+        }
         
         $departments = Department::all();
         $departments_arr = [];
@@ -70,6 +76,7 @@ class UserController extends Controller
             'companies' => $companies_arr,
             'positions' => $positions_arr,
             'departments' => $departments_arr,
+            'users' => $users_arr,
             'roles' => $roles,
         ]);
     }
@@ -89,6 +96,7 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => $password,
             'cost_center' => $request->cost_center,
+            'head_approver_id' => decrypt($request->head_approver_id),
 
         ]);
         $user->save();
@@ -137,6 +145,18 @@ class UserController extends Controller
             $companies_arr[$encrypted_id] = $company->name;
         }
 
+        $heads = User::all();
+        $heads_arr = [];
+        $head_selected_id = '';
+        foreach($heads as $head) {
+            $encrypted_id = encrypt($head->id);
+            if($user->head_approver_id == $head->id) {
+                $head_selected_id = $encrypted_id;
+            }
+
+            $heads_arr[$encrypted_id] = $head->name;
+        }
+
         $departments = Department::all();
         $departments_arr = [];
         $department_selected_id = '';
@@ -171,10 +191,12 @@ class UserController extends Controller
             'companies' => $companies_arr,
             'positions' => $positions_arr,
             'departments' => $departments_arr,
+            'heads' => $heads_arr,
             'roles' => $roles,
             'company_selected_id' => $company_selected_id,
             'position_selected_id' => $position_selected_id,
             'department_selected_id' => $department_selected_id,
+            'head_selected_id' => $head_selected_id,
             'user_roles' => $user_roles
         ]);
     }
@@ -196,6 +218,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'cost_center' => $request->cost_center,
+            'head_approver_id' => decrypt($request->head_approver_id),
         ]);
         
         $role_ids = explode(',', $request->role_ids);
@@ -242,6 +265,20 @@ class UserController extends Controller
         $search = $request->search;
 
         $users = User::select('id', 'name as text')->where('cost_center', 1)
+            ->when($search, function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%');
+            })
+            ->limit(5) // Limit results for performance
+            ->get();
+
+        return response()->json(['results' => $users]);
+    }
+
+    public function getFinanceUsers(Request $request)
+    {
+        $search = $request->search;
+
+        $users = User::select('id', 'name as text')->where('department_id', 2)
             ->when($search, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
             })

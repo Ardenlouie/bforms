@@ -35,8 +35,10 @@ new class extends Component
 
         Session::put('gate_item', [
             'items' => $this->items,
+            'control_number' => $this->control_number,
             'data' => $this->data,
         ]);
+        
 
     }
 
@@ -127,12 +129,16 @@ new class extends Component
                 </tbody>
 
             </table>
-            <div class="row text-left">
-                <div class="col-4">
-                    <h4>Prepared By: <b>{{ ($user->name ?? '' )}}</b></h4>
+          
+            <div class="row text-center">
+                <div class="col-6">
+                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
-                <div class="col-4">
-                    <h4>Approved By: <b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                <div class="col-6">
+                    <h4>Approved By: 
+                        <br><b>
+                            {{ ($forms->department->name ?? '' )}} Department
+                        </b></h4>
                 </div>
             </div>
         </div>

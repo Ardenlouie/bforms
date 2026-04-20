@@ -9,11 +9,12 @@ use App\Models\User;
 use App\Models\Department;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1, $approver, $cost_center, $department, $currency = 'PHP';
+    public $control_number, $company_id, $forms, $user, $form_id=1, $cost_center, $department, $currency = 'PHP';
     public $data = [];
 
     protected $listeners = ['loadRfpSummary' => 'loadData'];
@@ -28,7 +29,6 @@ new class extends Component
         $this->currency = $data['currency'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->approver = User::where('id', $data['approver'])->first();
         $this->cost_center = User::where('id', $data['cost_center'])->first();
         $this->department = Department::where('id', $data['department_id'])->first();
 
@@ -39,6 +39,11 @@ new class extends Component
         } else {
             $this->control_number = $this->generateControlNumber();
         }
+
+        Session::put('rfp_item', [
+            'control_number' => $this->control_number,
+            'data' => $this->data,
+        ]);
 
     }
 
@@ -116,13 +121,18 @@ new class extends Component
                     <h4>Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
                 </div>
             </div>
-                
-            <div class="row text-left">
+            <div class="row text-left mb-3">
                 <div class="col-6">
-                    <h4>Requested By: <b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Attachment File Name: <b>{{ ($data['file_name'] ?? '' )}}</b></h4>
+                </div>
+            </div>
+                
+            <div class="row text-center">
+                <div class="col-6">
+                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-6">
-                    <h4>Approved By: <b>{{ ($approver->name ?? '' )}}</b></h4>
+                    <h4>Approved By: <br><b>{{ ($user->head_approver->name ?? '' )}}</b></h4>
                 </div>
             </div>
         </div>

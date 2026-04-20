@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\AllForm;
+use App\Models\User;
 
 use App\Notifications\TestNotification;
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\FollowUpFormNotification;
+use Illuminate\Support\Facades\Notification;
 
 class NotificationController extends Controller
 {
@@ -30,7 +32,16 @@ class NotificationController extends Controller
     }
 
     public function testNotification() {
-        auth()->user()->notify(new SubmitFormNotification());
+        // auth()->user()->notify(new SubmitFormNotification());
+        $all_forms = AllForm::where('id', 49)->first();
+            
+        $approved = [12, 13];
+
+        $approvers = User::whereIn('id', $approved ?? [])->get();
+
+        if ($approvers->isNotEmpty()) {
+            Notification::send($approvers, new SubmitFormNotification($all_forms));
+        }
 
         return back();
     }

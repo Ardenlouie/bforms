@@ -41,6 +41,7 @@
                     <table class="table table-sm table-striped table-hover mb-0 rounded">
                         <thead class="tex-center bg-dark">
                             <tr class="text-center">
+                                <th>ID</th>
                                 <th>Prefix</th>
                                 <th>{{__('adminlte::utilities.name')}}</th>
                                 <th>Category Name</th>
@@ -50,6 +51,9 @@
                         <tbody>
                             @foreach($forms as $form)
                                 <tr>
+                                    <td class="align-middle text-center">
+                                        {{$form->id}}
+                                    </td>
                                     <td class="align-middle text-center">
                                         {{$form->prefix}}
                                     </td>

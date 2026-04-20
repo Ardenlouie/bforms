@@ -18,7 +18,7 @@ class CompanyController extends Controller
 
         $search = trim($request->get('search'));
         
-        $companies = Company::orderBy('created_at', 'DESC')
+        $companies = Company::orderBy('id', 'ASC')
             ->when(!empty($search), function($query) use($search) {
                 $query->where('name', 'like', '%'.$search.'%');
             })

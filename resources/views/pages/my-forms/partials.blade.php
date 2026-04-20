@@ -44,16 +44,22 @@
                 <td class="align-middle text-center">
                     @if($my_form->status == 'draft')
                         <span class="badge badge-secondary"><b>DRAFT</b></span>
+                    @elseif($my_form->status == 'confirmation')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($my_form->status == 'endorsement')
                         <span class="badge badge-info"><b>Endorsement</b></span>
                     @elseif($my_form->status == 'approval')
                         <span class="badge badge-primary"><b>Final Approval</b></span>
                     @elseif($my_form->status == 'approved')
                         <span class="badge badge-success"><b>Approved</b></span>
+                    @elseif($my_form->status == 'processing')
+                        <span class="badge bg-navy"><b>For Processing</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge bg-purple"><b>Received & Checked</b></span>
+                    @elseif($my_form->status == 'partially_released')
+                        <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
                         <span class="badge bg-dark"><b>Pending</b></span>
                     @endif
@@ -63,9 +69,25 @@
                     @if($my_form->status == 'draft')
                         
                     @elseif($my_form->status == 'endorsement')
-                        {{$my_form->endorsed->name}}
+                        <span class="badge badge-info">
+                            <i class="fas fa-file-signature"></i> {{$my_form->endorsed->name}}
+                        </span>
                     @elseif($my_form->status == 'approval')
-                        {{$my_form->approved->name}}
+                        @php
+                            $approvers = \App\Models\User::whereIn('id', $my_form->approver ?? [])->get();
+                        @endphp
+
+                        @foreach($approvers as $id => $approver)
+                            <span class="badge badge-primary">
+                                <i class="fas fa-file-signature"></i> {{ $approver->name }}
+                            </span>
+                        @endforeach
+                    @elseif($my_form->status == 'confirmation')
+                        <span class="badge badge-navy">
+                            <i class="fas fa-file-signature"></i> {{$my_form->admin->name}}
+                        </span>
+                    @elseif($my_form->status == 'processing')
+                        {{$my_form->processed->name}}
                     @elseif($my_form->status == 'approved')
                         <span class="badge badge-success"><b>Completed</b></span>
                     @elseif($my_form->status == 'checked')
@@ -83,7 +105,7 @@
                             <i class="fa fa-edit text-warning"></i>
                         </a>
                     @endif
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined')
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked')
                         <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn">
                             <i class="fa fa-file-contract text-orange"></i>
                         </a>

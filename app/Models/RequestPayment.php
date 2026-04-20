@@ -33,6 +33,8 @@ class RequestPayment extends Model
         'instructions',
         'date_submitted',
         'currency',
+        'file_name',
+        'path',
     ];
 
     public function form() {

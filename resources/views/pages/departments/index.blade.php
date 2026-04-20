@@ -41,15 +41,20 @@
                     <table class="table table-sm table-striped table-hover mb-0 rounded">
                         <thead class="tex-center bg-dark">
                             <tr class="text-center">
+                                <th>ID</th>
                                 <th>Prefix</th>
                                 <th>{{__('adminlte::utilities.name')}}</th>
                                 <th>Department Head</th>
+                                <th>Admin</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($departments as $department)
                                 <tr>
+                                    <td class="align-middle text-center">
+                                        {{$department->id}}
+                                    </td>
                                     <td class="align-middle text-center">
                                         {{$department->prefix}}
                                     </td>
@@ -58,6 +63,9 @@
                                     </td>
                                     <td class="align-middle text-center">
                                         {{$department->head->name ?? ''}}
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        {{$department->admin->name ?? ''}}
                                     </td>
                                     <td class="align-middle text-right p-0 pr-1">
                                         <a href="{{route('department.show', encrypt($department->id, 'roles'))}}" class="btn btn-info btn-xs mb-0 ml-0">

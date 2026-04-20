@@ -1,4 +1,4 @@
-<form action="{{ route('store.rfp',encrypt($form->id)) }}" method="POST" id="add_rfp">
+<form action="{{ route('store.rfp',encrypt($form->id)) }}" method="POST" id="add_rfp" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -85,24 +85,33 @@
                     <small class="text-danger">{{$errors->first('instructions')}}</small>
                 </div>
             </div>
-            <div class="col-lg-4">
-                <div class="form-group">
-                    <label class="mb-0">Requested By</label>
-                    <input type="text" class="form-control" name="user_id" value="{{$requestor->name}}" form="add_rfp" disabled> 
-                    <input type="hidden" name="user_id" value="{{$requestor->id}}" form="add_psrf"> 
-                    <small class="text-danger">{{$errors->first('user_id')}}</small>
-                </div>
-            </div>
-            <div class="col-lg-4">
-            </div>
-            <div class="col-lg-4">
-                <div class="form-group">
-                    <label class="mb-0">Approved By</label>
-                    <select id="user_select" name="approver" class="form-control" style="width: 100%;" form="add_rfp"></select>
-                    <small class="text-danger">{{$errors->first('approver')}}</small>
-                </div>
 
+            <div class="col-lg-6">
+                <div class="form-group">
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }}
+                    <input
+                        form="add_rfp"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                </div>
                 
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
+                </div>
             </div>
         </div>
         
@@ -201,11 +210,11 @@ $(function() {
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 department_id: document.querySelector('select[name="department_id"]').value || "-",
                 payable: document.querySelector('input[name="payable"]').value || "-",
+                file_name: document.querySelector('input[name="file_name"]').value || "-",
                 amount: document.querySelector('input[name="amount"]').value || 0.00,
                 cost_center: document.querySelector('select[name="cost_center"]').value || "-",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 instructions: document.querySelector('input[name="instructions"]').value || "-",
-                approver: document.querySelector('select[name="approver"]').value || "-",
                 currency: document.querySelector('input[name="currency"]').value || "-",
             };
    
@@ -214,4 +223,18 @@ $(function() {
         });
     });
 </script>
+
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
+
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
+    });
+</script>
+
 @endpush

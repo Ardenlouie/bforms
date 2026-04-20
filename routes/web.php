@@ -31,6 +31,8 @@ Auth::routes();
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
+Route::get('printPDF/{id}', [FormController::class, 'printPDF'])->name('printPDF');
+
 Route::get('lang/{locale}', function ($locale) {
     if (!in_array($locale, ['en', 'ja', 'zh-CN'])) {
         abort(400);
@@ -43,27 +45,30 @@ Route::get('error-logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@inde
 
 Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
 
+    Route::get('security/{id}', [FormController::class, 'security'])->name('security')->middleware('permission:bforms security');
+
     // FORM ROUTES
     Route::group(['middleware' => 'permission:bforms access'], function() {
         Route::get('forms', [FormController::class, 'index'])->name('form.index');
-        Route::get('security/{id}', [FormController::class, 'security'])->name('security');
         Route::get('forms/create', [FormController::class, 'create'])->name('form.create');
         Route::get('forms/{id}', [FormController::class, 'createForm'])->name('form.createForm');
         Route::get('forms/{id}/show', [FormController::class, 'show'])->name('form.show');
         Route::get('forms/{id}/edit', [FormController::class, 'edit'])->name('form.edit');
+        Route::get('forms/{id}/liquid', [FormController::class, 'liquid'])->name('form.liquid');
+        Route::get('/products-ajax', [FormController::class, 'product_api'])->name('products.ajax');
 
-        Route::get('printPDF/{id}', [FormController::class, 'printPDF'])->name('printPDF');
 
         Route::post('form', [FormController::class, 'store'])->name('form.store');
         Route::post('form/{id}', [FormController::class, 'update'])->name('form.update');
-        Route::post('check/form/{id}', [FormController::class, 'check'])->name('form.check');
-        Route::post('approve/form/{id}', [FormController::class, 'approve'])->name('approve.form');
-
 
         Route::post('store/psrf/{id}', [FormController::class, 'store_psrf'])->name('store.psrf');
         Route::post('store/psst/{id}', [FormController::class, 'store_psst'])->name('store.psst');
         Route::post('store/gate/{id}', [FormController::class, 'store_gate'])->name('store.gate');
         Route::post('store/rfp/{id}', [FormController::class, 'store_rfp'])->name('store.rfp');
+        Route::post('store/rca/{id}', [FormController::class, 'store_rca'])->name('store.rca');
+        Route::post('store/lca/{id}', [FormController::class, 'store_lca'])->name('store.lca');
+        Route::post('store/pca/{id}', [FormController::class, 'store_pca'])->name('store.pca');
+        Route::post('store/pcl/{id}', [FormController::class, 'store_pcl'])->name('store.pcl');
     });
 
     // MY FORMS ROUTES
@@ -76,6 +81,10 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::post('update/psst/{id}', [MyFormController::class, 'update_psst'])->name('update.psst');
         Route::post('update/gate/{id}', [MyFormController::class, 'update_gate'])->name('update.gate');
         Route::post('update/rfp/{id}', [MyFormController::class, 'update_rfp'])->name('update.rfp');
+        Route::post('update/rca/{id}', [MyFormController::class, 'update_rca'])->name('update.rca');
+        Route::post('update/lca/{id}', [MyFormController::class, 'update_lca'])->name('update.lca');
+        Route::post('update/pca/{id}', [MyFormController::class, 'update_pca'])->name('update.pca');
+        Route::post('update/pcl/{id}', [MyFormController::class, 'update_pcl'])->name('update.pcl');
     });
 
     // APPROVER ROUTES
@@ -83,6 +92,8 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('approvers', [ApproverController::class, 'index'])->name('approver.index');
         Route::get('approver/show/{id}', [ApproverController::class, 'show'])->name('approver.show');
 
+        Route::post('check/form/{id}', [ApproverController::class, 'check'])->name('form.check');
+        Route::post('approve/form/{id}', [ApproverController::class, 'approve'])->name('approve.form');
     });
 
     // ALL FORMS ROUTES
@@ -176,6 +187,7 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::post('user/{id}', [UserController::class, 'update'])->name('user.update')->middleware('permission:user edit');
         Route::get('/get-users-ajax', [UserController::class, 'getUsers'])->name('users.ajax');
         Route::get('/get-cost-centers-ajax', [UserController::class, 'getCostCenters'])->name('cost_centers.ajax');
+        Route::get('/get-finance-users-ajax', [UserController::class, 'getFinanceUsers'])->name('finance_users.ajax');
     });
 
     // SYSTEM SETTING

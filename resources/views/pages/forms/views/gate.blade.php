@@ -5,6 +5,8 @@
         <h3 class="text-right text-uppercase">
             @if($forms->status == 'draft')
                 <span class="badge badge-secondary"><b>DRAFT</b></span>
+            @elseif($forms->status == 'confirmation')
+                <span class="badge badge-warning"><b>Admin Confirmation</b></span>
             @elseif($forms->status == 'endorsement')
                 <span class="badge badge-info"><b>For Endorsement</b></span>
             @elseif($forms->status == 'approval')
@@ -15,6 +17,8 @@
                 <span class="badge bg-purple"><b>Received & Checked</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
+            @elseif($forms->status == 'partially_released')
+                    <span class="badge bg-orange"><b>Partially Released</b></span>
             @else
                 <span class="badge bg-dark"><b>Pending</b></span>
             @endif
@@ -81,6 +85,54 @@
             </table>
         </div>
         <div class="row">
+            <div class="col-9 mb-3">
+                <h4>Photo:</h4>
+                @if(!empty($forms->model->path))
+                    <div class="gallery text-center">
+                        <img
+                            class="popup-image"
+                            src="{{ asset('/'.$forms->model->path) }}"
+                            width="100%"
+                            height="60%"
+                            style="border: none;">
+                        </img>
+                    </div>
+                @else
+                    NO PHOTO
+                @endif
+            </div>
+        </div>
+        @if($forms->status == 'checked' || $forms->status == 'partially_released')
+            @if(!empty($images))
+            <h4>Security Released Item/s: </h4><br>
+            <div class="row gallery">
+            @forelse($images as $imageUrl)
+            @php
+                list($name, $png) = explode('-', $imageUrl);
+            @endphp
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-1">
+                            <h4>{{ $name }}</h4>
+                            <img src="{{ asset($folderPath .'/' . $imageUrl) }}"
+                                class="img-fluid rounded image-preview" 
+                                style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
+                                onclick="showFullImage('{{ asset($folderPath .'/' . $imageUrl) }}')">
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="col-12">
+                    <div class="callout callout-info">
+                        <h5><i class="fas fa-info"></i> Note:</h5>
+                        No images uploaded for this Gate Pass ID.
+                    </div>
+                </div>
+            @endforelse
+            </div>
+            @endif
+        @endif
+        <div class="row">
             <div class="col-6">
                 <a type="button" href="{{route( 'printPDF', encrypt($forms->id) )}}" target="_blank" class="btn bg-gradient-navy" style="margin-right: 5px;">
                     <i class="fas fa-download"></i> Generate PDF
@@ -96,7 +148,7 @@
                         <small class="form-text text-muted mb-3">
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 You are endorser of this Form.
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
                             @else
                                 
@@ -106,7 +158,7 @@
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @else
@@ -156,11 +208,11 @@
                         This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
                     </small>
                     <div class="mb-3">
-                        {!! DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE') !!}
+                        <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
                     </div>
 
-                    <a href="data:image/svg+xml;base64,{{ base64_encode(DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10)) }}" 
-                        download="QR_Code_{{ $forms->model->control_number }}.svg" 
+                    <a href="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10) }}" 
+                        download="QR_Code_{{ $forms->model->control_number }}.png" 
                         class="btn bg-green">
                             <i class="fas fa-download"></i> Download QR Code
                     </a>
@@ -171,10 +223,12 @@
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved')
+        @if($forms->status == 'approved' || $forms->status == 'partially_released' || $forms->status == 'checked')
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -182,10 +236,11 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? $forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($forms->approved->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($forms->signed->name ?? $forms->approved->name )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>
@@ -194,3 +249,20 @@
         @endif
     </div>
 </div>
+
+@push('js')
+
+<script>
+function showFullImage(url) {
+    Swal.fire({
+        imageUrl: url,
+        imageAlt: 'Gate Pass Attachment',
+        width: '80%',
+        backdrop: `rgba(0, 0, 71, 0.4)`,
+        showCloseButton: true,
+        showConfirmButton: false
+    });
+}
+</script>
+
+@endpush

@@ -45,6 +45,8 @@
                     <b>
                     @if($all_form->status == 'endorsement')
                         <span class="badge badge-info">Endorsement</span>
+                    @elseif($all_form->status == 'confirmation')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($all_form->status == 'approval')
                         <span class="badge badge-primary">Final Approval</span>
                     @elseif($all_form->status == 'draft')
@@ -55,6 +57,8 @@
                         <span class="badge bg-purple"><b>Received & Checked</b></span>
                     @elseif($all_form->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
+                    @elseif($all_form->status == 'partially_released')
+                        <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
                         <span class="badge bg-dark">Pending</span>
                     @endif
@@ -66,6 +70,8 @@
                         {{$all_form->endorsed->name}}
                     @elseif($all_form->status == 'approval')
                         {{$all_form->approved->name}}
+                    @elseif($all_form->status == 'confirmation')
+                        {{$all_form->admin->name}}
                     @elseif($all_form->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($all_form->status == 'checked')
@@ -80,11 +86,11 @@
                     </b>
                 </td>
                 <td class="align-middle text-right">
-                    <a href="{{ route('myforms.edit', encrypt($all_form->id)) }}" title="edit" class="btn-edit btn ">
-                        <i class="fa fa-edit text-warning"></i>
-                    </a>
                     <a href="#" title="view" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-view btn ">
                         <i class="fa fa-eye text-dark"></i>
+                    </a>
+                    <a href="{{ route('myforms.edit', encrypt($all_form->id)) }}" title="edit" class="btn-edit btn ">
+                        <i class="fa fa-edit text-warning"></i>
                     </a>
                     <a href="#" title="delete" data-id="{{encrypt($all_form->id)}}" class="btn-delete btn ">
                         <i class="fa fa-trash-alt text-danger"></i>

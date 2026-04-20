@@ -59,6 +59,14 @@
 
                     <div class="col-lg-3">
                         <div class="form-group">
+                            {{ html()->label(__('Head Approver'), 'head_approver_id')->class(['mb-0']) }}
+                            {{ html()->select('head_approver_id', $users,'')->class(['form-control', 'form-control-sm text-uppercase', 'is-invalid' => $errors->has('head_approver_id')]) }}
+                            <small class="text-danger">{{$errors->first('head_approver_id')}}</small>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="form-group">
                             {{ html()->label(__('Cost Center'), 'cost_center')->class(['mb-2 d-block font-weight-bold']) }}
 
                             <div class="custom-control custom-switch custom-switch-purple">

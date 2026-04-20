@@ -45,14 +45,20 @@
                     <b>
                     @if($approval->status == 'endorsement')
                         <span class="badge badge-info">Endorsement</span>
+                     @elseif($approval->status == 'confirmation')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($approval->status == 'approval')
                         <span class="badge badge-primary">Final Approval</span>
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Approved</span>
+                    @elseif($approval->status == 'processing')
+                        <span class="badge bg-navy"><b>For Processing</b></span>
                     @elseif($approval->status == 'checked')
                         <span class="badge bg-purple"><b>Received & Checked</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
+                    @elseif($approval->status == 'partially_released')
+                        <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
                         <span class="badge bg-dark">Pending</span>
                     @endif
@@ -61,9 +67,25 @@
                 <td class="align-middle text-center">
                     <b>
                     @if($approval->status == 'endorsement')
-                        {{$approval->endorsed->name}}
+                        <span class="badge badge-info">
+                            <i class="fas fa-file-signature"></i> {{$approval->endorsed->name}}
+                        </span>
                     @elseif($approval->status == 'approval')
-                        {{$approval->approved->name}}
+                        @php
+                            $approvers = \App\Models\User::whereIn('id', $approval->approver ?? [])->get();
+                        @endphp
+
+                        @foreach($approvers as $id => $approver)
+                            <span class="badge badge-primary">
+                                <i class="fas fa-file-signature"></i> {{ $approver->name }}
+                            </span>
+                        @endforeach
+                    @elseif($approval->status == 'confirmation')
+                        <span class="badge badge-navy">
+                            <i class="fas fa-file-signature"></i> {{$approval->admin->name}}
+                        </span>
+                    @elseif($approval->status == 'processing')
+                        {{$approval->processed->name}}
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($approval->status == 'checked')
@@ -84,11 +106,15 @@
                          <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
                             <i class="fa fa-pen-alt text-purple"></i>
                         </a>
+                    @elseif($approval->admin_id == $user_id && $approval->status == 'confirmation')
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
+                            <i class="fa fa-pen-alt text-purple"></i>
+                        </a>
                     @else
 
                     @endif
 
-                    @if($approval->status == 'approved')
+                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked')
                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="show" class="btn">
                             <i class="fa fa-file-contract text-orange"></i>
                         </a>

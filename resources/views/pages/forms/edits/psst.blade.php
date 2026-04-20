@@ -75,7 +75,7 @@
                             <td><input type="text" name="items[{{ $index }}][sku]" value="{{ $item['item_code'] }}" class="form-control text-center sku" /></td>             
                             <td ><input type="text" name="items[{{ $index }}][desc]" value="{{ $item['item_description'] }}" class="form-control text-center desc" /></td>             
                             <td ><input type="text" name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom" /></td>
-                            <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty" value="0"/></td>
+                            <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty" value="1" min="1"/></td>
                             <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                         </tr>
@@ -113,7 +113,7 @@
             <td><input type="text" name="items[${i}][sku]" placeholder="Enter Item Code" class="form-control text-center sku" /></td>
             <td><input type="text" name="items[${i}][desc]" placeholder="Enter Item Description" class="form-control text-center desc" /></td>
             <td><input type="text" name="items[${i}][uom]" placeholder="Enter UOM" class="form-control text-center uom" /></td>
-            <td><input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="0" /></td>
+            <td><input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
             <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
         `;
@@ -122,19 +122,22 @@
         emitPSRF();
     });
 
+    $(document).on('input', '.qty', function() {
+        let val = parseFloat($(this).val());
+        
+        if (val <= 0 || isNaN(val)) {
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
     document.addEventListener("click", function (e) {
         if (e.target && e.target.classList.contains("removeRow")) {
             e.target.closest("tr").remove();
             updateRowNumbers();
             emitPSRF();
 
-        }
-    });
-
-
-    document.addEventListener("input", function (e) {
-        if (e.target.name.includes("[sku]")) {
-                checkDuplicateNames();
         }
     });
 
@@ -169,30 +172,7 @@
             row.querySelector(".row-number").textContent = index + 1;
         });
     }
-
-    function checkDuplicateNames() {
-        const names = [];
-        const inputs = document.querySelectorAll('input[name*="[sku]"]');
-        let hasDuplicate = false;
-
-        inputs.forEach(input => {
-            const name = input.value.trim().toLowerCase();
-            if (name !== "") {
-                if (names.includes(name)) {
-                    input.classList.add("is-invalid");
-                    hasDuplicate = true;
-                } else {
-                    input.classList.remove("is-invalid");
-                    names.push(name);
-                }
-            }
-        });
-
-        if (hasDuplicate) {
-            alert("Duplicate Item Code are not allowed in the same form!");
-        }
-    }
-
+    
     updateRowNumbers();
 </script>
 
@@ -250,7 +230,54 @@
 <script>
     $(function() {
         $('body').on('click', '.btn-preview', function(e) {
-            e.preventDefault();
+            let hasDuplicate = false;
+        let hasError = false;
+        let errorMessage = "";
+        
+            const names = [];
+            const inputs = document.querySelectorAll('select[name*="[sku-select]"]');
+
+            inputs.forEach(input => {
+                const name = input.value.trim().toLowerCase();
+                if (name !== "") {
+                    if (names.includes(name)) {
+                        input.classList.add("is-invalid");
+                        errorMessage = "Duplicate Item Code are not allowed in the same form!";
+
+                        hasDuplicate = true;
+                    } else {
+                        input.classList.remove("is-invalid");
+                        names.push(name);
+                    }
+                }
+            });
+
+
+            $('.qty').each(function() {
+            let val = parseFloat($(this).val());
+
+            if (isNaN(val) || val <= 0) {
+                    hasError = true;
+                    $(this).addClass('is-invalid'); 
+                    errorMessage = "Quantity must be greater than 0.";
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            if (hasError || hasDuplicate) {
+                e.preventDefault();
+                e.stopPropagation(); 
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Input',
+                    text: errorMessage,
+                    confirmButtonColor: '#d33'
+                });
+
+                return false; 
+            }
 
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",

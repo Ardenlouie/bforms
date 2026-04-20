@@ -26,6 +26,9 @@ class GatePass extends Model
         'received_by',
         'date_submitted',
         'control_number',
+        'psrf_form_id',
+        'image',
+        'path',
     ];
 
     public function form() {
@@ -42,5 +45,9 @@ class GatePass extends Model
 
     public function gate_pass_item() {
         return $this->hasMany('App\Models\GatePassItem', 'gate_pass_id', 'id');
+    }
+
+    public function psrf_form() {
+        return $this->belongsTo('App\Models\ProductSample', 'psrf_form_id', 'id');
     }
 }
