@@ -24,6 +24,8 @@ class GatePassItem extends Model
         'item_description',
         'uom',
         'quantity',
+        'quantity_release',
+        'balance',
         'remarks',
     ];
 

@@ -59,6 +59,33 @@
                         </div>
                     </div>
 
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ html()->label(__('Admin'), 'admin_id')->class(['mb-0']) }}
+                            {{ html()->select('admin_id', $users, $admin_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('admin_id')]) }}
+                            <small class="text-danger">{{$errors->first('admin_id')}}</small>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>Select Approvers</label>
+                            @foreach($users as $enc_id => $name)
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" 
+                                        type="checkbox" 
+                                        name="approver_ids[]" 
+                                        id="approver_{{ $loop->index }}" 
+                                        value="{{ $enc_id }}"
+                                        {{ in_array($enc_id, $approvers_selected_ids) ? 'selected checked' : '' }}>
+                                    
+                                    <label for="approver_{{ $loop->index }}" class="custom-control-label font-weight-normal">
+                                        {{ $name }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -79,7 +106,10 @@
 {{-- Push extra scripts --}}
 @push('js')
     <script>
-        $(function() {
+        $('.select2').select2({
+            allowClear: true,
+            theme: "classic",
+
         });
     </script>
 @endpush

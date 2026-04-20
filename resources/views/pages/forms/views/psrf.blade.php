@@ -5,6 +5,8 @@
         <h3 class="text-right text-uppercase">
             @if($forms->status == 'draft')
                 <span class="badge badge-secondary"><b>DRAFT</b></span>
+            @elseif($forms->status == 'confirmation')
+                <span class="badge badge-warning"><b>Admin Confirmation</b></span>
             @elseif($forms->status == 'endorsement')
                 <span class="badge badge-info"><b>For Endorsement</b></span>
             @elseif($forms->status == 'approval')
@@ -73,12 +75,17 @@
                 <tbody>
                     @foreach($forms->model->psrf_form_item()->get() as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['item_code'] }}</td>
-                            <td>{{ $item['item_description'] }}</td>
-                            <td>{{ $item['uom'] }}</td>
-                            <td>{{ $item['quantity'] }}</td>
-                            <td>{{ $item['remarks'] }}</td>
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td class="align-middle">
+                                <div class="gallery text-center">
+                                    <img class="popup-image" src="{{ asset('images/AllProducts/'.$item['item_code'].'.png') }}" alt="SKU IMAGE" height="150" width="150">
+                                </div>
+                                {{ $item['item_code'] }}
+                            </td>
+                            <td class="align-middle">{{ $item['item_description'] }}</td>
+                            <td class="align-middle">{{ $item['uom'] }}</td>
+                            <td class="align-middle">{{ $item['quantity'] }}</td>
+                            <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -92,7 +99,25 @@
                 </a>
                 
             </div>
+           
             <div class="col-6 text-right">
+                @if($forms->status == 'approved' && $forms->user_id == $user->id)
+                    @php
+                        $psrf_gate_pass = DB::table('gate_pass')->where('psrf_form_id', $forms->model->id)->first();
+                    @endphp
+                    @if(!empty($psrf_gate_pass))
+                        <small class="form-text text-muted mb-3">
+                            Gate Pass has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            {{$psrf_gate_pass->control_number}}
+                        </label>
+                    @else
+                        <a type="button" href="{{route( 'form.liquid', encrypt($forms->id) )}}" class="btn bg-gradient-blue" style="margin-right: 5px;">
+                            <i class="fas fa-reply"></i> Create Gate Pass
+                        </a>
+                    @endif
+                @endif
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
                     <div class="form-group">
@@ -101,7 +126,7 @@
                         <small class="form-text text-muted mb-3">
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 You are endorser of this Form.
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
                             @else
                                 
@@ -111,7 +136,7 @@
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @else
@@ -154,24 +179,7 @@
                 @endif
               
             </div>
-            <div class="col-12 text-center">
-                @if($forms->status == 'approved')
-                <div class="form-group">    
-                    <small class="form-text text-muted mb-3">
-                        This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
-                    </small>
-                    <div class="mb-3">
-                        {!! DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE') !!}
-                    </div>
-
-                    <a href="data:image/svg+xml;base64,{{ base64_encode(DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10)) }}" 
-                        download="QR_Code_{{ $forms->model->control_number }}.svg" 
-                        class="btn bg-green">
-                            <i class="fas fa-download"></i> Download QR Code
-                    </a>
-                </div>
-                @endif
-            </div>
+            
             
         </div>
     </div>
@@ -180,6 +188,8 @@
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+                
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -188,6 +198,7 @@
             </div>
             <div class="col-4">
                 <img src="{{ asset($forms->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
                 <h3><b>{{ ($forms->endorsed->name ?? '' )}}</b></h3>
@@ -197,6 +208,7 @@
             </div>
             <div class="col-4">
                 <img src="{{ asset($forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->approved->name ?? '' )}}</b></h3>

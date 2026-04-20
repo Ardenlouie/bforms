@@ -93,6 +93,13 @@
             <livewire:online-users/>
         </div>
     </div>
+
+    <div id="imageModal" class="modal-img">
+        <span class="close">&times;</span>
+        <img id="modalImage" src="" alt="Expanded Image">
+    </div>
+
+ 
 @stop
 
 {{-- Create a common footer --}}
@@ -140,6 +147,38 @@
     });
 
 
+</script>
+<script>
+    $(function() {
+        $('body').on('click', '.btn-admin', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want to confirm this Form?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, approve it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Approved!",
+                    text: "Form has been confirmed.",
+                    icon: "success"
+                    });
+                    
+                    Swal.showLoading();
+                    $('#status').val('endorsement');
+                    $('#approve').submit();
+
+                }
+                });
+        });
+    });
 </script>
 <script>
     $(function() {
@@ -258,12 +297,7 @@ $(function() {
             confirmButtonColor: "#d33", // Red for decline
             cancelButtonColor: "rgb(73, 73, 73)",
             confirmButtonText: "Decline Form",
-            preConfirm: (value) => {
-                if (!value) {
-                    Swal.showValidationMessage('A reason is required to decline.');
-                }
-                return value;
-            }
+          
         }).then((result) => {
             if (result.isConfirmed) {
                 // 1. Set the status
@@ -284,33 +318,6 @@ $(function() {
                 $('#approve').submit();
             }
         }); 
-    });
-});
-</script>
-
-<script>
-$(function() {
-    $('body').on('click', '.btn-checked', function(e) {
-        e.preventDefault();
-
-        Swal.fire({
-            title: 'Enter Security PIN',
-            input: 'password',
-            inputLabel: 'Security Authorization Required',
-            inputPlaceholder: 'Enter your 4-digit PIN',
-            inputAttributes: {
-                maxlength: 4,
-                autocapitalize: 'off',
-                autocorrect: 'off'
-            }
-        }).then((result) => {
-            if (result.value === '1234') { // Replace with actual validation logic or backend check
-                $('#status').val('checked');
-                $('#check').submit();
-            } else if (result.value) {
-                Swal.fire('Error', 'Invalid Security PIN', 'error');
-            }
-        });
     });
 });
 </script>
@@ -365,6 +372,58 @@ $(function() {
     });
 });
 </script>
+<script>
+    $(document).ready(function() {
+    $('#finance_user').select2({
+        placeholder: "Select Finance Personnel",
+        allowClear: true,
+        theme: "classic",
+        ajax: {
+            url: "{{ route('finance_users.ajax') }}", // Create this route in web.php
+            dataType: 'json',
+            delay: 250, // Wait 250ms before sending request (debounce)
+            data: function (params) {
+                return {
+                    search: params.term // This sends the 'search' variable to PHP
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
+    });
+});
+</script>
+<script>
+    const galleryImages = document.querySelectorAll('.popup-image');
+    const imageModal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+
+    const closeModal = document.querySelector('.modal-img .close');
+
+    galleryImages.forEach((image) => {
+        image.addEventListener('click', () => {
+            modalImage.src = image.src; 
+
+            imageModal.style.display = 'flex';
+        });
+    });
+
+    closeModal.addEventListener('click', () => {
+        imageModal.style.display = 'none';
+    });
+
+    imageModal.addEventListener('click', (event) => {
+        if (event.target === imageModal) {
+            imageModal.style.display = 'none';
+        }
+    });
+</script>
+
+
 @endpush
 
 {{-- Add common CSS customizations --}}
@@ -380,5 +439,75 @@ $(function() {
         border-top: 2px solid black;
         margin-bottom: 5px;
     }
+</style>
+<style>
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .gallery img {
+        cursor: pointer;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+        
+    }
+
+
+
+    .gallery img:hover {
+        transform: scale(1.05);
+    }
+
+
+    .modal-img {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-img img {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .modal-img img:hover {
+        transform: scale(1.1); /* Zoom effect */
+    }
+
+    .modal-img .close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 30px;
+        font-weight: bold;
+        color: white;
+        cursor: pointer;
+    }
+
+    .modal-img .close:hover {
+        color: red;
+    }
+
+</style>
+<style>
+
+.swal2-shown {
+    overflow: hidden !important;
+}
+body.swal2-height-auto {
+    height: 100% !important;
+}
 </style>
 @endpush

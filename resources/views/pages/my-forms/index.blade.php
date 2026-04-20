@@ -139,10 +139,13 @@
     $(function() {
         $('body').on('click', '.btn-view', function(e) {
             e.preventDefault();
+            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+
             let data = {
                 id: $(this).data('id'),
                 form: $(this).data('form'),
             };
+
             Livewire.dispatch('viewForm', {data});
             $('#modal-view').modal('show');
         });

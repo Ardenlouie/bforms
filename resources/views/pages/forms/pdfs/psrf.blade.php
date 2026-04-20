@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Product Sample Request Form (PSRF)</title>
+<title>{{ $forms->form->name }}</title>
     <link rel="shortcut icon" href="{{ public_path('/images/logonobg.png')}}" />
 
 <style>
@@ -217,6 +217,12 @@
                 <img src="{{ public_path('/images/bevanobg.png')}}" alt="product photo" class="product-img" height="80" width="120">
                 @elseif($forms->model->company->id == 3)
                 <img src="{{ public_path('/images/biginobg.png')}}" alt="product photo" class="product-img" height="80" width="150">
+                @elseif($forms->model->company->id == 4)
+                <img src="{{ public_path('/images/bevminobg.png')}}" alt="product photo" class="product-img" height="80" width="220">
+                @elseif($forms->model->company->id == 5)
+                <img src="{{ public_path('/images/osp.png')}}" alt="product photo" class="product-img" height="80" width="250">
+                @elseif($forms->model->company->id == 6)
+                <img src="{{ public_path('/images/pbb.png')}}" alt="product photo" class="product-img" height="80" width="150">
                 @endif
             </td>
             <td></td>
@@ -226,7 +232,7 @@
         </tr>
     </table>
     <div class="header">
-        <h1>Product Sample Request Form</h1>
+        <h1>{{ $forms->form->name }}</h1>
     </div>
 
     <!-- Info Section -->
@@ -281,63 +287,9 @@
     </table>
     <p></p>
 
-    <!-- <table class="data">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Signature</th>
-                <th>Remarks</th>
-            </tr>
-        </thead>
-        <tbody >
-            <tr >
-                <td style="height: 50px; font-weight: bold;">Prepared By:</td>
-                <td>{{ $forms->user->name }}</td>
-                <td>
-                    @if( !empty($forms->model->date_submitted) )
-                    <img src="{{ public_path($forms->user->signature)}}" height="50" width="150">
-                    @endif
-                </td>
-                <td>
-                    @if( !empty($forms->model->date_submitted) )
-                        {{ $forms->model->date_submitted }}
-                    @endif
-                </td>
-            </tr>
-            <tr>
-                <td style="height: 50px; font-weight: bold;">Endorsed By:</td>
-                <td>{{ $forms->endorsed->name }}</td>
-                <td>
-                    @if( !empty($forms->date_endorsed) )
-                    <img src="{{ public_path($forms->endorsed->signature)}}" height="50" width="150">
-                    @endif
-                </td>
-                <td>
-                    @if( !empty($forms->date_endorsed) )
-                        {{ $forms->date_endorsed }}
-                    @endif
-                </td>
-            </tr>
-            <tr>
-                <td style="height: 50px; font-weight: bold;">Approved By:</td>
-                <td>{{ $forms->approved->name }}</td>
-                <td>
-                    @if( !empty($forms->date_approved) )
-                    <img src="{{ public_path($forms->approved->signature)}}" height="50" width="150">
-                    @endif
-                </td>
-                <td>
-                    @if( !empty($forms->date_approved) )
-                        {{ $forms->date_approved }}
-                    @endif
-                </td>
-            </tr>
-        </tbody>
-    </table> -->
     <p></p>
 
-    <div class="container">
+    <!-- <div class="container">
     <p></p>
 
         <div class="headers">Receiving Copy</div>
@@ -427,10 +379,10 @@
             </tr>
         </table>
 
-    </div>
+    </div> -->
     <div class="signature-wrapper">
         <div class="sig-column">
-            <img src="{{ public_path($forms->user->signature)}}" height="75" width="150">
+            <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->model->date_submitted }}</div>
             <div class="sig-name">{{ $forms->user->name }}</div>
             <div class="sig-line">Prepared By</div>
@@ -438,20 +390,20 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->endorsed->signature)}}" height="75" width="150">
+            <img src="{{ public_path($forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->date_endorsed }}</div>
             <div class="sig-name">{{ $forms->endorsed->name }}</div>
-            @endif
             <div class="sig-line">Endorsed By</div>
+            @endif
         </div>
 
         <div class="sig-column">
             @if( !empty($forms->date_approved) && $forms != 'declined' )
-            <img src="{{ public_path($forms->approved->signature)}}" height="75" width="150">
+            <img src="{{ public_path($forms->signed->signature ?? $forms->approved->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->date_approved }}</div>
-            <div class="sig-name">{{ $forms->approved->name }}</div>
-            @endif
+            <div class="sig-name">{{ ($forms->signed->name ?? $forms->approved->name )}}</div>
             <div class="sig-line">Approved By</div>
+            @endif
         </div>
     </div>
 

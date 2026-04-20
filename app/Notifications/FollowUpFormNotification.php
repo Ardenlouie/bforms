@@ -59,7 +59,6 @@ class FollowUpFormNotification extends Notification
                 'greeting' => $greeting,
                 'introLines' => $introLines,
                 'outroLines' => $outroLines,
-                'buttons' => $buttons,
             ]);
     }
 

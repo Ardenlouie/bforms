@@ -41,6 +41,7 @@
                     <table class="table table-sm table-striped table-hover mb-0 rounded">
                         <thead class="tex-center bg-dark">
                             <tr class="text-center">
+                                <th>ID</th>
                                 <th>{{__('adminlte::utilities.name')}}</th>
                                 <th></th>
                             </tr>
@@ -48,6 +49,9 @@
                         <tbody>
                             @foreach($companies as $company)
                                 <tr>
+                                    <td class="align-middle text-center">
+                                        {{$company->id}}
+                                    </td>
                                     <td class="align-middle text-center">
                                         {{$company->name}}
                                     </td>

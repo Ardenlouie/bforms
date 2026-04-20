@@ -13,6 +13,14 @@ use App\Models\ProductTransferItem;
 use App\Models\GatePass;
 use App\Models\GatePassItem;
 use App\Models\RequestPayment;
+use App\Models\RequestCash;
+use App\Models\RequestCashItem;
+use App\Models\LiquidCash;
+use App\Models\LiquidCashItem;
+use App\Models\PettyCash;
+use App\Models\PettyCashItem;
+use App\Models\PettyLiquid;
+use App\Models\PettyLiquidItem;
 use App\Models\Company;
 use App\Models\Product;
 use App\Models\User;
@@ -23,17 +31,25 @@ use App\Http\Requests\PSRFStoreRequest;
 use App\Http\Requests\PSSTStoreRequest;
 use App\Http\Requests\GateStoreRequest;
 use App\Http\Requests\RFPStoreRequest;
-use App\Http\Requests\AllFormUpdateRequest;
-use App\Http\Requests\AllFormCheckRequest;
+use App\Http\Requests\RCAStoreRequest;
+use App\Http\Requests\LCAStoreRequest;
+use App\Http\Requests\PCAStoreRequest;
+use App\Http\Requests\PCLStoreRequest;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Notification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Traits\SettingTrait;
+
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
 use App\Notifications\DeclineFormNotification;
 
+use App\Helpers\FileSavingHelper;
 use Auth;
 
 class FormController extends Controller
@@ -44,7 +60,7 @@ class FormController extends Controller
     {
         $search = trim($request->get('search'));
         
-        $forms = Form::orderBy('created_at', 'DESC')
+        $forms = Form::orderBy('id', 'ASC')
             ->when(!empty($search), function($query) use($search) {
                 $query->where('name', 'like', '%'.$search.'%');
             })
@@ -71,25 +87,50 @@ class FormController extends Controller
             $users_arr[encrypt($user->id)] = $user->name;
         }
 
+        $departments = Department::all();
+        $departments_arr = [];
+        foreach($departments as $department) {
+            $departments_arr[encrypt($department->id)] = $department->name;
+        }
+
         return view('pages.forms.create')->with([
             'categories' => $categories_arr,
             'users' => $users_arr,
+            'departments' => $departments_arr,
         ]);
     }
 
-    public function edit($id) {
+    public function edit($id) 
+    {
         $form = Form::findOrFail(decrypt($id));
 
         $users = User::all();
         $users_arr = [];
         $user_selected_id = '';
+        $beva_selected_id = '';
         foreach($users as $user) {
             $encrypted_id = encrypt($user->id);
             if($form->approver_id == $user->id) {
                 $user_selected_id = $encrypted_id;
             }
 
+            if($form->beva_approver_id == $user->id) {
+                $beva_selected_id = $encrypted_id;
+            }
+
             $users_arr[$encrypted_id] = $user->name;
+        }
+
+        $departments = Department::all();
+        $departments_arr = [];
+        $department_selected_id = '';
+        foreach($departments as $department) {
+            $encrypted_id = encrypt($department->id);
+            if($form->department_id == $department->id) {
+                $department_selected_id = $encrypted_id;
+            }
+
+            $departments_arr[$encrypted_id] = $department->name;
         }
 
         $categories = Category::all();
@@ -109,21 +150,113 @@ class FormController extends Controller
             'form' => $form,
             'users' => $users_arr,
             'categories' => $categories_arr,
+            'departments' => $departments_arr,
             'user_selected_id' => $user_selected_id,
+            'beva_selected_id' => $beva_selected_id,
             'category_selected_id' => $category_selected_id,
+            'department_selected_id' => $department_selected_id,
 
         ]);
     }
 
-    public function show($id) {
-        $form = Form::findOrFail(decrypt($id));
+    public function liquid($id) {
+        $all_form = AllForm::findOrFail(decrypt($id));
 
+        if($all_form->form->prefix == 'rca'){
+            $form = Form::where('prefix', 'lca')->first();
+        } elseif($all_form->form->prefix == 'pca'){
+            $form = Form::where('prefix', 'pcl')->first();
+        } elseif($all_form->form->prefix == 'psrf'){
+            $form = Form::where('prefix', 'pgp')->first();
+        } 
+
+        $prefix = strtolower($form->prefix);
+
+        $users = User::all();
+        $users_arr = [];
+        foreach($users as $user) {
+            $users_arr[$user->id] = $user->name;
+        }
+
+        $companies = Company::all();
+        $companies_arr = [];
+        foreach($companies as $company) {
+            $companies_arr[$company->id] = $company->name;
+        }
+
+        $departments = Department::all();
+        $departments_arr = [];
+        foreach($departments as $department) {
+            $departments_arr[$department->id] = $department->name;
+        }
+
+        return view('pages.forms.liquid')->with([
+            'all_form' => $all_form,
+            'form' => $form,
+            'companies' => $companies_arr,
+            'departments' => $departments_arr,
+            'users' => $users_arr,
+            'prefix' => $prefix,
+
+        ]);
+    }
+
+    public function show($id) 
+    {
+        $form = Form::findOrFail(decrypt($id));
+        
         return view('pages.forms.show')->with([
             'form' => $form
         ]);
     }
 
-    public function security($id) {
+    public function product_api(Request $request)
+    {
+        $search = $request->query('search');
+
+        // $product_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
+        //     ->get('http://192.168.11.240/refreshable/public/api/invMaster');
+
+        // $products_collect = collect($product_api->json());
+
+        // $results = $products_collect
+        //     ->when($search, function ($collection) use ($search) {
+
+        //         return $collection->filter(function ($item) use ($search) {
+        //             return false !== stripos($item['Stock Description'], $search) || 
+        //                 false !== stripos($item['StockCode'], $search);
+        //         });
+        //     })
+        //     ->take(5)
+        //     ->map(function ($item) {
+        //         return [
+        //             'id'   => $item['StockCode'], 
+        //             'text' => $item['StockCode'] . ' - ' . $item['Stock Description'], 
+        //         ];
+        //     })
+        //     ->values();
+
+        $products = Product::select('id', 'description', 'stock_code as text', 'size') // Added uom if you have it
+            ->when($search, function ($query) use ($search) {
+                $query->where('stock_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+            })
+            ->limit(5) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'          => $item->text,
+                    'text'        => $item->text,
+                    'description' => $item->description . ' - ' . $item->size, 
+                ];
+            });
+
+
+        return response()->json(['results' => $products]);
+    }
+
+    public function security($id) 
+    {
         $all_form = AllForm::findOrFail(decrypt($id));
 
         return view('security')->with([
@@ -131,14 +264,16 @@ class FormController extends Controller
         ]);
     }
 
-    public function store(FormAddRequest $request) {
+    public function store(FormAddRequest $request) 
+    {
 
         $form = new Form([
             'prefix' => $request->prefix,
             'name' => $request->name,
-            'category_id' => decrypt($request->category_id),
-            'approver_id' => decrypt($request->approver_id),
-            'department_id' => 1,
+            'category_id' => decrypt($request->category_id) ?? null,
+            'approver_id' => decrypt($request->approver_id) ?? null,
+            'beva_approver_id' => decrypt($request->beva_approver_id) ?? null,
+            'department_id' => decrypt($request->department_id) ?? null,
         ]);
         $form->save();
 
@@ -152,7 +287,8 @@ class FormController extends Controller
         ]);
     }
 
-    public function update(FormEditRequest $request, $id) {
+    public function update(FormEditRequest $request, $id) 
+    {
         $form = Form::findOrFail(decrypt($id));
 
         $changes_arr['old'] = $form->getOriginal();
@@ -162,6 +298,8 @@ class FormController extends Controller
             'name' => $request->name,
             'category_id' => decrypt($request->category_id),
             'approver_id' => decrypt($request->approver_id),
+            'beva_approver_id' => decrypt($request->beva_approver_id),
+            'department_id' => decrypt($request->department_id),
         ]);
         $form->save();
 
@@ -178,10 +316,12 @@ class FormController extends Controller
         ]);
     }
 
-    public function createForm($id)
+    public function createForm($id, Request $request)
     {
         $form = Form::findOrFail(decrypt($id));
         $requestor = Auth::user();
+        
+        $prefix = strtolower($form->prefix);
 
         $users = User::all();
         $users_arr = [];
@@ -207,39 +347,35 @@ class FormController extends Controller
             'users' => $users_arr,
             'companies' => $companies_arr,
             'departments' => $departments_arr,
+            'prefix' => $prefix,
         ]);
     }
 
+    public function printPDF($id) 
+    {
+        $forms = AllForm::findOrFail(decrypt($id)); 
+        $prefix = $forms->form->prefix;
+
+        $pdf = PDF::loadView('pages.forms.pdfs.'.$prefix, [
+            'forms' => $forms,
+        ]);
+
+        return $pdf->stream();
+    }
 
     public function store_psrf($id, PSRFStoreRequest $request)
     {
         $user = Auth::user();
         $form = Form::findOrFail(decrypt($id));
         $date_submitted = date('Y-m-d');
-
-        $psrf_number = 'PSRF-0'.$request->company_id.'-001';
-        $psrf_form = ProductSample::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $request->company_id)->first();
-        if(!empty($psrf_form)) {
-    
-            $psrf_number_arr = explode('-', $psrf_form->control_number);
-            $last = end($psrf_number_arr);
-            array_pop($psrf_number_arr);
-            $prev_company_id = end($psrf_number_arr);
-            array_pop($psrf_number_arr);
-            if('0'.$request->company_id == $prev_company_id) { 
-                $number = (int)$last + 1;
-            } else { 
-                $number = 1;
-            }
-            for($i = strlen($number);$i <= 2; $i++) {
-                $number = '0'.$number;
-            }
-            array_push($psrf_number_arr, '0'.$request->company_id);
-            array_push($psrf_number_arr, $number);
-            $psrf_number = implode('-', $psrf_number_arr);
-        }
-        
+ 
         $psrf_item = Session::get('psrf_item');
+
+        $request->validate([
+            'psrf_item.*.qty' => 'required|numeric|min:1',
+        ], [
+            'psrf_item.*.qty.min' => 'Quantity must be at least 1.',
+        ]);
 
         $psrf = new ProductSample([
             'form_id' => $form->id,
@@ -256,7 +392,9 @@ class FormController extends Controller
 
         if(!empty($psrf_item)){
             foreach ($psrf_item['items'] as $key => $items){
-                $psrf_item = new ProductSampleItem([
+
+               
+                $psrf_items = new ProductSampleItem([
                     'psrf_form_id' => $psrf->id,
                     'item_code' => $items['sku'],
                     'item_description' => $items['desc'],
@@ -264,7 +402,7 @@ class FormController extends Controller
                     'quantity' =>  $items['qty'],
                     'remarks' =>  $items['remarks'],
                 ]);
-                $psrf_item->save();
+                $psrf_items->save();
             }
         }
         
@@ -275,15 +413,16 @@ class FormController extends Controller
             'model_id' => $psrf->id,
             'model_type' => 'App\Models\ProductSample',
             'endorser' => $user->department->head_id,
-            'approver' => $form->approver_id,
+            'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
 
         $all_forms->save();
 
+
         if($all_forms->status == 'endorsement') {
             $psrf->update([
-                'control_number' => $psrf_number,
+                'control_number' => $psrf_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
             $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
@@ -308,28 +447,6 @@ class FormController extends Controller
         $form = Form::findOrFail(decrypt($id));
         $date_submitted = date('Y-m-d');
 
-        $psst_number = 'PSST-0'.$request->company_id.'-001';
-        $psst_form = ProductTransfer::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $request->company_id)->first();
-        if(!empty($psst_form)) {
-    
-            $psst_number_arr = explode('-', $psst_form->control_number);
-            $last = end($psst_number_arr);
-            array_pop($psst_number_arr);
-            $prev_company_id = end($psst_number_arr);
-            array_pop($psst_number_arr);
-            if('0'.$request->company_id == $prev_company_id) { 
-                $number = (int)$last + 1;
-            } else { 
-                $number = 1;
-            }
-            for($i = strlen($number);$i <= 2; $i++) {
-                $number = '0'.$number;
-            }
-            array_push($psst_number_arr, '0'.$request->company_id);
-            array_push($psst_number_arr, $number);
-            $psst_number = implode('-', $psst_number_arr);
-        }
-        
         $psst_item = Session::get('psst_item');
 
         $psst = new ProductTransfer([
@@ -345,7 +462,7 @@ class FormController extends Controller
 
         if(!empty($psst_item)){
             foreach ($psst_item['items'] as $key => $items){
-                $psst_item = new ProductTransferItem([
+                $psst_items = new ProductTransferItem([
                     'psst_form_id' => $psst->id,
                     'item_code' => $items['sku'],
                     'item_description' => $items['desc'],
@@ -353,10 +470,9 @@ class FormController extends Controller
                     'quantity' =>  $items['qty'],
                     'remarks' =>  $items['remarks'],
                 ]);
-                $psst_item->save();
+                $psst_items->save();
             }
         }
-        
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
@@ -364,7 +480,7 @@ class FormController extends Controller
             'model_id' => $psst->id,
             'model_type' => 'App\Models\ProductTransfer',
             'endorser' => $user->department->head_id,
-            'approver' => $form->approver_id,
+            'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
 
@@ -372,7 +488,7 @@ class FormController extends Controller
 
         if($all_forms->status == 'endorsement') {
             $psst->update([
-                'control_number' => $psst_number,
+                'control_number' => $psst_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
             $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
@@ -398,30 +514,6 @@ class FormController extends Controller
         $date_submitted = date('Y-m-d');
         $date_code = date('Y');
 
-        $gate_number = 'GP-0'.$request->company_id.'-'.$date_code.'-001';
-        $gate_pass = GatePass::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $request->company_id)->first();
-        if(!empty($gate_pass)) {
-    
-            $gate_number_arr = explode('-', $gate_pass->control_number);
-            $last = end($gate_number_arr);
-            array_pop($gate_number_arr);
-            $prev_year = end($rfp_number_arr);
-            array_pop($gate_number_arr);
-            $prev_company_id = end($gate_number_arr);
-            array_pop($gate_number_arr);
-            if('0'.$request->company_id == $prev_company_id && $prev_year == $date_code) { 
-                $number = (int)$last + 1;
-            } else { 
-                $number = 1;
-            }
-            for($i = strlen($number);$i <= 2; $i++) {
-                $number = '0'.$number;
-            }
-            array_push($gate_number_arr, '0'.$request->company_id);
-            array_push($gate_number_arr, $number);
-            $gate_number = implode('-', $gate_number_arr);
-        }
-        
         $gate_item = Session::get('gate_item');
 
         $gate = new GatePass([
@@ -429,30 +521,50 @@ class FormController extends Controller
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
             'received_by' => $request->received_by,
+            'psrf_form_id' => $request->psrf_form_id ?? null,
         ]);
 
         $gate->save();
 
         if(!empty($gate_item)){
             foreach ($gate_item['items'] as $key => $items){
-                $gate_item = new GatePassItem([
+                $gate_items = new GatePassItem([
                     'gate_pass_id' => $gate->id,
                     'item_description' => $items['desc'],
                     'uom' =>  $items['uom'],
                     'quantity' =>  $items['qty'],
+                    'quantity_release' =>  $items['qty'],
+                    'balance' =>  $items['qty'],
                     'remarks' =>  $items['remarks'],
                 ]);
-                $gate_item->save();
+                $gate_items->save();
             }
         }
-        
+
+        if($request->filled('image')) {
+            $image = $request->image;
+            
+            $image = str_replace('data:image/png;base64,', '', $image);
+            $image = str_replace(' ', '+', $image);
+            
+            $imageName = 'capture_' . time() . '.png';
+            
+            Storage::disk('uploads')->put('gate-pass-images/' . $imageName, base64_decode($image));
+            
+            $gate->update([
+                'path' => 'uploads/gate-pass-images/' . $imageName,
+                'image' => $imageName,
+            ]);
+        }
+
+        $approver = $form->department->approver_ids;
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $gate->id,
             'model_type' => 'App\Models\GatePass',
-            'approver' => $form->approver_id,
+            'approver' => $approver,
             'status' => $request->status,
         ]);
 
@@ -460,10 +572,17 @@ class FormController extends Controller
 
         if($all_forms->status == 'approval') {
             $gate->update([
-                'control_number' => $gate_number,
+                'control_number' => $gate_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -486,30 +605,8 @@ class FormController extends Controller
         $date_submitted = date('Y-m-d');
         $date_code = date('Y');
 
-        $rfp_number = 'RFP-0'.$request->company_id.'-'.$date_code.'-001';
-        $rfp_form = RequestPayment::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $request->company_id)->first();
-        
-        if(!empty($rfp_form)) {
-            $rfp_number_arr = explode('-', $rfp_form->control_number);
-            $last = end($rfp_number_arr);
-            array_pop($rfp_number_arr);
-            $prev_year = end($rfp_number_arr);
-            array_pop($rfp_number_arr);
-            $prev_company_id = end($rfp_number_arr);
-            array_pop($rfp_number_arr);
-            if('0'.$request->company_id == $prev_company_id && $prev_year == $date_code) { 
-                $number = (int)$last + 1;
-            } else { 
-                $number = 1;
-            }
-            for($i = strlen($number);$i <= 2; $i++) {
-                $number = '0'.$number;
-            }
-            array_push($rfp_number_arr, '0'.$request->company_id, $date_code);
-            array_push($rfp_number_arr, $number);
-            $rfp_number = implode('-', $rfp_number_arr);
-        }
-        
+        $rfp_item = Session::get('rfp_item');
+  
         $rfp = new RequestPayment([
             'form_id' => $form->id,
             'company_id' => $request->company_id,
@@ -523,13 +620,29 @@ class FormController extends Controller
         ]);
 
         $rfp->save();
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $rfp->id, 'rfp-attachments');
+
+            $rfp->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $rfp->id,
             'model_type' => 'App\Models\RequestPayment',
-            'approver' => $request->approver,
+            'approver' => $user->head_approver_id,
             'status' => $request->status,
         ]);
 
@@ -537,7 +650,7 @@ class FormController extends Controller
 
         if($all_forms->status == 'approval') {
             $rfp->update([
-                'control_number' => $rfp_number,
+                'control_number' => $rfp_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
             $all_forms->approved->notify(new SubmitFormNotification($all_forms));
@@ -555,102 +668,303 @@ class FormController extends Controller
         ]);
     }
 
-    public function approve($id, AllFormUpdateRequest $request)
+    public function store_rca($id, RCAStoreRequest $request)
     {
-        $all_forms = AllForm::findOrFail(decrypt($id)); 
-
         $user = Auth::user();
+        $form = Form::findOrFail(decrypt($id));
+        $date_submitted = date('Y-m-d');
+        $date_code = date('Y');
 
-        if($all_forms->endorser == $user->id && $request->status == 'approval'){
-            $date_endorsed = date('Y-m-d');
+        $rca_item = Session::get('rca_item');
 
-            $all_forms->update([
-                'date_endorsed' => $date_endorsed,
+        $rca = new RequestCash([
+            'form_id' => $form->id,
+            'company_id' => $request->company_id,
+            'name' => $request->name,
+            'department_id' => $user->department_id,
+            'purpose' => $request->purpose,
+            'travel' => $request->travel,
+            'cost_center' => $request->cost_center,
+            'rca_date' => $request->rca_date,
+            'itenerary' => $request->itenerary,
+            'location' => $request->location,
+            'total_amount' => $rca_item['total_amount'],
+        ]);
+
+        $rca->save();
+
+        if(!empty($rca_item)){
+            foreach ($rca_item['items'] as $key => $items){
+                $rca_items = new RequestCashItem([
+                    'rca_form_id' => $rca->id,
+                    'item_description' => $items['desc'],
+                    'amount' =>  $items['amount'],
+                    'days' =>  $items['days'],
+                    'remarks' =>  $items['remarks'],
+                ]);
+                $rca_items->save();
+            }
+        }
+        
+        
+        $all_forms = new AllForm([
+            'form_id' => $form->id,
+            'user_id' => $user->id,
+            'model_id' => $rca->id,
+            'model_type' => 'App\Models\RequestCash',
+            'admin_id' => $user->department->admin_id,
+            'endorser' => $user->head_approver_id,
+            'approver' => $form->approver_id,
+            'status' => $request->status,
+        ]);
+
+        $all_forms->save();
+
+        if($all_forms->status == 'confirmation') {
+            $rca->update([
+                'control_number' => $rca_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+            $all_forms->admin->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('create')
+        ->performedOn($rca)
+        ->log(':causer.name has created '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was created'
+        ]);
+    }
+
+    public function store_lca($id, LCAStoreRequest $request)
+    {
+        $user = Auth::user();
+        $form = Form::findOrFail(decrypt($id));
+        $date_submitted = date('Y-m-d');
+        $date_code = date('Y');
+
+        $lca_item = Session::get('lca_item');
+
+        $lca = new LiquidCash([
+            'form_id' => $form->id,
+            'company_id' => $request->company_id,
+            'rca_form_id' => $request->rca_form_id,
+            'total_amount' => $lca_item['total_amount'],
+            'balance' => $lca_item['balance'],
+        ]);
+
+        $lca->save();
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $lca->id, 'lca-receipts');
+
+            $lca->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
+        if(!empty($lca_item)){
+            foreach ($lca_item['items'] as $key => $items){
+                $lca_items = new LiquidCashItem([
+                    'lca_form_id' => $lca->id,
+                    'date' =>  $items['date'],
+                    'item_description' => $items['desc'],
+                    'area' =>  $items['area'],
+                    'amount' =>  $items['amount'],
+                ]);
+                $lca_items->save();
+            }
+        }
+        
+        
+        $all_forms = new AllForm([
+            'form_id' => $form->id,
+            'user_id' => $user->id,
+            'model_id' => $lca->id,
+            'model_type' => 'App\Models\LiquidCash',
+            'endorser' => $user->head_approver_id,
+            'approver' => $form->approver_id,
+            'status' => $request->status,
+        ]);
+
+        $all_forms->save();
+
+        if($all_forms->status == 'endorsement') {
+            $lca->update([
+                'control_number' => $lca_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('create')
+        ->performedOn($lca)
+        ->log(':causer.name has created '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was created'
+        ]);
+    }
+
+    public function store_pca($id, PCAStoreRequest $request)
+    {
+        $user = Auth::user();
+        $form = Form::findOrFail(decrypt($id));
+        $date_submitted = date('Y-m-d');
+        $date_code = date('Y');
+
+        $pca_item = Session::get('pca_item');
+
+        $pca = new PettyCash([
+            'form_id' => $form->id,
+            'company_id' => $request->company_id,
+            'name' => $request->name,
+            'cost_center' => $request->cost_center,
+            'total_amount' => $pca_item['total_amount'],
+        ]);
+
+        $pca->save();
+
+        if(!empty($pca_item)){
+            foreach ($pca_item['items'] as $key => $items){
+                $pca_items = new PettyCashItem([
+                    'pca_form_id' => $pca->id,
+                    'item_description' => $items['desc'],
+                    'amount' =>  $items['amount'],
+                ]);
+                $pca_items->save();
+            }
+        }
+        
+        
+        $all_forms = new AllForm([
+            'form_id' => $form->id,
+            'user_id' => $user->id,
+            'model_id' => $pca->id,
+            'model_type' => 'App\Models\PettyCash',
+            'approver' => $form->approver_id,
+            'status' => $request->status,
+        ]);
+
+        $all_forms->save();
+
+        if($all_forms->status == 'approval') {
+            $pca->update([
+                'control_number' => $pca_item['control_number'],
+                'date_submitted' => $date_submitted,
             ]);
             $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('create')
+        ->performedOn($pca)
+        ->log(':causer.name has created '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was created'
+        ]);
+    }
+
+    public function store_pcl($id, PCLStoreRequest $request)
+    {
+        $user = Auth::user();
+        $form = Form::findOrFail(decrypt($id));
+        $date_submitted = date('Y-m-d');
+        $date_code = date('Y');
+
+        $pcl_item = Session::get('pcl_item');
+
+        $pcl = new PettyLiquid([
+            'form_id' => $form->id,
+            'company_id' => $request->company_id,
+            'pca_form_id' => $request->pca_form_id,
+            'total_amount' => $pcl_item['total_amount'],
+            'balance' => $pcl_item['balance'],
+        ]);
+
+        $pcl->save();
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $pcl->id, 'pcl-receipts');
+
+            $pcl->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
+        if(!empty($pcl_item)){
+            foreach ($pcl_item['items'] as $key => $items){
+                $pcl_items = new PettyLiquidItem([
+                    'pcl_form_id' => $pcl->id,
+                    'item_description' => $items['desc'],
+                    'amount' =>  $items['amount'],
+                ]);
+                $pcl_items->save();
+            }
+        }
+        
+        
+        $all_forms = new AllForm([
+            'form_id' => $form->id,
+            'user_id' => $user->id,
+            'model_id' => $pcl->id,
+            'model_type' => 'App\Models\PettyLiquid',
+            'approver' => $form->approver_id,
+            'status' => $request->status,
+        ]);
+
+        $all_forms->save();
+
+        if($all_forms->status == 'approval') {
+            $pcl->update([
+                'control_number' => $pcl_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('create')
+        ->performedOn($pcl)
+        ->log(':causer.name has created '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was created'
+        ]);
+    }
+
     
-        } elseif ($all_forms->endorser == $user->id && $request->status == 'declined') {
-
-            $all_forms->update([
-                'remarks' => $request->remarks,
-            ]);
-
-            $all_forms->user->notify(new DeclineFormNotification($all_forms));
-
-        }
-
-        if($all_forms->approver == $user->id && $request->status == 'approved'){
-            $date_approved = date('Y-m-d');
-
-            $all_forms->update([
-                'date_approved' => $date_approved,
-            ]);
-            $all_forms->user->notify(new ApproveFormNotification($all_forms));
-
-        } elseif ($all_forms->approver == $user->id && $request->status == 'declined') {
-
-            $all_forms->update([
-                'remarks' => $request->remarks,
-            ]);
-
-            $all_forms->user->notify(new DeclineFormNotification($all_forms));
-            
-        }
-
-        $control_number = $all_forms->model->control_number;
-        $form_name = $all_forms->form->name;
-        
-        $all_forms->update([
-            'status' => $request->status,
-        ]);
-        
-        if ($request->status == 'declined'){
-            activity('declined')
-            ->performedOn($all_forms)
-            ->log(':causer.name has decline '.$form_name.' ['.$control_number.']');
-
-            return redirect()->route('approver.index')->with([
-                'message_success' => $form_name.' ['.$control_number.'] was declined'
-            ]);
-        } else {
-            activity('approved')
-            ->performedOn($all_forms)
-            ->log(':causer.name has approve '.$form_name.' ['.$control_number.']');
-
-            return redirect()->route('approver.index')->with([
-                'message_success' => $form_name.' ['.$control_number.'] was approved'
-            ]);
-        }
-    }
-
-    public function check($id, AllFormCheckRequest $request) {
-        $all_forms = AllForm::findOrFail(decrypt($id)); 
-
-        $all_forms->update([
-            'status' => $request->status,
-        ]);
-
-        $control_number = $all_forms->model->control_number;
-        $form_name = $all_forms->form->name;
-
-        activity('checked')
-            ->performedOn($all_forms)
-            ->log('Security has check '.$form_name.' ['.$control_number.']');
-
-        return redirect()->route('home')->with([
-            'message_success' => $form_name.' ['.$control_number.'] was checked'
-        ]);
-    }
-
-    public function printPDF($id) {
-        $forms = AllForm::findOrFail(decrypt($id)); 
-        $prefix = $forms->form->prefix;
-
-        $pdf = PDF::loadView('pages.forms.pdfs.'.$prefix, [
-            'forms' => $forms,
-        ]);
-
-        return $pdf->stream();
-    }
 
 }

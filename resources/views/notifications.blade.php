@@ -34,10 +34,10 @@
                 <div class="col-12 table-responsive">
                     <table class="table table-sm table-striped table-hover bg-white mb-0 rounded">
                         <thead class="text-center bg-dark">
-                            <tr class="text-center">
-                                <th></th>
-                                <th class="text-left">NAME</th>
-                                <th>EMAIL</th>
+                            <tr class="text-left">
+                                <th>TITLE</th>
+                                <th>MESSAGE</th>
+                                <th>TIME</th>
                                 <th></th>
                             </tr>
                         </thead>

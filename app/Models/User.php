@@ -39,6 +39,7 @@ class User extends Authenticatable
         'last_activity',
         'signature',
         'cost_center',
+        'head_approver_id',
     ];
 
     /**
@@ -104,6 +105,10 @@ class User extends Authenticatable
 
     public function position() {
         return $this->belongsTo('App\Models\Position');
+    }
+
+    public function head_approver() {
+        return $this->belongsTo('App\Models\User');
     }
     /**
      * Get the org structure trees associated with the user.

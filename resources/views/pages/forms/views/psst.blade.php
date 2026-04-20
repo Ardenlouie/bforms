@@ -5,6 +5,8 @@
         <h3 class="text-right text-uppercase">
             @if($forms->status == 'draft')
                 <span class="badge badge-secondary"><b>DRAFT</b></span>
+            @elseif($forms->status == 'confirmation')
+                <span class="badge badge-warning"><b>Admin Confirmation</b></span>
             @elseif($forms->status == 'endorsement')
                 <span class="badge badge-info"><b>For Endorsement</b></span>
             @elseif($forms->status == 'approval')
@@ -100,7 +102,7 @@
                         <small class="form-text text-muted mb-3">
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 You are endorser of this Form.
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
                             @else
                                 
@@ -110,7 +112,7 @@
                             @if($forms->endorser == $user->id && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @else
@@ -153,25 +155,7 @@
                 @endif
                 
             </div>
-            <div class="col-12 text-center">
-                @if($forms->status == 'approved')
-                <div class="form-group">    
-                    <small class="form-text text-muted mb-3">
-                        This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
-                    </small>
-                    <div class="mb-3">
-                        {!! DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE') !!}
-                    </div>
-
-                    <a href="data:image/svg+xml;base64,{{ base64_encode(DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10)) }}" 
-                        download="QR_Code_{{ $forms->model->control_number }}.svg" 
-                        class="btn bg-green">
-                            <i class="fas fa-download"></i> Download QR Code
-                    </a>
-                </div>
-                @endif
-            </div>
-            
+                    
         </div>
     </div>
     <div class="card-footer text-center">
@@ -179,6 +163,8 @@
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+                
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -187,6 +173,7 @@
             </div>
             <div class="col-4">
                 <img src="{{ asset($forms->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
                 <h3><b>{{ ($forms->endorsed->name ?? '' )}}</b></h3>
@@ -196,6 +183,7 @@
             </div>
             <div class="col-4">
                 <img src="{{ asset($forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->approved->name ?? '' )}}</b></h3>

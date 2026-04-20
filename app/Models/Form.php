@@ -23,6 +23,7 @@ class Form extends Model
         'department_id',
         'category_id',
         'approver_id',
+        'beva_approver_id',
     ];
 
     public function department() {
@@ -34,6 +35,10 @@ class Form extends Model
     }
 
     public function approver() {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function beva_approver() {
         return $this->belongsTo('App\Models\User');
     }
 

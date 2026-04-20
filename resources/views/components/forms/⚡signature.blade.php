@@ -55,6 +55,22 @@ new class extends Component
                             @endif
                         </td>
                     </tr>
+                    @if(!empty($forms->admin_id))
+                    <tr>
+                        <td>Admin In-charge</td>
+                        <td>{{ $forms->admin->name ?? ''}}</td>
+                        <td>
+                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
+                            {{ $forms->date_confirmed }}
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
+                            <span class="badge badge-success"><b>Signed</b></span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
                     @if(!empty($forms->endorser))
                     <tr>
                         <td>Endorsed By</td>
@@ -73,7 +89,9 @@ new class extends Component
                     @endif
                     <tr>
                         <td>Approved By</td>
-                        <td>{{ $forms->approved->name ?? ''}}</td>
+                        <td>
+                            {{ ($forms->signed->name ?? $forms->approved->name ) }}
+                        </td>
                         <td>
                             @if(!empty($forms->date_approved) && $forms->status != 'declined')
                                 {{ $forms->date_approved }}

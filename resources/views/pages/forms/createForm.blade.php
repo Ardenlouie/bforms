@@ -30,7 +30,7 @@
         </div>
     </div>
 
-        @include('pages.forms.inputs.'.$form->prefix ) 
+        @include('pages.forms.inputs.'.$prefix ) 
 
 
 </div>

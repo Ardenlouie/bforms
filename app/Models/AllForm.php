@@ -17,13 +17,22 @@ class AllForm extends Model
         return Session::get('db_connection', 'mysql'); // Default to 'mysql' if not set
     }
 
+    protected $casts = [
+        'approver' => 'array', 
+    ];
+
     protected $fillable = [
         'form_id',
         'user_id',
         'model_id',
         'model_type',
+        'admin_id',
+        'processor',
         'endorser',
         'approver',
+        'signed_id',
+        'date_confirmed',
+        'date_processed',
         'date_endorsed',
         'date_approved',
         'date_checked',
@@ -43,8 +52,25 @@ class AllForm extends Model
         return $this->morphTo();
     }
 
+    public function admin() {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function signed() {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function processed() {
+        return $this->belongsTo('App\Models\User', 'processor', 'id');
+    }
+
     public function approved() {
         return $this->belongsTo('App\Models\User', 'approver', 'id');
+    }
+
+    public function hasApprover($userId)
+    {
+        return in_array($userId, $this->approver ?? []);
     }
 
     public function endorsed() {

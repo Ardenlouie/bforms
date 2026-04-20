@@ -63,6 +63,18 @@
                         </div>
                     </div>
 
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ html()->label(__('Admin'), 'admin_id')->class(['mb-0']) }}
+                            {{ 
+                                html()->select('admin_id', $users)
+                                    ->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('admin_id')])
+                                    ->placeholder(__('Select User')) 
+                            }}
+                            <small class="text-danger">{{$errors->first('head_id')}}</small>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>

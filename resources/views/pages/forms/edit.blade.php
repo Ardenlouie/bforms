@@ -61,9 +61,25 @@
 
                     <div class="col-lg-4">
                         <div class="form-group">
-                            {{ html()->label(__('Final Approver'), 'approver_id')->class(['mb-0']) }}
+                            {{ html()->label(__('Department'), 'department_id')->class(['mb-0']) }}
+                            {{ html()->select('department_id', $departments, $department_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('department_id')]) }}
+                            <small class="text-danger">{{$errors->first('department_id')}}</small>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ html()->label(__('Final Approver (BEVI)'), 'approver_id')->class(['mb-0']) }}
                             {{ html()->select('approver_id', $users, $user_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('approver_id')]) }}
                             <small class="text-danger">{{$errors->first('approver_id')}}</small>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {{ html()->label(__('Final Approver (BEVA)'), 'beva_approver_id')->class(['mb-0']) }}
+                            {{ html()->select('beva_approver_id', $users, $beva_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('beva_approver_id')]) }}
+                            <small class="text-danger">{{$errors->first('beva_approver_id')}}</small>
                         </div>
                     </div>
 

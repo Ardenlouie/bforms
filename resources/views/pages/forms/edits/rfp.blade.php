@@ -89,24 +89,33 @@
                 </div>
             </div>
 
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="form-group">
-                    <label class="mb-0">Requested By</label>
-                    <input type="text" class="form-control" name="user_id" value="{{$all_form->user->name}}" form="update_rfp" disabled> 
-                    <input type="hidden" name="user_id" value="{{$all_form->user_id}}" form="update_rfp"> 
-                    <small class="text-danger">{{$errors->first('user_id')}}</small>
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }}
+                    <h6>{{$all_form->model->file_name}}</h6>
+                    <input
+                        form="update_rfp"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
                 </div>
             </div>
-            <div class="col-lg-4">
-            </div>
-            <div class="col-lg-4">
-                <div class="form-group">
-                    <label class="mb-0">Approved By</label>
-                    <select id="user_select" name="approver" class="form-control" style="width: 100%;" form="update_rfp" value="{{$all_form->approver}}"></select>
-                    <small class="text-danger">{{$errors->first('approver')}}</small>
-                </div>
 
-                
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        src="{{ asset('/'.$all_form->model->path) }}"
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
+                </div>
             </div>
         </div>
     </div>
@@ -211,13 +220,25 @@ $(function() {
                 cost_center: document.querySelector('select[name="cost_center"]').value || "-",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 instructions: document.querySelector('input[name="instructions"]').value || "-",
-                approver: document.querySelector('select[name="approver"]').value || "-",
                 currency: document.querySelector('input[name="currency"]').value || "-",
             };
    
             Livewire.dispatch('loadRfpSummary',{ data });
             $('#modal-preview').modal('show');
         });
+    });
+</script>
+
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
+
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
     });
 </script>
 @endpush

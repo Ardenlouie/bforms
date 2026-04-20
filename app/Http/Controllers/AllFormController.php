@@ -27,7 +27,8 @@ class AllFormController extends Controller
             ->whereHasMorph(
                 'model',
                 ['App\Models\ProductSample', 'App\Models\RequestPayment', 'App\Models\ProductTransfer',
-                'App\Models\GatePass'], 
+                'App\Models\GatePass', 'App\Models\RequestCash', 'App\Models\LiquidCash', 
+                'App\Models\PettyCash', 'App\Models\PettyLiquid'], 
                 function ($query, $type) use($search) {
                     $query->where('control_number', 'like', '%'.$search.'%')
                         ->orWhere('form_id', 'like', '%'.$search.'%');

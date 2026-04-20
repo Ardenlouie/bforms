@@ -141,6 +141,8 @@
                 id: $(this).data('id'),
                 form: $(this).data('form'),
             };
+            $.fn.modal.Constructor.prototype._enforceFocus = function() {};
+
             Livewire.dispatch('viewForm', {data});
             $('#modal-view').modal('show');
         });

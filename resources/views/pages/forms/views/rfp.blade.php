@@ -5,6 +5,8 @@
         <h3 class="text-right text-uppercase">
             @if($forms->status == 'draft')
                 <span class="badge badge-secondary"><b>DRAFT</b></span>
+            @elseif($forms->status == 'confirmation')
+                <span class="badge badge-warning"><b>Admin Confirmation</b></span>
             @elseif($forms->status == 'endorsement')
                 <span class="badge badge-info"><b>For Endorsement</b></span>
             @elseif($forms->status == 'approval')
@@ -71,6 +73,21 @@
             <div class="col-6 text-right">
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
+                @endif
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-9 mb-3">
+                <h4>Attachment:</h4>
+                @if(!empty($forms->model->path))
+                    <iframe
+                        src="{{ asset('/'.$forms->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
+                @else
+                    NO ATTACHMENT
                 @endif
             </div>
         </div>
