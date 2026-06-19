@@ -66,24 +66,27 @@
                 </td>
                 <td class="align-middle text-center">
                     <b>
+                    @php
+                        $approvers = \App\Models\User::whereIn('id', $my_form->approver ?? [])->get();
+                        $endorsers = \App\Models\User::whereIn('id', $my_form->endorser ?? [])->get();
+                    @endphp
+
                     @if($my_form->status == 'draft')
                         
                     @elseif($my_form->status == 'endorsement')
-                        <span class="badge badge-info">
-                            <i class="fas fa-file-signature"></i> {{$my_form->endorsed->name}}
-                        </span>
+                        @foreach($endorsers as $id => $endorser)
+                            <span class="badge badge-info">
+                                <i class="fas fa-file-signature"></i> {{ $endorser->name }}
+                            </span>
+                        @endforeach
                     @elseif($my_form->status == 'approval')
-                        @php
-                            $approvers = \App\Models\User::whereIn('id', $my_form->approver ?? [])->get();
-                        @endphp
-
                         @foreach($approvers as $id => $approver)
                             <span class="badge badge-primary">
                                 <i class="fas fa-file-signature"></i> {{ $approver->name }}
                             </span>
                         @endforeach
                     @elseif($my_form->status == 'confirmation')
-                        <span class="badge badge-navy">
+                        <span class="badge badge-warning">
                             <i class="fas fa-file-signature"></i> {{$my_form->admin->name}}
                         </span>
                     @elseif($my_form->status == 'processing')

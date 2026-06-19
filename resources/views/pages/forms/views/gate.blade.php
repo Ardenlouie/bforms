@@ -54,11 +54,15 @@
                 <h4>Received By: <b>{{ ($forms->model->received_by ?? '' )}}</b></h4>
             </div>
             <div class="col-6 text-right">
+                <h4>Category: <b>{{ ($forms->model->category ?? '' )}}</b></h4>
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
+                <h4>Note: <b>{{ ($forms->model->note ?? '' )}}</b></h4>
+
             </div>
         </div>
+        
         <div class="table-responsive mb-3">
             <table class="table table-striped text-center" id="summaryTable">
                 <thead>
@@ -86,19 +90,16 @@
         </div>
         <div class="row">
             <div class="col-9 mb-3">
-                <h4>Photo:</h4>
+                <h4>Attachment:</h4>
                 @if(!empty($forms->model->path))
-                    <div class="gallery text-center">
-                        <img
-                            class="popup-image"
-                            src="{{ asset('/'.$forms->model->path) }}"
-                            width="100%"
-                            height="60%"
-                            style="border: none;">
-                        </img>
-                    </div>
+                    <iframe
+                        src="{{ asset('/'.$forms->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
                 @else
-                    NO PHOTO
+                    NO ATTACHMENT
                 @endif
             </div>
         </div>
@@ -146,7 +147,7 @@
                         <input type="hidden" id="status" name="status" form="approve" value="endorsement">
 
                         <small class="form-text text-muted mb-3">
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 You are endorser of this Form.
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
@@ -155,7 +156,7 @@
                             @endif
                         </small>
                         <label>
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
@@ -236,11 +237,21 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->signed->signature ?? $forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->noted->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
+                <h3><b>{{ ($forms->noted->name ?? '') }}</b></h3>
+
+                <div class="line"></div>
+                <h4>Endorsed By</h4>
+            </div>
+            <div class="col-4">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($forms->signed->name ?? $forms->approved->name )}}</b></h3>
+                <h3><b>{{ ($forms->signed->name ?? '') }}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>

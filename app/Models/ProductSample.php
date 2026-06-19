@@ -22,6 +22,8 @@ class ProductSample extends Model
     protected $fillable = [
         'form_id',
         'company_id',
+        'requested_by',
+        'customer',
         'recipient',
         'activity_name',
         'objective',
@@ -29,6 +31,8 @@ class ProductSample extends Model
         'date_submitted',
         'program_date',
         'control_number',
+        'file_name',
+        'path',
     ];
 
     public function form() {

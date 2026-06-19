@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies, $all_form->model->company_id)->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
@@ -12,28 +12,50 @@
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
         <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
         <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
+        <input type="hidden" name="numberof"  value="1">
 
         </div>  
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Purpose</label>
+                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="purpose" form="update_gate" value="{{ $all_form->model->purpose }}"> 
                     <small class="text-danger">{{$errors->first('purpose')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Category <small class="text-danger font-italic text-bold">(required)</small></label>
+                        <select class="form-control" name="category" form="update_gate" value="{{ $all_form->model->category }}">
+                            <option value="IT Equipment">IT Equipment</option>
+                            <option value="Marketing Materials">Marketing Materials</option>
+                            <option value="Documents">Documents</option>
+                        </select>
+                    <small class="text-danger">{{$errors->first('point_origin')}}</small>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Receive By</label>
+                    <label class="mb-0">Receive By <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="received_by" form="update_gate" value="{{ $all_form->model->received_by }}"> 
                     <small class="text-danger">{{$errors->first('received_by')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="form-group">
+                    <label class="mb-0">Note <small class=" font-italic text-bold">(optional)</small></label>
+                    <input type="text" class="form-control" name="note" form="update_gate" value="{{ $all_form->model->note }}"> 
+                    <small class="text-danger">{{$errors->first('note')}}</small>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
+                <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
+
                 <table class="table table-responsive table-bordered text-center" id="dynamicTable">
                     <thead>
                         <tr>
@@ -64,9 +86,34 @@
             </div>
             <div class="col-lg-6">
                 <div class="form-group">
-                    @if(!empty($all_form->model->path))
-                    <img id="photo_preview" class="img-thumbnail" style="max-height: 500px;" src="{{ asset('/'.$all_form->model->path) }}">
-                    @endif
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
+                    <h6>{{$all_form->model->file_name}}</h6>
+                    <input
+                        form="update_psst"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        src="{{ ($all_form->model->file_name == null && '') ? (asset('/'.$all_form->model->path)) : '' }}"
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
+                </div>
+            </div>
+            <!-- <div class="col-lg-6">
+                <div class="form-group">
                     <div id="photo_preview_container" style="display:none;">
                     <label>Photo Preview</label><br>
                        
@@ -89,7 +136,7 @@
 
                     <input type="hidden" name="image" id="captured_image_input">
                 </div>
-            </div>
+            </div> -->
         </div>
     </div>
     <div class="card-footer text-right">
@@ -104,7 +151,7 @@
             </div>
         </div>
 
-        <div id="camera_modal" class="modal fade" tabindex="-1" role="dialog">
+        <!-- <div id="camera_modal" class="modal fade" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -122,7 +169,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
     </div>
 </form>
@@ -253,7 +300,7 @@
                     });
 
                     Swal.showLoading();
-                    $('#status').val('approval');
+                    $('#status').val('endorsement');
                     $('#update_gate').submit();
 
                 }
@@ -298,8 +345,11 @@
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 control_number: document.querySelector('input[name="control_number"]').value,
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
+                numberof: "1",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 received_by: document.querySelector('input[name="received_by"]').value || "-",
+                category: document.querySelector('select[name="category"]').value || "-",
+                note: document.querySelector('input[name="note"]').value || "-",
             };
 
             let items = [];
@@ -385,5 +435,16 @@ $('#remove_photo').on('click', function() {
     $('#upload_controls').show();
 });
 </script>
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
 
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
+    });
+</script>
 @endpush

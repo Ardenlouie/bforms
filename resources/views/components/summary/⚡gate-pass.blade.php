@@ -96,11 +96,14 @@ new class extends Component
             </div>
             <div class="row text-left">
                 <div class="col-6">
-                    <h4>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h4>
-                    <h4>Received By: <b>{{ ($data['received_by'] ?? '' )}}</b></h4>
+                    <h5>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h5>
+                    <h5>No. of Receiver/s: <b>{{ ($data['numberof'] ?? '' )}}</b></h5>
+                    <h5>Received By: <b>{{ ($data['received_by'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h4>Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
+                    <h5>Category: <b>{{ ($data['category'] ?? '' )}}</b></h5>
+                    <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
+                    <h5>Note: <b>{{ ($data['note'] ?? '' )}}</b></h5>
                 </div>
          
             </div>
@@ -119,11 +122,11 @@ new class extends Component
                 <tbody>
                     @foreach($items as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['desc'] }}</td>
-                            <td>{{ $item['uom'] }}</td>
-                            <td>{{ $item['qty'] }}</td>
-                            <td>{{ $item['remarks'] }}</td>
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td class="align-middle">{{ $item['desc'] }}</td>
+                            <td class="align-middle">{{ $item['uom'] }}</td>
+                            <td class="align-middle">{{ $item['qty'] }}</td>
+                            <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -131,11 +134,29 @@ new class extends Component
             </table>
           
             <div class="row text-center">
-                <div class="col-6">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                <div class="col-4">
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
-                <div class="col-6">
-                    <h4>Approved By: 
+
+                <div class="col-4">
+                    @if(!empty($data['category']))
+                        @if($data['category'] != 'Product Sample')
+                        <h4>Endorser: 
+                            <br><b>
+                                @if($data['category'] == 'IT Equipment')
+                                    IT Department Approvers
+                                @elseif($data['category'] == 'Marketing Materials')
+                                    Marketing Department Approvers
+                                @elseif($data['category'] == 'Documents')
+                                    {{ ($user->department->name ?? '' )}} Department Approvers
+                                @endif
+                            </b>
+                        </h4>
+                        @endif
+                    @endif
+                </div>
+                <div class="col-4">
+                    <h4>Approver: 
                         <br><b>
                             {{ ($forms->department->name ?? '' )}} Department
                         </b></h4>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class PCAStoreRequest extends FormRequest
 {
@@ -22,7 +23,22 @@ class PCAStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'company_id' => [
+                'required',
+            ], 
+            'name' => [
+                'required',
+            ], 
+            'cost_center' => [
+                'required',
+            ], 
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        session()->flash('message_error', 'Please fill up the form before saving.');
+
+        parent::failedValidation($validator);
     }
 }

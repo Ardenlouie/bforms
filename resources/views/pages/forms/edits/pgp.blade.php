@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies, $all_form->model->company_id)->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
@@ -12,29 +12,41 @@
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
         <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
         <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
+        <input type="hidden" name="purpose"  value="{{ $all_form->model->purpose }}">
+
+        <input type="hidden" name="psrf_form_id"  value="{{ $all_form->model->id }}">
+        <input type="hidden" name="category"  value="Product Sample">
 
         </div>  
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Purpose</label>
-                    <input type="text" class="form-control" name="purpose" form="update_gate" value="{{ $all_form->model->purpose }}"> 
+                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="text" class="form-control" name="purpose" form="update_gate" value="{{ $all_form->model->purpose }}" disabled> 
                     <small class="text-danger">{{$errors->first('purpose')}}</small>
                 </div>
             </div>
-        </div>
-        <div class="row">
+            <div class="col-lg-2"></div>
             <div class="col-lg-5">
+                @php
+                    $psrf_number = \App\Models\ProductSample::where('id', $all_form->model->psrf_form_id)->first();
+                @endphp
                 <div class="form-group">
-                    <label class="mb-0">Receive By</label>
-                    <input type="text" class="form-control" name="received_by" form="update_gate" value="{{ $all_form->model->received_by }}"> 
-                    <small class="text-danger">{{$errors->first('received_by')}}</small>
+                    <label class="mb-0">Product Sample Request Form:</label>
+                    <h4><b>[{{ $psrf_number->control_number }}]</b></h4>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label>Note <small class=" font-italic text-bold">(optional)</small></label>
+                    <input type="text" class="form-control" name="note" form="update_gate" value="{{ $all_form->model->note }}"> 
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12">
-                <table class="table table-responsive table-bordered text-center" id="dynamicTable">
+            <div class="col-md-12 table-responsive ">
+                <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
+                <table class="table table-bordered text-center" id="dynamicTable">
                     <thead>
                         <tr>
                             <th>No.</th>
@@ -42,7 +54,6 @@
                             <th>UOM</th>
                             <th>Qty</th>
                             <th>Remarks</th>
-                            <th><button type="button" name="add" id="addBtn" class="btn btn-success"><i class="fa fa-plus"></i></button></th>
                         </tr>
                     </thead>
                     @php
@@ -51,43 +62,33 @@
                     <tbody >
                         @foreach ($all_form->model->gate_pass_item()->get() as $index => $item)
                         <tr>
-                            <td class="row-number">{{ $index + 1 }}</td>
-                            <td ><input type="text" name="items[{{ $index }}][desc]" value="{{ $item['item_description'] }}" class="form-control text-center desc" /></td>             
-                            <td ><input type="text" name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom" /></td>
-                            <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty"/></td>
-                            <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" /></td>
-                            <td><button type="button" class="btn btn-danger removeRow">x</button></td>
+                            <td>{{ $index + 1 }}</td>
+                            <td ><input type="text" name="items[{{ $index }}][desc]" value="{{ $item['item_description'] }}" class="form-control text-center desc" disabled/></td>             
+                            <td ><input type="text" name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom" disabled/></td>
+                            <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty" disabled/></td>
+                            <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" disabled/></td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="col-lg-6">
+        </div>
+        <div class="row">
+            <div class="col-md-4">
                 <div class="form-group">
-                    @if(!empty($all_form->model->path))
-                    <img id="photo_preview" class="img-thumbnail" style="max-height: 500px;" src="{{ asset('/'.$all_form->model->path) }}">
-                    @endif
-                    <div id="photo_preview_container" style="display:none;">
-                    <label>Photo Preview</label><br>
-                       
+                    <label>Number of Receiver/s <small class="text-danger font-italic text-bold">(required)</small></label>
+                    {{-- This input controls how many fields appear --}}
+                    <input type="number" id="numberof" class="form-control" form="update_gate" name="numberof" min="1" value="1"  value="{{ $all_form->model->numberof }}">
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label>Received By <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <div id="receivers-container">
+                        <input type="text" class="form-control mb-2" name="received_by[]" form="update_gate" required placeholder="Receiver 1 Name"> 
 
-                        <img id="photo_preview" src="" class="img-thumbnail" style="max-height: 500px;" src="{{ asset('/'.$all_form->model->path) }}">
-                        <div class="mt-2">
-                            <button type="button" class="btn btn-xs btn-danger" id="remove_photo">
-                                <i class="fas fa-trash"></i> Remove & Retake
-                            </button>
-                        </div>
                     </div>
-                    
-                    <div id="upload_controls">
-                        <label>Upload Photo</label><br>
-
-                        <button type="button" class="btn btn-info" id="open_camera">
-                            <i class="fas fa-camera"></i> Take Photo
-                        </button>
-                    </div>
-
-                    <input type="hidden" name="image" id="captured_image_input">
                 </div>
             </div>
         </div>
@@ -103,27 +104,6 @@
                 <livewire:summary.gate-pass  />
             </div>
         </div>
-
-        <div id="camera_modal" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Camera Capture</h5>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-                    <div class="modal-body text-center">
-                        <video id="video" width="100%" height="auto" autoplay playsinline class="rounded border"></video>
-                        <canvas id="canvas" style="display:none;"></canvas>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="snap" class="btn btn-success">
-                            <i class="fas fa-camera"></i> Capture
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 </form>
 
@@ -158,7 +138,6 @@
         `;
         table.appendChild(newRow);
         updateRowNumbers();
-        emitPSRF();
     });
 
     $(document).on('input', '.qty', function() {
@@ -175,32 +154,8 @@
         if (e.target && e.target.classList.contains("removeRow")) {
             e.target.closest("tr").remove();
             updateRowNumbers();
-            emitPSRF();
-
         }
     });
-
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            purpose: document.querySelector('input[name="purpose"]').value || "-",
-            receive_by: document.querySelector('input[name="receive_by"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let uom = row.querySelector(".uom").value || "-";
-            let qty = parseFloat(row.querySelector(".qty").value) || 0;
-            let remarks = row.querySelector(".remarks").value || "-";
-
-            items.push({ desc, uom, qty, remarks });
-        });
-
-        Livewire.dispatch('loadGateSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
@@ -299,7 +254,12 @@
                 control_number: document.querySelector('input[name="control_number"]').value,
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
-                received_by: document.querySelector('input[name="received_by"]').value || "-",
+                numberof: document.querySelector('input[name="numberof"]').value || "-",
+                category: document.querySelector('input[name="category"]').value || "-",
+                note: document.querySelector('input[name="note"]').value || "-",
+                received_by: Array.from(document.querySelectorAll('input[name="received_by[]"]'))
+                  .map(input => input.value.trim() || "-")
+                  .join(', '),
             };
 
             let items = [];
@@ -386,4 +346,39 @@ $('#remove_photo').on('click', function() {
 });
 </script>
 
+<script>
+$(document).ready(function() {
+    $('#numberof').on('input change', function() {
+        let count = parseInt($(this).val()) || 1;
+        let container = $('#receivers-container');
+        
+        // Safety guard: Don't allow less than 1
+        if (count < 1) {
+            $(this).val(1);
+            count = 1;
+        }
+
+        // Get the current number of inputs inside the container
+        let currentInputs = container.find('input[name="received_by[]"]').length;
+
+        if (count > currentInputs) {
+            // Add more fields if count increased
+            for (let i = currentInputs + 1; i <= count; i++) {
+                container.append(`
+                    <input type="text" 
+                           class="form-control mb-2 extra-receiver" 
+                           name="received_by[]" 
+                           required 
+                           placeholder="Receiver ${i} Name">
+                `);
+            }
+        } else if (count < currentInputs) {
+            // Remove fields from the bottom if count decreased
+            for (let i = currentInputs; i > count; i--) {
+                container.find('input[name="received_by[]"]').last().remove();
+            }
+        }
+    });
+});
+</script>
 @endpush

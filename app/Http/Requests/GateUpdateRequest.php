@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class GateUpdateRequest extends FormRequest
 {
@@ -22,7 +23,25 @@ class GateUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'company_id' => [
+                'required',
+            ], 
+            'purpose' => [
+                'required',
+            ], 
+            'category' => [
+                'required',
+            ], 
+            'received_by' => [
+                'required',
+            ], 
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        session()->flash('message_error', 'Please fill up the form before saving.');
+
+        parent::failedValidation($validator);
     }
 }

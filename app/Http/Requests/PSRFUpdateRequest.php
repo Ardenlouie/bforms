@@ -32,6 +32,18 @@ class PSRFUpdateRequest extends FormRequest
             'activity_name' => [
                 'required',
             ], 
+            'program_date' => [
+                'required',
+            ],
+            'objective' => [
+                'required',
+            ],
+            'customer' => [
+                'required',
+            ],
+            'requested_by' => [
+                'required',
+            ],
         ];
     }
 

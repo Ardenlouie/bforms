@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Http;
 use App\Http\Traits\SettingTrait;
 use App\Helpers\FileSavingHelper;
 
@@ -57,6 +58,13 @@ class MyFormController extends Controller
     public function index(Request $request) {
         $search = trim($request->get('search') ?? '');
         $user_id = Auth::user()->id;
+        $form_id = $request->query('form_id');
+
+        $forms = Form::all();
+        $forms_arr = [];
+        foreach($forms as $form) {
+            $forms_arr[$form->id] = $form->prefix.' ('.$form->name.')';
+        }
 
         $status = $request->query('status');
 
@@ -75,15 +83,20 @@ class MyFormController extends Controller
             ->when($status, function($q) use ($status) {
                 $q->where('status', $status);
             })
+            ->when($form_id, function($q) use ($form_id) {
+                $q->where('form_id', $form_id);
+            })
             ->paginate($this->getDataPerPage())->onEachSide(1);
 
         if ($request->ajax()) {
             return view('pages.my-forms.partials', compact('my_forms'))->render();
         }
 
+
         return view('pages.my-forms.index')->with([
             'my_forms' => $my_forms,
             'search' => $search,
+            'forms' => $forms_arr,
 
         ]);
     }
@@ -91,6 +104,18 @@ class MyFormController extends Controller
     public function show($id) {
         $forms = AllForm::findOrFail(decrypt($id));
         $user = Auth::user();
+        $po_number = 'RS 32305611';
+        $company = $forms->model->company->name;
+        $sct_number = null;
+
+        if($forms->form->prefix == 'psst'){
+            $sct_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
+                ->get('http://192.168.11.240/refreshable/public/api/sor_master/'.$po_number.'/'.$company);
+
+            $sct = $sct_api->json();
+
+            $sct_number = $sct['SalesOrder'];
+        }
 
         $folderPath = 'uploads/gate-pass-images/to-release/' . $forms->model->id;
         $directory = public_path($folderPath); 
@@ -101,11 +126,12 @@ class MyFormController extends Controller
                 'folderPath' => $folderPath,
                 'forms' => $forms,
                 'user' => $user,
+                'sct_number' => $sct_number,
             ]);
         }
 
         $files = File::files($directory);
-        
+
         $images = [];
         foreach ($files as $file) {
             $images[] = $file->getFilename();
@@ -116,6 +142,7 @@ class MyFormController extends Controller
             'user' => $user,
             'images' => $images,
             'folderPath' => $folderPath,
+            'sct_number' => $sct_number,
         ]);
     }
 
@@ -151,6 +178,7 @@ class MyFormController extends Controller
 
         ]);
     }
+    
 
     public function update_psrf($id, PSRFUpdateRequest $request)
     {
@@ -162,6 +190,8 @@ class MyFormController extends Controller
         $all_forms->model->update([
             'control_number' => $request->control_number,
             'company_id' => $request->company_id,
+            'requested_by' => $request->requested_by,
+            'customer' => $request->customer,
             'recipient' => $request->recipient,
             'activity_name' => $request->activity_name,
             'objective' => $request->objective,
@@ -185,6 +215,22 @@ class MyFormController extends Controller
             }
         }
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'psrf-attachments');
+
+            $all_forms->model->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
         
         $all_forms->update([
             'status' => $request->status,
@@ -199,7 +245,13 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->admin->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -246,6 +298,21 @@ class MyFormController extends Controller
             }
         }
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'psst-attachments');
+
+            $all_forms->model->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
         
         $all_forms->update([
             'status' => $request->status,
@@ -261,7 +328,13 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -290,6 +363,10 @@ class MyFormController extends Controller
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
             'received_by' => $request->received_by,
+            'receivers' => $request->received_by,
+            'note' => $request->note,
+            'numberof' => $request->numberof,
+            'category' => $request->category,
         ]);
 
         DB::table('gate_pass_items')->where('gate_pass_id', $all_forms->model->id)->delete();
@@ -309,28 +386,44 @@ class MyFormController extends Controller
             }
         }
 
-        if($request->filled('image')) {
-            $image = $request->image;
+        // if($request->filled('image')) {
+        //     $image = $request->image;
             
-            $image = str_replace('data:image/png;base64,', '', $image);
-            $image = str_replace(' ', '+', $image);
+        //     $image = str_replace('data:image/png;base64,', '', $image);
+        //     $image = str_replace(' ', '+', $image);
             
-            $imageName = 'capture_' . time() . '.png';
+        //     $imageName = 'capture_' . time() . '.png';
             
-            Storage::disk('uploads')->put('gate-pass-images/' . $imageName, base64_decode($image));
+        //     Storage::disk('uploads')->put('gate-pass-images/' . $imageName, base64_decode($image));
             
+        //     $all_forms->model->update([
+        //         'path' => 'uploads/gate-pass-images/' . $imageName,
+        //         'image' => $imageName,
+        //     ]);
+        // }
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'gate-pass-attachments');
+
             $all_forms->model->update([
-                'path' => 'uploads/gate-pass-images/' . $imageName,
-                'image' => $imageName,
+                'path' => $path,
+                'file_name' => $nameWithExtension,
             ]);
         }
 
         
-        $all_forms->update([
+        $all_forms->update([ 
             'status' => $request->status,
         ]);
 
-        if($all_forms->status == 'approval') {
+        if($all_forms->status == 'endorsement') {
             if($all_forms->model->control_number == NULL){
 
                 $all_forms->model->update([
@@ -339,6 +432,22 @@ class MyFormController extends Controller
 
                 ]);
 
+            }
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        } elseif($all_forms->status == 'approval') {
+            if($all_forms->model->control_number == NULL){
+
+                $all_forms->model->update([
+                    'control_number' => $gate_item['control_number'],
+                    'date_submitted' => $request->date_submitted,
+                ]);
             }
 
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
@@ -464,6 +573,22 @@ class MyFormController extends Controller
                 ]);
                 $rca_items->save();
             }
+        }
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'rca-attachments');
+
+            $all_forms->model->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
         }
 
         $all_forms->update([
@@ -600,6 +725,22 @@ class MyFormController extends Controller
                 ]);
                 $pca_items->save();
             }
+        }
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'pca-attachments');
+
+            $all_forms->model->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
         }
 
         $all_forms->update([

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProductTransfers xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="SORTOIDOC.XSD">
+  <Orders>
+    <OrderHeader>
+      <CustomerPoNumber>PSST-01-004</CustomerPoNumber>
+      <SourceWarehouse>CAL</SourceWarehouse>
+      <TargetWarehouse>MAK</TargetWarehouse>
+      <OrderDate>2026-05-07</OrderDate>
+      <ShipDate>2026-05-07</ShipDate>
+      <ShippingInstrs>ARDEN Test</ShippingInstrs>
+    </OrderHeader>
+    <OrderDetails>
+      <StockLine>
+        <StockCode>KS01054</StockCode>
+        <OrderQty>5.00</OrderQty>
+        <OrderUom>CS</OrderUom>
+      </StockLine>
+      <StockLine>
+        <StockCode>DF01022</StockCode>
+        <OrderQty>4.00</OrderQty>
+        <OrderUom>CS</OrderUom>
+      </StockLine>
+    </OrderDetails>
+  </Orders>
+</ProductTransfers>

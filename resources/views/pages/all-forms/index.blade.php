@@ -25,15 +25,28 @@
                 </a>
             </div>
             <div class="row mb-3">
-                <div class="col-lg-4">
+                <div class="col-lg-3">
                     <div class="form-group">
                         <input type="text" id="search_forms" class="form-control form-control-xl" placeholder="Search">
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    
+                <div class="col-lg-6 mb-3">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-filter"></i>FORM</span>
+                        </div>
+                        <select id="form_filter" class="form-control text-uppercase">
+                                <option value="">All</option>
+                            @foreach($forms as $key => $form)
+                                <option value="{{ $key }}" {{ old('company_id') == $key ? 'selected' : '' }}>
+                                    {{ $form }}
+                                </option>
+                            @endforeach
+                  
+                        </select>
+                    </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-filter"></i>FILTER</span>
@@ -83,14 +96,16 @@
     // Listen to both the search input and the status select
     const searchInput = document.getElementById('search_forms');
     const statusSelect = document.getElementById('status_filter'); // Ensure your <select> has this ID
+    const formSelect = document.getElementById('form_filter'); 
 
     const handleFilterChange = () => {
         let searchTerm = searchInput.value;
         let status = statusSelect ? statusSelect.value : '';
+        let form_id = formSelect ? formSelect.value : '';
 
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-            fetchSearch(searchTerm, status);
+            fetchSearch(searchTerm, status, form_id);
         }, 300);
     };
 
@@ -100,10 +115,14 @@
         statusSelect.addEventListener('change', handleFilterChange);
     }
 
-    function fetchSearch(query, status) {
+    if (formSelect) {
+        formSelect.addEventListener('change', handleFilterChange);
+    }
+
+    function fetchSearch(query, status, form_id) {
         document.getElementById('forms_table_container').style.opacity = '0.5';
 
-        fetch(`/allforms?search=${query}&status=${status}`, {
+        fetch(`/allforms?search=${query}&status=${status}&form_id=${form_id}`, {
             method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

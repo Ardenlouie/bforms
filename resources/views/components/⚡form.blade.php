@@ -33,7 +33,7 @@ new class extends Component
     }
 
     public function getFormsProperty() {
-        return Form::where('category_id', $this->category_id)->get();
+        return Form::where('category_id', $this->category_id)->where('display', 1)->get();
     }
 
     public function navigateToForm($id)
@@ -76,7 +76,7 @@ new class extends Component
                         <div class="col-md-6 ">
                             @foreach($this->forms as $key =>$form)
                                 <div x-data="{ loading: false }">
-                                    <a href="/forms/{{ encrypt($form->id) }}" 
+                                    <a href="/forms/list/{{ encrypt($form->id) }}" 
                                         class="btn bg-primary btn-block mb-3"
                                         @click="loading = true"
                                         :class="loading ? 'disabled' : ''"

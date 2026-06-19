@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies,'')->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
@@ -15,7 +15,7 @@
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Name</label>
+                    <label class="mb-0">Name <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="name" form="add_rca"> 
                     <small class="text-danger">{{$errors->first('name')}}</small>
                 </div>
@@ -23,8 +23,8 @@
             <div class="col-lg-3"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Cost Center</label>
-                    <select id="cost_center" name="cost_center" class="form-control" style="width: 100%;" form="add_rca"></select>
+                    <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select id="employee_cost_center" name="cost_center" class="form-control" style="width: 100%;" form="add_rca"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
@@ -32,7 +32,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="form-group">
-                    <label class="mb-0">Purpose</label>
+                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="purpose" form="add_rca"> 
                     <small class="text-danger">{{$errors->first('purpose')}}</small>
                 </div>
@@ -40,28 +40,28 @@
 
             <div class="col-lg-6">
                 <div class="form-group">
-                    <label class="mb-0">Travel With</label>
+                    <label class="mb-0">Travel With <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="travel" form="add_rca"> 
                     <small class="text-danger">{{$errors->first('travel')}}</small>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Date</label>
+                    <label class="mb-0">Date <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="date" class="form-control" name="rca_date" form="add_rca" value="{{ date('Y-m-d') }}"> 
                     <small class="text-danger">{{$errors->first('rca_date')}}</small>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Itenerary</label>
+                    <label class="mb-0">Itenerary <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="itenerary" form="add_rca"> 
                     <small class="text-danger">{{$errors->first('itenerary')}}</small>
                 </div>
             </div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Location</label>
+                    <label class="mb-0">Location <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="location" form="add_rca"> 
                     <small class="text-danger">{{$errors->first('location')}}</small>
                 </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <label class="mb-0">Estimated Details of Allowed Expenses</label>
+                <label class="mb-0">Estimated Details of Allowed Expenses <small class="text-danger font-italic text-bold">(required)</small></label>
                 <div class="table-responsive">
                     <table class="table table-bordered text-center" id="dynamicTable">
                         <thead>
@@ -104,6 +104,32 @@
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
+                    <input
+                        form="add_rca"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                </div>
+                
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
                 </div>
             </div>
         </div>
@@ -293,5 +319,47 @@
             $('#modal-preview').modal('show');
         });
     });
+</script>
+
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
+
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
+    });
+</script>
+<script>
+    $(document).ready(function() {
+
+        let company = document.querySelector('select[name="company_id"]').value;
+
+        $('#employee_cost_center').select2({
+            placeholder: "Select Employee Cost Center",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                dataType: 'json',
+                delay: 250, // Wait 250ms before sending request (debounce)
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+});
 </script>
 @endpush

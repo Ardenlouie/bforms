@@ -124,9 +124,9 @@
                         <input type="hidden" id="status" name="status" form="approve" value="endorsement">
 
                         <small class="form-text text-muted mb-3">
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 You are endorser of this Form.
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
                             @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
                                 You are admin in-charge of this Form.
@@ -135,10 +135,10 @@
                             @endif
                         </small>
                         <label>
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif($forms->approver == $user->id && $forms->status == 'approval')
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
@@ -202,10 +202,10 @@
 
        
             <div class="col-6">
-                <img src="{{ asset($forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($forms->approved->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>

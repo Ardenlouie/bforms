@@ -262,9 +262,15 @@
         </thead>
         <tbody>
             @foreach($forms->model->gate_pass_item()->get() as $index => $item)
+            @php
+                list($sku, $desc, $size) = explode(' - ', $item['item_description']);
+            @endphp
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $item['item_description'] ?? '' }}</td>
+                <td>
+                    <img class="product-img" src="{{ public_path('/images/AllProducts/'.$sku.'.png') }}" alt="SKU IMAGE" height="80" width="80"><br>
+                    {{ $item['item_description'] ?? '' }}
+                </td>
                 <td>{{ $item['uom'] ?? '' }}</td>
                 <td>{{ number_format($item['quantity'] ?? 0, 0) }}</td>
                 <td>{{ $item['remarks'] ?? '' }}</td>

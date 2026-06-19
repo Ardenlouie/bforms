@@ -1,10 +1,11 @@
-<form action="{{ route('store.psst',encrypt($form->id)) }}" method="POST" id="add_psst">
+<form action="{{ route('store.psst',encrypt($form->id)) }}" method="POST" id="add_psst" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
+        
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies,'')->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
@@ -15,7 +16,7 @@
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Objective</label>
+                    <label class="mb-0">Objective <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="objective" form="add_psst"> 
                     <small class="text-danger">{{$errors->first('objective')}}</small>
                 </div>
@@ -23,19 +24,16 @@
             <div class="col-lg-3"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Point of Origin</label>
-                        <select class="form-control" name="point_origin" form="add_psst">
-                            <option value="BEVMI Warehouse">BEVMI Warehouse</option>
-                            <option value="Maersk Calamba Warehouse">Maersk Calamba Warehouse</option>
-                        </select>
-                    <small class="text-danger">{{$errors->first('point_origin')}}</small>
+                    <label class="mb-0">Delivery Date <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="date" class="form-control" name="delivery_date" form="add_psst" value="{{ date('Y-m-d') }}"> 
+                    <small class="text-danger">{{$errors->first('delivery_date')}}</small>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-lg-7">
                 <div class="form-group">
-                    <label class="mb-0">Delivery Instructions</label>
+                    <label class="mb-0">Delivery Instructions <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="delivery_instructions" form="add_psst"> 
                     <small class="text-danger">{{$errors->first('delivery_instructions')}}</small>
                 </div>
@@ -43,19 +41,26 @@
             <div class="col-lg-1"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Delivery Date</label>
-                    <input type="date" class="form-control" name="delivery_date" form="add_psst" value="{{ date('Y-m-d') }}"> 
-                    <small class="text-danger">{{$errors->first('delivery_date')}}</small>
+                    <label class="mb-0">Point of Origin <small class="text-danger font-italic text-bold">(required)</small></label>
+                        <select class="form-control" name="point_origin" form="add_psst">
+                            <option value="VIR">BEVMI Warehouse (VIR)</option>
+                            <option value="CAL">Maersk Calamba Warehouse (CAL)</option>
+                            <option value="CAL-SDI">Maersk Calamba Warehouse - SDI (CAL-SDI)</option>
+                        </select>
+                    <small class="text-danger">{{$errors->first('point_origin')}}</small>
                 </div>
             </div>
         </div>
+
+
         <div class="row">
             <div class="col-md-12">
+                <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
                 <table class="table table-responsive table-bordered text-center" id="dynamicTable">
                     <thead>
                         <tr>
                             <th>No.</th>
-                            <th style="min-width: 200px;">Item Code</th>
+                            <th style="min-width: 200px;">Item Code </th>
                             <th style="min-width: 350px;">Item Description</th>
                             <th style="min-width: 100px;">UOM</th>
                             <th>Qty</th>
@@ -70,20 +75,53 @@
                         <tr>
                             <td class="row-number">1</td>
                             <td><select name="items[0][sku-select]" style="width: 100%;" class="form-control text-center sku-select"></select></td>
-                            <td><input type="text" name="items[0][desc]" class="form-control text-center desc" disabled/></td>           
+                            <td><input type="text" name="items[0][desc]" class="form-control text-center desc" disabled/></td>       
+                                
                             <td>
                                 <select name="items[0][uom]" class="form-control text-center uom">
                                     <option value="PCS">PCS</option>
                                     <option value="CS">CS</option>
-                                    <option value="IN">IN</option>
                                 </select>
                             </td>
-                            <td><input type="number" name="items[0][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
+                            
+                            <td>
+                                <input type="number" name="items[0][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" max="1" />
+                                <small class="form-text text-muted">
+                                    Available:
+                                </small>
+                                <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
+                            </td>
                             <td><input type="text" name="items[0][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
+                    <input
+                        form="add_psst"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                </div>
+                
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
+                </div>
             </div>
         </div>
     </div>
@@ -120,25 +158,30 @@
                 <select name="items[${i}][uom]" class="form-control text-center uom">
                     <option value="PCS">PCS</option>
                     <option value="CS">CS</option>
-                    <option value="IN">IN</option>
                 </select>
             </td>
-            <td><input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
+            <td>
+                <input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" />
+                <small class="form-text text-muted">
+                    Available:
+                </small>
+                <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
+            </td>
             <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
         `;
         table.appendChild(newRow);
         let $newSelect = $(newRow).find('.sku-select');
         initSelect2($newSelect);
-
         updateRowNumbers();
-        emitPSRF();
     });
 
     $(document).on('input', '.qty', function() {
         let val = parseFloat($(this).val());
+        let $row = $(this).closest('tr');
+        updateRowQuantity($row);
         
-        if (val <= 0 || isNaN(val)) {
+        if (val <= 0 || isNaN(val) || val > available) {
             $(this).addClass('is-invalid');
         } else {
             $(this).removeClass('is-invalid');
@@ -149,24 +192,27 @@
         if (e.target && e.target.classList.contains("removeRow")) {
             e.target.closest("tr").remove();
             updateRowNumbers();
-            emitPSRF();
-
         }
     });
 
-
     function initSelect2(element) {
+        let company = document.querySelector('select[name="company_id"]').value;
+        let warehouse = document.querySelector('select[name="point_origin"]').value;
+
         element.select2({
             placeholder: "Select Product",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('products.ajax') }}", 
+                url: "{{ route('lot_detail.ajax') }}", 
                 dataType: 'json',
                 delay: 250, 
                 data: function (params) {
                     return {
-                        search: params.term 
+                        search: params.term,
+                        // Grabbing values dynamically on every search
+                        company_id: $('select[name="company_id"]').val(),
+                        warehouse: $('select[name="point_origin"]').val()
                     };
                 },
                 processResults: function (data) {
@@ -180,41 +226,51 @@
             let data = e.params.data; 
             let $row = $(this).closest('tr');
 
+
+            $row.data('product-info', data);
             $row.find('.desc').val(data.description);
-            
-            emitPSRF(); 
+            $row.find('.totalQty').val(data.quantity_pcs);
+
+            updateRowQuantity($row);
+
         });
-    }
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            recipient: document.querySelector('input[name="recipient"]').value || "-",
-            activity: document.querySelector('input[name="activity_name"]').value || "-",
-            program: document.querySelector('input[name="program_date"]').value || "-",
-            objective: document.querySelector('input[name="objective"]').value || "-",
-            special: document.querySelector('input[name="special_instructions"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let sku = row.querySelector(".sku-select").value || "-";
-            let desc = row.querySelector(".desc").value || "-";
-            let uom = row.querySelector(".uom").value || "-";
-            let qty = parseFloat(row.querySelector(".qty").value) || 0;
-            let remarks = row.querySelector(".remarks").value || "-";
-
-            items.push({ sku, desc, uom, qty, remarks });
-        });
-
-        Livewire.dispatch('loadPsstSummary',{ data, items });
     }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
             row.querySelector(".row-number").textContent = index + 1;
         });
+    }
+
+    $(document).on('change', '.uom', function() {
+        let $row = $(this).closest('tr');
+        updateRowQuantity($row);
+    });
+
+    function updateRowQuantity($row) {
+        let data = $row.data('product-info');
+        let uom = $row.find('.uom').val(); 
+        let $qtyInput = $row.find('.qty'); 
+        let $totalQtyDisplay = $row.find('.totalQty'); 
+        if (!data) return;
+
+
+        let available = (uom === 'CS') ? data.quantity_cs : data.quantity_pcs;
+
+        $totalQtyDisplay.val(available);
+
+        $qtyInput.attr('max', available);
+
+        if (parseInt($qtyInput.val()) > available) {
+            $qtyInput.val(available);
+            errorMessage = "Quantity adjusted to maximum available stock.";
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Quantity Limit',
+                text: errorMessage
+            });
+        }
     }
 
 
@@ -242,7 +298,31 @@
 <script>
     $(function() {
         $('body').on('click', '.btn-confirm', function(e) {
-            e.preventDefault();
+            let hasError = false;
+            let errorMessage = "";
+            const objectiveInput = document.querySelector('input[name="objective"]'); 
+
+            if (objectiveInput) {
+                const val = objectiveInput.value.trim();
+                
+                if (!val) { 
+                    hasError = true;
+                    objectiveInput.classList.add('is-invalid');
+                    errorMessage = "Please enter the Objective before proceeding.";
+                } else {
+                    objectiveInput.classList.remove('is-invalid');
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: errorMessage
+                });
+                return false;
+            }
 
             Swal.fire({
                 title: "Final Confirmation",
@@ -278,7 +358,6 @@
             let hasDuplicate = false;
             let hasError = false;
             let errorMessage = "";
-        
             const names = [];
             const inputs = document.querySelectorAll('select[name*="[sku-select]"]');
 
@@ -297,11 +376,10 @@
                 }
             });
 
-
             $('.qty').each(function() {
             let val = parseFloat($(this).val());
 
-            if (isNaN(val) || val <= 0) {
+            if (isNaN(val) || val <= 0 ) {
                     hasError = true;
                     $(this).addClass('is-invalid'); 
                     errorMessage = "Quantity must be greater than 0.";
@@ -327,10 +405,12 @@
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
-                point_origin: document.querySelector('select[name="point_origin"]').value || "-",
                 delivery_date: document.querySelector('input[name="delivery_date"]').value || "-",
+                point_origin: document.querySelector('select[name="point_origin"]').value || "-",
                 objective: document.querySelector('input[name="objective"]').value || "-",
                 delivery_instructions: document.querySelector('input[name="delivery_instructions"]').value || "-",
+                file_name: document.querySelector('input[name="file_name"]').value || "-",
+
             };
 
             let items = [];
@@ -349,4 +429,18 @@
         });
     });
 </script>
+
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
+
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
+    });
+</script>
+
 @endpush

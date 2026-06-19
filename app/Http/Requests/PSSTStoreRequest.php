@@ -23,7 +23,18 @@ class PSSTStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-             
+            'company_id' => [
+                'required',
+            ], 
+            'point_origin' => [
+                'required',
+            ], 
+            'objective' => [
+                'required',
+            ], 
+            'delivery_date' => [
+                'required',
+            ], 
         ];
     }
 

@@ -18,9 +18,12 @@ use App\Http\Requests\AllFormCheckRequest;
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
 use App\Notifications\DeclineFormNotification;
+use App\Notifications\XmlFormNotification;
+use App\Notifications\CheckedFormNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Notification;
 
 use App\Http\Traits\SettingTrait;
 use Auth;
@@ -33,12 +36,20 @@ class ApproverController extends Controller
         $search = trim($request->get('search') ?? '');
         $user_id = Auth::user()->id;
 
+        $form_id = $request->query('form_id');
+
+        $forms = Form::all();
+        $forms_arr = [];
+        foreach($forms as $form) {
+            $forms_arr[$form->id] = $form->prefix.' ('.$form->name.')';
+        }
+
         $status = $request->query('status');
                     
         $approvals = AllForm::orderBy('created_at', 'DESC')
             ->where(function ($query) use ($user_id) {
                 $query->whereJsonContains('approver', $user_id)
-                    ->orWhere('endorser', $user_id)
+                    ->orWhereJsonContains('endorser', $user_id)
                     ->orWhere('admin_id', $user_id)
                     ->orWhere('processor', $user_id);
             })
@@ -56,6 +67,9 @@ class ApproverController extends Controller
             ->when($status, function($q) use ($status) {
                 $q->where('status', $status);
             })
+            ->when($form_id, function($q) use ($form_id) {
+                $q->where('form_id', $form_id);
+            })
             ->paginate($this->getDataPerPage())->onEachSide(1);
 
         if ($request->ajax()) {
@@ -70,6 +84,7 @@ class ApproverController extends Controller
             'approvals' => $approvals,
             'search' => $search,
             'user_id' => $user_id,
+            'forms' => $forms_arr,
         ]);
     }
 
@@ -95,7 +110,13 @@ class ApproverController extends Controller
             $all_forms->update([
                 'date_confirmed' => $date_confirmed,
             ]);
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
     
         } elseif ($all_forms->admin_id == $user->id && $request->status == 'declined') {
 
@@ -107,15 +128,23 @@ class ApproverController extends Controller
 
         }
 
-        if($all_forms->endorser == $user->id && $request->status == 'approval'){
+        if(in_array($user->id, $all_forms->endorser ?? []) && $request->status == 'approval'){
             $date_endorsed = date('Y-m-d');
 
             $all_forms->update([
                 'date_endorsed' => $date_endorsed,
+                'noted_id' => $user->id,
+
             ]);
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
     
-        } elseif ($all_forms->endorser == $user->id && $request->status == 'declined') {
+        } elseif (in_array($user->id, $all_forms->endorser ?? []) && $request->status == 'declined') {
 
             $all_forms->update([
                 'remarks' => $request->remarks,
@@ -135,9 +164,18 @@ class ApproverController extends Controller
             ]);
             $all_forms->user->notify(new ApproveFormNotification($all_forms));
 
-           
 
-        } elseif ($all_forms->approver == $user->id && $request->status == 'declined') {
+            $scm = User::where('department_id', '9')->get();
+            $finance = User::where('department_id', '2')->get();
+            $hr = User::where('department_id', '3')->get();
+
+            if($all_forms->form->prefix == 'psst' || $all_forms->form->prefix == 'psrf'){
+                if ($scm->isNotEmpty()) {
+                    Notification::send($scm, new XmlFormNotification($all_forms));
+                }
+            }
+
+        } elseif (in_array($user->id, $all_forms->approver ?? []) && $request->status == 'declined') {
 
             $all_forms->update([
                 'remarks' => $request->remarks,

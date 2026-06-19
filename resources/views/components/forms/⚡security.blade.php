@@ -1,13 +1,18 @@
 <?php
 
 use Livewire\Component;
+
 use App\Models\GatePass;
 use App\Models\GatePassItem;
 use App\Models\Company;
 use App\Models\Form;
 use App\Models\AllForm;
+use App\Models\User;
+
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
+
 use App\Notifications\CheckedFormNotification;
 
 new class extends Component
@@ -15,6 +20,7 @@ new class extends Component
     public $forms, $user, $form_id;
     public $data = [];
     public $items = [];
+    public $gate_pass;
 
     protected $listeners = [
         'checkedForm' => 'loadData',
@@ -46,13 +52,7 @@ new class extends Component
 
     public function submit($data)
     {
-        $rules = [];
-        foreach ($this->items as $index => $item) {
-            // Ensure they can't release more than the total requested
-            $rules["items.{$index}.quantity_release"] = "required|numeric|min:0|max:{$item['balance']}";
-        }
-        
-        $this->validate($rules);
+        $this->gate_pass = GatePass::where('id', $this->forms->model->id)->get();
 
         if (!empty($data['imageUrl'])) {
             $image = $data['imageUrl'];
@@ -69,13 +69,26 @@ new class extends Component
 
         $allBalancesZero = true;
 
-        foreach ($this->items as $index => $item) {
-            $remaining_balance = $item['balance'] - $item['quantity_release'];
+        foreach ($this->gate_pass as $gate) {
+            $remaining_balance = $gate->balance - 1;
 
-            \App\Models\GatePassItem::where('id', $item['id'])->update([
-                'quantity_release' => $item['quantity_release'],
-                'balance' => $remaining_balance
+            $current_receivers = $gate->receivers ?? [];
+
+            $receiver_to_remove = $data['receiverName'];
+
+            $updated_receivers = array_filter($current_receivers, function($name) use ($receiver_to_remove) {
+                return trim($name) !== trim($receiver_to_remove);
+            });
+
+            $updated_receivers = array_values($updated_receivers);
+
+            $gate->update([
+                'balance' => $remaining_balance,
+                'receivers' => $updated_receivers
             ]);
+
+            $receiver = $data['receiverName'];
+
 
             if ($remaining_balance > 0) {
                 $allBalancesZero = false;
@@ -88,7 +101,15 @@ new class extends Component
             $all_forms = $this->forms;
 
             $all_forms->user->notify(new CheckedFormNotification($all_forms));
-            $all_forms->approved->notify(new CheckedFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new CheckedFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new CheckedFormNotification($all_forms));
+
 
         } else {
             $this->forms->update(['status' => 'partially_released']);
@@ -102,7 +123,7 @@ new class extends Component
             ->log('Security has check '.$form_name.' ['.$control_number.']');
 
         return redirect()->route('security', encrypt($this->forms->id))->with([
-            'message_success' => $form_name.' ['.$control_number.'] quantity was released!'
+            'message_success' => '1 '.$form_name.' ['.$control_number.'] was released!'
         ]);
     }
 
@@ -118,6 +139,7 @@ new class extends Component
             <form wire:submit.prevent="submit">
             <div class="modal-body">
                 <div class="table-responsive">
+                    <div class="card-title"><h3>No. of Receiver/s: <b>{{$forms->model->balance}} </b><h3></div>
                     <table class="table table-bordered">
                         <thead class="text-center">
                             <tr>
@@ -125,16 +147,16 @@ new class extends Component
                                 <th>RELEASE ITEM</th>
                                 <th>UOM</th>
                                 <th>QTY</th>
-                                <th>REMAINING QTY</th>
+                                <!-- <th>REMAINING QTY</th>
                                 <th>ENTER QTY TO RELEASE</th>
-                                <th>-</th>
+                                <th>-</th> -->
                             </tr>
                         </thead>
                         @if($forms->form->prefix == 'pgp')
                         <tbody class="align-middle text-center text-uppercase">
                             @foreach($items as $index => $item)
                             @php
-                                list($sku, $desc, $size) = explode(' - ', $item['item_description']);
+                                list($sku, $desc) = explode(' - ', $item['item_description']);
                             @endphp
                             <tr wire:key="item-{{ $item['id'] }}">
                                 <td class="align-middle">{{ $index + 1 }}</td>
@@ -144,20 +166,7 @@ new class extends Component
                                 </td>
                                 <td class="align-middle">{{ $item['uom'] }}</td>
                                 <td class="align-middle">{{ $item['total_requested'] }}</td>
-                                <td class="text-bold text-success align-middle">
-                                    {{ $item['balance'] }}
-                                </td> 
-                                <td class="align-middle">
-                                    <input type="number" wire:model.lazy="items.{{ $index }}.quantity_release" class="form-control text-center qty" 
-                                        min="0" max="{{ $items[$index]['balance'] }}" 
-                                        oninput="if(parseInt(this.value) > parseInt(this.max)) this.value = this.max;">
-                                    @if(($item['quantity_release'] ?? 0) < 0)
-                                        <span class="text-danger small">Must be greater than or equal to 0</span>
-                                    @endif
-                                </td>
-                                <td class="text-bold text-danger align-middle">
-                                    {{ (int)$item['balance'] - (int)$item['quantity_release'] }}
-                                </td> 
+                                
                             </tr>
 
                             @endforeach
@@ -170,18 +179,6 @@ new class extends Component
                                 <td class="align-middle">{{ $item['item_description'] }}</td>
                                 <td class="align-middle">{{ $item['uom'] }}</td>
                                 <td class="align-middle">{{ $item['total_requested'] }}</td>
-                                <td class="text-bold text-success align-middle">
-                                    {{ $item['balance'] }}
-                                </td> 
-                                <td class="align-middle">
-                                    <input type="number" wire:model.live="items.{{ $index }}.quantity_release" class="form-control text-center">
-                                    @error("items.{$index}.quantity_release")
-                                        <span class="text-danger small">{{ $message }}</span>
-                                    @enderror
-                                </td>
-                                <td class="text-bold text-danger align-middle">
-                                    {{ (int)$item['balance'] - (int)$item['quantity_release'] }}
-                                </td> 
                             </tr>
 
                             @endforeach

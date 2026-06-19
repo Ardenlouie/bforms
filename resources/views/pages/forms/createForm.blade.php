@@ -22,9 +22,9 @@
                 <strong class="text-lg card-title float-none text-bold">{{$form->name}}</strong>
             </div>
             <div class="col-lg-1 text-right">
-                <a href="{{route('home')}}" class="btn bg-red btn-sm">
+                <a href="{{ route('form.listForm', encrypt($form->id)) }}" class="btn bg-red btn-sm">
                     <i class="fa fa-caret-left"></i>
-                    Home
+                    Back
                 </a>
             </div>
         </div>
