@@ -372,6 +372,7 @@ $(function() {
     });
 });
 </script>
+
 <script>
     $(document).ready(function() {
     $('#finance_user').select2({

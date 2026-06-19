@@ -42,6 +42,12 @@ return [
             'throw' => false,
         ],
 
+        'DFM' => [
+            'driver' => 'local',
+            'root' => storage_path('DFM'),
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

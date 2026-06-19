@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1;
+    public $control_number, $company_id, $forms, $user, $form_id=1, $point_origin;
     public $data = [], $items = [];
 
     protected $listeners = ['loadPsstSummary' => 'loadData'];
@@ -25,6 +25,8 @@ new class extends Component
         $this->form_id = $data['form_id'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
+        $this->point_origin = Session::get('point_origin');
+
         
         if(!empty($data['control_number'])){
             $this->control_number = $data['control_number'];
@@ -94,13 +96,13 @@ new class extends Component
             </div>
             <div class="row text-left">
                 <div class="col-6">
-                    <h4>Objective: <b>{{ ($data['objective'] ?? '' )}}</b></h4>
-                    <h4>Delivery Instructions: <b>{{ ($data['delivery_instructions'] ?? '' )}}</b></h4>
+                    <h5>Objective: <b>{{ ($data['objective'] ?? '' )}}</b></h5>
+                    <h5>Delivery Instructions: <b>{{ ($data['delivery_instructions'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h4>Point of Origin: <b>{{ ($data['point_origin'] ?? '' )}}</b></h4>
-                    <h4>Delivery Date: <b>{{ date('F d, Y', strtotime($data['delivery_date'] ?? '')) }}</b></h4>
-                    <h4>Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
+                    <h5>Point of Origin: <b>{{ ($data['point_origin'] ?? '' )}}</b></h5>
+                    <h5>Delivery Date: <b>{{ date('F d, Y', strtotime($data['delivery_date'] ?? '')) }}</b></h5>
+                    <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
 
                 </div>
          
@@ -111,7 +113,6 @@ new class extends Component
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Item Code</th>
                         <th>Item Description</th>
                         <th>UOM</th>
                         <th>Qty</th>
@@ -121,26 +122,36 @@ new class extends Component
                 <tbody>
                     @foreach($items as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['sku'] }}</td>
-                            <td>{{ $item['desc'] }}</td>
-                            <td>{{ $item['uom'] }}</td>
-                            <td>{{ $item['qty'] }}</td>
-                            <td>{{ $item['remarks'] }}</td>
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td>
+                                <img src="{{ asset('images/AllProducts/'.$item['sku'].'.png') }}" alt="SKU IMAGE" height="80" width="80"><br>
+                                {{ $item['sku'] }} ({{ $item['desc'] }})
+                            </td>
+                            <td class="align-middle">{{ $item['uom'] }}</td>
+                            <td class="align-middle">{{ $item['qty'] }}</td>
+                            <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
 
             </table>
+            <div class="row text-left mb-3">
+                <div class="col-6">
+                    <h4>Attachment File Name: <b>{{ ($data['file_name'] ?? '' )}}</b></h4>
+                </div>
+            </div>
             <div class="row text-center">
                 <div class="col-4">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Endorsed By: <br><b>{{ ($user->department->head->name ?? '' )}}</b></h4>
+                    <h4>Endorser: 
+                        <br><b>
+                            {{ ($user->department->name ?? '' )}} Department Approvers
+                        </b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Approved By: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
                 </div>
             </div>
         </div>

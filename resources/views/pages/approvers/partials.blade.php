@@ -45,7 +45,7 @@
                     <b>
                     @if($approval->status == 'endorsement')
                         <span class="badge badge-info">Endorsement</span>
-                     @elseif($approval->status == 'confirmation')
+                    @elseif($approval->status == 'confirmation')
                         <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($approval->status == 'approval')
                         <span class="badge badge-primary">Final Approval</span>
@@ -66,15 +66,18 @@
                 </td>
                 <td class="align-middle text-center">
                     <b>
-                    @if($approval->status == 'endorsement')
-                        <span class="badge badge-info">
-                            <i class="fas fa-file-signature"></i> {{$approval->endorsed->name}}
-                        </span>
-                    @elseif($approval->status == 'approval')
-                        @php
-                            $approvers = \App\Models\User::whereIn('id', $approval->approver ?? [])->get();
-                        @endphp
+                    @php
+                        $approvers = \App\Models\User::whereIn('id', $approval->approver ?? [])->get();
+                        $endorsers = \App\Models\User::whereIn('id', $approval->endorser ?? [])->get();
+                    @endphp
 
+                    @if($approval->status == 'endorsement')
+                        @foreach($endorsers as $id => $endorser)
+                            <span class="badge badge-info">
+                                <i class="fas fa-file-signature"></i> {{ $endorser->name }}
+                            </span>
+                        @endforeach
+                    @elseif($approval->status == 'approval')
                         @foreach($approvers as $id => $approver)
                             <span class="badge badge-primary">
                                 <i class="fas fa-file-signature"></i> {{ $approver->name }}
@@ -98,11 +101,11 @@
                     </b>
                 </td>
                 <td class="align-middle text-right">
-                    @if($approval->endorser == $user_id && $approval->status == 'endorsement')
+                    @if(in_array($user_id, $approval->endorser ?? []) && $approval->status == 'endorsement')
                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
                             <i class="fa fa-pen-alt text-purple"></i>
                         </a>
-                    @elseif($approval->approver == $user_id && $approval->status == 'approval')
+                    @elseif(in_array($user_id, $approval->approver ?? []) && $approval->status == 'approval')
                          <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
                             <i class="fa fa-pen-alt text-purple"></i>
                         </a>

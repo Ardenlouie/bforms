@@ -8,8 +8,12 @@ use App\Models\Form;
 use App\Models\AllForm;
 use App\Models\Company;
 use App\Models\Product;
+
+use App\Exports\GatePassExport;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+
 use App\Http\Traits\SettingTrait;
 use Auth;
 
@@ -20,6 +24,14 @@ class AllFormController extends Controller
     public function index(Request $request) {
         $search = trim($request->get('search') ?? '');
         $user_id = Auth::user()->id;
+
+        $form_id = $request->query('form_id');
+
+        $forms = Form::all();
+        $forms_arr = [];
+        foreach($forms as $form) {
+            $forms_arr[$form->id] = $form->prefix.' ('.$form->name.')';
+        }
 
         $status = $request->query('status');
                     
@@ -37,12 +49,16 @@ class AllFormController extends Controller
             ->when($status, function($q) use ($status) {
                 $q->where('status', $status);
             })
+            ->when($form_id, function($q) use ($form_id) {
+                $q->where('form_id', $form_id);
+            })
             ->paginate($this->getDataPerPage())->onEachSide(1);
 
         if ($request->ajax()) {
             return view('pages.all-forms.partials')->with([
                 'all_forms' => $all_forms,
                 'user_id' => $user_id,
+                'forms' => $forms_arr,
             ])->render();
         }
 
@@ -51,6 +67,7 @@ class AllFormController extends Controller
             'all_forms' => $all_forms,
             'search' => $search,
             'user_id' => $user_id,
+            'forms' => $forms_arr,
         ]);
     }
 
@@ -62,5 +79,38 @@ class AllFormController extends Controller
             'forms' => $forms,
             'user' => $user,
         ]);
+    }
+
+    public function export_gate()
+    {
+        $filePath = public_path('refreshables/gate_pass.xlsx');
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->download($filePath, 'Gate Pass Refreshable.xlsx');
+    }
+
+    public function export_psrf()
+    {
+        $filePath = public_path('refreshables/psrf.xlsx');
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->download($filePath, 'PSRF Refreshable.xlsx');
+    }
+
+    public function export_psst()
+    {
+        $filePath = public_path('refreshables/psst.xlsx');
+
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found.');
+        }
+
+        return response()->download($filePath, 'PSST Refreshable.xlsx');
     }
 }

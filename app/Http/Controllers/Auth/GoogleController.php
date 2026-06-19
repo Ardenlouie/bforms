@@ -33,7 +33,7 @@ class GoogleController extends Controller
                     'google_id' => $googleUser->id,
                 ]);
 
-                $user->assignRole('bforms user');
+                $user->assignRole('user');
             }
 
             Auth::login($user);

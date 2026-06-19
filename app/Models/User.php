@@ -40,6 +40,7 @@ class User extends Authenticatable
         'signature',
         'cost_center',
         'head_approver_id',
+        'hub_user_id',
     ];
 
     /**

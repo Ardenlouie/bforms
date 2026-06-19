@@ -73,7 +73,7 @@ new class extends Component
         </div>
         <div class="modal-body">
             <div class="row mb-3 text-left">
-                <div class="col-6">
+                <div class="col-8">
                     @if($company_id== 1)
                     <img src="{{asset('/images/bevilogonobg.png')}}" alt="product photo" class="product-img" height="50" width="250">
                     @elseif($company_id == 2)
@@ -88,22 +88,24 @@ new class extends Component
                     <img src="{{asset('/images/pbb.png')}}" alt="product photo" class="product-img" height="80" width="150">
                     @endif
                 </div>
-                <div class="col-6">
-                    <h4>Ref. No.: <b>{{ $control_number }}</b></h4>
-                    <h4>Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
-                    <h4>Program Date: <b>{{ date('F d, Y', strtotime($data['program'] ?? '')) }}</b></h4>
+                <div class="col-4">
+                    <h5>Ref. No.: <b>{{ $control_number }}</b></h5>
+                    <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
+                    <h5>Program Date: <b>{{ date('F d, Y', strtotime($data['program'] ?? '')) }}</b></h5>
                 </div>
             </div>
             <div class="row text-left">
-                <div class="col-6">
+                <div class="col-8">
 
-                    <h4>Recipient: <b>{{ ($data['recipient'] ?? '' )}}</b></h4>
-                    <h4>Activity Name: <b>{{ ($data['activity'] ?? '' )}}</b></h4>
-                    <h4>Objective: <b>{{ ($data['objective'] ?? '' )}}</b></h4>
+                    <h5>Requested By: <b>{{ ($data['requested_by'] ?? '' )}}</b></h5>
+                    <h5>Recipient: <b>{{ ($data['recipient'] ?? '' )}}</b></h5>
+                    <h5>Objective: <b>{{ ($data['objective'] ?? '' )}}</b></h5>
 
                 </div>
-                <div class="col-6">
-                    <h4>Special Instructions: <b>{{ ($data['special'] ?? '' )}}</b></h4>
+                <div class="col-4">
+                    <h5>Customer: <b>{{ ($data['customer'] ?? '' )}}</b></h5>
+                    <h5>Activity Name: <b>{{ ($data['activity'] ?? '' )}}</b></h5>
+                    <h5>Special Instructions: <b>{{ ($data['special'] ?? '' )}}</b></h5>
                 </div>
             </div>
         
@@ -112,7 +114,6 @@ new class extends Component
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Item Code</th>
                         <th>Item Description</th>
                         <th>UOM</th>
                         <th>Qty</th>
@@ -122,26 +123,38 @@ new class extends Component
                 <tbody>
                     @foreach($items as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['sku'] }}</td>
-                            <td>{{ $item['desc'] }}</td>
-                            <td>{{ $item['uom'] }}</td>
-                            <td>{{ $item['qty'] }}</td>
-                            <td>{{ $item['remarks'] }}</td>
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td>
+                                <img src="{{ asset('images/AllProducts/'.$item['sku'].'.png') }}" alt="SKU IMAGE" height="80" width="80"><br>
+                                {{ $item['sku'] }} ({{ $item['desc'] }})
+                            </td>
+                           
+                            <td class="align-middle">{{ $item['uom'] }}</td>
+                            <td class="align-middle">{{ $item['qty'] }}</td>
+                            <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
 
             </table>
+            <div class="row text-left mb-3">
+                <div class="col-6">
+                    <h4>Attachment File Name: <b>{{ ($data['file_name'] ?? '' )}}</b></h4>
+                </div>
+            </div>
             <div class="row text-center">
+                
                 <div class="col-4">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Endorsed By: <br><b>{{ ($user->department->head->name ?? '' )}}</b></h4>
+                    <h4>Endorser: 
+                        <br><b>
+                            {{ ($user->department->name ?? '' )}} Department Approvers
+                        </b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Approved By: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
                 </div>
             </div>
         </div>

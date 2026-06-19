@@ -19,16 +19,27 @@ class GatePass extends Model
         return Session::get('db_connection', 'mysql'); // Default to 'mysql' if not set
     }
 
+    protected $casts = [
+        'received_by' => 'array', 
+        'receivers' => 'array', 
+    ];
+
     protected $fillable = [
         'form_id',
         'company_id',
         'purpose',
         'received_by',
+        'receivers',
         'date_submitted',
+        'numberof',
+        'balance',
         'control_number',
         'psrf_form_id',
         'image',
+        'file_name',
         'path',
+        'note',
+        'category',
     ];
 
     public function form() {

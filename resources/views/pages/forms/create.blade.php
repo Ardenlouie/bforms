@@ -77,7 +77,7 @@
 
                     <div class="col-lg-4">
                         <div class="form-group">
-                            {{ html()->label(__('Final Approver (BEVI)'), 'approver_id')->class(['mb-0']) }}
+                            {{ html()->label(__('Final Approver'), 'approver_id')->class(['mb-0']) }}
                             {{ 
                                 html()->select('approver_id', $users)
                                     ->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('approver_id')])
@@ -87,7 +87,35 @@
                         </div>
                     </div>
 
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {{ html()->label(__('On View'), 'display')->class(['mb-2 d-block font-weight-bold']) }}
+
+                            <div class="custom-control custom-switch custom-switch-purple">
+                                <input type="hidden" name="cost_center" value="0">
+                                
+                                <input 
+                                    type="checkbox" 
+                                    name="display" 
+                                    class="custom-control-input {{ $errors->has('display') ? 'is-invalid' : '' }}" 
+                                    id="costcenterSwitch" 
+                                    value="1"
+                                >
+                                
+                                <label class="custom-control-label" for="costcenterSwitch">
+                                    <span id="switch-text">
+                                        {{ old('display') == 1 ? __('(Yes)') : __('(No)') }}
+                                    </span>
+                                </label>
+                            </div>
+
+                            @if($errors->has('cost_center'))
+                                <small class="text-danger d-block mt-2">{{ $errors->first('cost_center') }}</small>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4" hidden>
                         <div class="form-group">
                             {{ html()->label(__('Final Approver (BEVA)'), 'beva_approver_id')->class(['mb-0']) }}
                             {{ html()->select('beva_approver_id', $users)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('beva_approver_id')]) }}
@@ -110,6 +138,40 @@
 @push('css')
     {{-- Add here extra stylesheets --}}
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+
+
+<style>
+    .custom-switch-purple .custom-control-input:checked ~ .custom-control-label::before {
+        background-color: #2c017d; 
+        border-color: #2c017d;
+    }
+
+
+    .custom-switch {
+        padding-left: 2.5rem;
+    }
+
+    .custom-switch .custom-control-label::before {
+        left: -2.25rem;
+        width: 2rem;
+        pointer-events: all;
+        border-radius: 0.5rem;
+    }
+
+    .custom-switch .custom-control-label::after {
+        top: calc(0.25rem + 2px);
+        left: calc(-2.25rem + 2px);
+        width: calc(1rem - 4px);
+        height: calc(1rem - 4px);
+        background-color: #adb5bd;
+        border-radius: 0.5rem;
+    }
+
+    .custom-switch .custom-control-input:checked ~ .custom-control-label::after {
+        background-color: #fff;
+        transform: translateX(1rem);
+    }
+</style>
 @endpush
 
 {{-- Push extra scripts --}}
@@ -121,6 +183,17 @@
                 var id = $(this).data('id');
                 Livewire.dispatch('setDeleteModel', {type: 'Depatment', model_id: id});
                 $('#modal-delete').modal('show');
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('#costcenterSwitch').on('change', function() {
+                if ($(this).is(':checked')) {
+                    $('#switch-text').text('(Yes)');
+                } else {
+                    $('#switch-text').text('(No)');
+                }
             });
         });
     </script>

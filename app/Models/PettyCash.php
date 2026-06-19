@@ -27,6 +27,8 @@ class PettyCash extends Model
         'total_amount',
         'cost_center',
         'date_submitted',
+        'file_name',
+        'path',
 
     ];
 

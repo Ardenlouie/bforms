@@ -45,6 +45,7 @@
                                 <th>Prefix</th>
                                 <th>{{__('adminlte::utilities.name')}}</th>
                                 <th>Category Name</th>
+                                <th>Department</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -62,6 +63,9 @@
                                     </td>
                                     <td class="align-middle text-center">
                                         {{$form->category->name ?? ''}}
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        {{$form->department->name ?? ''}}
                                     </td>
                                     <td class="align-middle text-right p-0 pr-1">
                                         <a href="{{route('form.show', encrypt($form->id, 'roles'))}}" class="btn btn-info btn-xs mb-0 ml-0">

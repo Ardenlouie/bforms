@@ -132,7 +132,9 @@
                 <b>Received By: </b><br>{{$all_form->model->received_by}}<br>
             </div>
             <div class="col-6 invoice-col">
+                <b>Category: </b><br>{{$all_form->model->category}}<br>
                 <b>Date Submitted: </b><br>{{$all_form->model->date_submitted}}<br>
+                <b>Note: </b><br>{{$all_form->model->note}}<br>
             </div>
         </div>
         <div class="row mb-3">
@@ -163,19 +165,16 @@
         </div>
         <div class="row">
             <div class="col-9 mb-3">
-                <h4>Photo:</h4>
+                <h4>Attachment:</h4>
                 @if(!empty($all_form->model->path))
-                    <div class="gallery text-center">
-                        <img
-                            class="popup-image"
-                            src="{{ asset('/'.$all_form->model->path) }}"
-                            width="100%"
-                            height="60%"
-                            style="border: none;">
-                        </img>
-                    </div>
+                    <iframe
+                        src="{{ asset('/'.$all_form->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
                 @else
-                    NO PHOTO
+                    NO ATTACHMENT
                 @endif
             </div>
         </div>
@@ -183,10 +182,11 @@
         <div class="row invoice-info mb-3 text-lg">
             <div class="col-6 invoice-col">
                 <b>Purpose: </b><br>{{$all_form->model->purpose}}<br>
-                <b>Received By: </b><br>{{$all_form->model->received_by}}<br>
+                <b>No. of Receiver/s: </b><br>{{$all_form->model->numberof}}<br>
             </div>
             <div class="col-6 invoice-col">
                 <b>Date Submitted: </b><br>{{$all_form->model->date_submitted}}<br>
+                <b>Received By: </b><br>{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}<br>
             </div>
         </div>
        
@@ -206,7 +206,7 @@
                     <tbody>
                         @foreach($all_form->model->gate_pass_item()->get() as $index => $item)
                         @php
-                            list($sku, $desc, $size) = explode(' - ', $item['item_description']);
+                            list($sku, $desc) = explode(' - ', $item['item_description']);
                         @endphp
                         <tr >
                             <td class="align-middle">{{ $index + 1 }}</td>
@@ -249,18 +249,19 @@
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_endorsed ?? '' )}}</h6>
-                <h3><b>{{ ($all_form->endorsed->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($all_form->noted->name ?? '' )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Endorsed By</h4>
             </div>
             @endif
+            
             <div class="col-4">
-                <img src="{{ asset($all_form->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($all_form->signed->signature ?? $all_form->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($all_form->approved->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($all_form->signed->name ?? $all_form->approved->name ?? '')}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>
@@ -282,7 +283,6 @@
             <div class="col-12">
                 <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
                     <i class="fas fa-clipboard-check"></i> CHECK</a>
-
             </div>
         </form>
         @endif
@@ -312,54 +312,59 @@
 <script>
 $(function() {
     $('body').on('click', '.btn-checked', function(e) {
-        let hasError = false;
-        let totalQty = 0;
-        let errorMessage = "";
+        // let hasError = false;
+        // let totalQty = 0;
+        // let errorMessage = "";
 
-        $('.qty').each(function() {
-            let val = parseFloat($(this).val()) || 0;
+        // $('.qty').each(function() {
+        //     let val = parseFloat($(this).val()) || 0;
 
-            if (val < 0) {
+        //     if (val < 0) {
 
-                hasError = true;
-                $(this).addClass('is-invalid');
-                errorMessage = "Quantity cannot be negative.";
-            } else {
-                $(this).removeClass('is-invalid');
-                totalQty += val; 
-            }
-        });
+        //         hasError = true;
+        //         $(this).addClass('is-invalid');
+        //         errorMessage = "Quantity cannot be negative.";
+        //     } else {
+        //         $(this).removeClass('is-invalid');
+        //         totalQty += val; 
+        //     }
+        // });
 
-        if (!hasError && totalQty === 0) {
-            hasError = true;
-            $('.qty').addClass('is-invalid'); 
-            errorMessage = "At least one item must have a quantity greater than 0.";
-        }
+        // if (!hasError && totalQty === 0) {
+        //     hasError = true;
+        //     $('.qty').addClass('is-invalid'); 
+        //     errorMessage = "At least one item must have a quantity greater than 0.";
+        // }
 
-        if (hasError) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                text: errorMessage
-            });
-            return false;
-        }
+        // if (hasError) {
+        //     e.preventDefault();
+        //     Swal.fire({
+        //         icon: 'error',
+        //         title: 'Validation Error',
+        //         text: errorMessage
+        //     });
+        //     return false;
+        // }
         takePhoto();
 
     });
 });
 
 async function takePhoto() {
+    const receiverOptions = @json($receiverOptions ?? []);
+
     const { value: name } = await Swal.fire({
-        title: "Receiver Name",
-        input: "text",
-        inputLabel: "Enter receiver name",
+        title: "Select Receiver",
+        input: "select",
+        inputOptions: receiverOptions, // Populates with DB records
+        inputPlaceholder: "Choose a receiver...",
+        inputLabel: "Select a name from the records",
         showCancelButton: true,
         inputValidator: (value) => {
-            if (!value) return "You must enter a name!";
+            if (!value) return "You must select a name!";
         }
     });
+
 
     if (!name) return;
 

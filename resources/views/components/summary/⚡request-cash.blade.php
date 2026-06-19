@@ -104,17 +104,17 @@ new class extends Component
             </div>
             <div class="row text-left">
                 <div class="col-6">
-                    <h4>Name: <b>{{ ($data['name'] ?? '' )}}</b></h4>
-                    <h4>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h4>
-                    <h4>Travel With: <b>{{ ($data['travel'] ?? '' )}}</b></h4>
-                    <h4>Date: <b>{{ date('F d, Y', strtotime($data['rca_date'] ?? '' ))}}</b></h4>
-                    <h4>Itenerary: <b>{{ ($data['itenerary'] ?? '' )}}</b></h4>
-                    <h4>Location: <b>{{ ($data['itenerary'] ?? '' )}}</b></h4>
+                    <h5>Name: <b>{{ ($data['name'] ?? '' )}}</b></h5>
+                    <h5>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h5>
+                    <h5>Travel With: <b>{{ ($data['travel'] ?? '' )}}</b></h5>
+                    <h5>Date: <b>{{ date('F d, Y', strtotime($data['rca_date'] ?? '' ))}}</b></h5>
+                    <h5>Itenerary: <b>{{ ($data['itenerary'] ?? '' )}}</b></h5>
+                    <h5>Location: <b>{{ ($data['itenerary'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h4>Department: <b>{{ $department->name ?? '' }}</b></h4>
-                    <h4>Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h4>
-                    <h4 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
+                    <h5>Department: <b>{{ $department->name ?? '' }}</b></h5>
+                    <h5>Cost Center: <b>{{ $data['cost_center'] ?? '' }}</b></h5>
+                    <h5 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
                     <h2>Total Budget of CA:
                         <b>₱{{  number_format($total_amount ?? 0.00 , 2) }}</b>
                     </h2>
@@ -156,16 +156,16 @@ new class extends Component
             </table>
             <div class="row text-center">
                 <div class="col-3">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-3">
                     <h4>Admin In-charge: <br><b>{{ ($department->admin->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-3">
-                    <h4>Endorsed By: <br><b>{{ ($user->head_approver->name ?? '' )}}</b></h4>
+                    <h4>Endorser: <br><b>{{ ($user->department->head->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-3">
-                    <h4>Approved By: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>Finance Department Approvers</b></h4>
                 </div>
             </div>
         </div>

@@ -22,7 +22,7 @@
                 <h3 class="card-title float-none text-center text-bold">MY FORMS</h3>
             </div>
             <div class="col-lg-1 text-right">
-                <a href="{{route('myforms.index')}}" class="btn bg-red btn-sm">
+                <a href="{{ route('form.listForm', encrypt($forms->form->id)) }}" class="btn bg-red btn-sm">
                     <i class="fa fa-caret-left"></i>
                     Back
                 </a>

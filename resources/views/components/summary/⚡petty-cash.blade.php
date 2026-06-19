@@ -103,12 +103,12 @@ new class extends Component
             </div>
             <div class="row text-left">
                 <div class="col-6">
-                    <h4>Name: <b>{{ ($data['name'] ?? '' )}}</b></h4>
+                    <h5>Name: <b>{{ ($data['name'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
    
-                    <h4>Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h4>
-                    <h4 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
+                    <h5>Cost Center: <b>{{ $data['cost_center'] ?? '' }}</b></h5>
+                    <h5 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
                     <h2>Total Amount:
                         <b>₱{{  number_format($total_amount ?? 0.00 , 2) }}</b>
                     </h2>
@@ -144,10 +144,10 @@ new class extends Component
             </table>
             <div class="row text-center">
                 <div class="col-6">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-6">
-                    <h4>Approved By: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>Finance Department Approvers</b></h4>
                 </div>
             </div>
         </div>

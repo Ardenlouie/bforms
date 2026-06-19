@@ -19,17 +19,21 @@ class AllForm extends Model
 
     protected $casts = [
         'approver' => 'array', 
+        'endorser' => 'array', 
+        'department_id' => 'array', 
     ];
 
     protected $fillable = [
         'form_id',
         'user_id',
+        'department_id',
         'model_id',
         'model_type',
         'admin_id',
         'processor',
         'endorser',
         'approver',
+        'noted_id',
         'signed_id',
         'date_confirmed',
         'date_processed',
@@ -60,6 +64,15 @@ class AllForm extends Model
         return $this->belongsTo('App\Models\User');
     }
 
+    public function noted() {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function department() {
+        return $this->belongsTo('App\Models\Department');
+    }
+
+
     public function processed() {
         return $this->belongsTo('App\Models\User', 'processor', 'id');
     }
@@ -76,5 +89,11 @@ class AllForm extends Model
     public function endorsed() {
         return $this->belongsTo('App\Models\User', 'endorser', 'id');
     }
+
+    public function hasEndorser($userId)
+    {
+        return in_array($userId, $this->endorser ?? []);
+    }
+
 
 }

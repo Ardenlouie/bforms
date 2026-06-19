@@ -51,15 +51,20 @@
             </div>
             <div class="col-6">
                 <h4>Purpose: <b>{{ ($forms->model->purpose ?? '' )}}</b></h4>
-                <h4>Received By: <b>{{ ($forms->model->received_by ?? '' )}}</b></h4>
+                <h4>No. of Receiver/s: <b>{{ ($forms->model->numberof ?? '' )}}</b></h4>
+                <h4>Received By: <b>{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</b></h4>
             </div>
             <div class="col-6 text-right">
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
+                <h4>Category: <b>{{ ($forms->model->category ?? '' )}}</b></h4>
+
                 @if(!empty($forms->model->psrf_form_id))
                 <h4>PSRF Ref No.: <b>{{ ($forms->model->psrf_form->control_number ?? '' )}}</b></h4>
                 @endif
+                <h4>Note: <b>{{ ($forms->model->note ?? '' )}}</b></h4>
+
 
             </div>
         </div>
@@ -77,7 +82,7 @@
                 <tbody>
                     @foreach($forms->model->gate_pass_item()->get() as $index => $item)
                     @php
-                        list($sku, $desc, $size) = explode(' - ', $item['item_description']);
+                        list($sku, $desc) = explode(' - ', $item['item_description']);
                     @endphp
                         <tr >
                             <td class="align-middle">{{ $index + 1 }}</td>
@@ -141,7 +146,7 @@
                         <input type="hidden" id="status" name="status" form="approve" value="endorsement">
 
                         <small class="form-text text-muted mb-3">
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 You are endorser of this Form.
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
@@ -150,7 +155,7 @@
                             @endif
                         </small>
                         <label>
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
@@ -231,11 +236,11 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->signed->signature ?? $forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($forms->signed->name ?? $forms->approved->name )}}</b></h3>
+                <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>

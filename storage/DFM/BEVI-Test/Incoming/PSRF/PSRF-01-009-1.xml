@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProductSamples xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="INVTMEDOC.XSD">
+  <Item>
+    <Warehouse>MAK</Warehouse>
+    <StockCode>KS01053</StockCode>
+    <Quantity>400.00</Quantity>
+    <UnitOfMeasure>CS</UnitOfMeasure>
+    <BinLocation/>
+    <Lot/>
+    <Reference/>
+    <Notation/>
+    <LedgerCode/>
+    <eSignature/>
+    <AnalysisEntry/>
+    <AnalysisLineEntry>
+      <AnalysisCode1/>
+      <AnalysisCode2/>
+      <AnalysisCode3/>
+      <StartDate/>
+      <EndDate/>
+      <EntryAmount/>
+    </AnalysisLineEntry>
+  </Item>
+</ProductSamples>

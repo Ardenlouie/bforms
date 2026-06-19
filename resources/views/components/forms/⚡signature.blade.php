@@ -74,7 +74,7 @@ new class extends Component
                     @if(!empty($forms->endorser))
                     <tr>
                         <td>Endorsed By</td>
-                        <td>{{ $forms->endorsed->name ?? ''}}</td>
+                        <td>{{ $forms->noted->name ?? ''}}</td>
                         <td>
                             @if(!empty($forms->date_endorsed) && $forms->status != 'declined')
                             {{ $forms->date_endorsed }}
@@ -90,7 +90,7 @@ new class extends Component
                     <tr>
                         <td>Approved By</td>
                         <td>
-                            {{ ($forms->signed->name ?? $forms->approved->name ) }}
+                            {{ ($forms->signed->name ?? '' ) }}
                         </td>
                         <td>
                             @if(!empty($forms->date_approved) && $forms->status != 'declined')

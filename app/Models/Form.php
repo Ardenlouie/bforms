@@ -24,6 +24,7 @@ class Form extends Model
         'category_id',
         'approver_id',
         'beva_approver_id',
+        'display',
     ];
 
     public function department() {

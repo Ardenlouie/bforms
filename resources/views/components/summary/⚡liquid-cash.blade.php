@@ -115,16 +115,16 @@ new class extends Component
             </div>
             <div class="row text-left">
                 <div class="col-6">
-                    <h4>Name: <b>{{ ($rca_form->name ?? '' )}}</b></h4>
-                    <h4 class="mb-3">Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h4>
-                    <h4>Cash Advance Ref No.: <b>{{ ($rca_form->control_number ?? '' )}}</b></h4>
+                    <h5>Name: <b>{{ ($rca_form->name ?? '' )}}</b></h5>
+                    <h5 class="mb-3">Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h5>
+                    <h5>Cash Advance Ref No.: <b>{{ ($rca_form->control_number ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h4>Department: <b>{{ $department->name ?? '' }}</b></h4>
-                    <h4 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
-                    <h4>Cash Advance Amount:
+                    <h5>Department: <b>{{ $department->name ?? '' }}</b></h5>
+                    <h5 class="mb-3">Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
+                    <h5>Cash Advance Amount:
                         <b>₱{{  number_format($rca_amount ?? 0.00 , 2) }}</b>
-                    </h4>
+                    </h5>
       
                 </div>
          
@@ -171,13 +171,13 @@ new class extends Component
             </div>
             <div class="row text-center">
                 <div class="col-4">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Endorsed By: <br><b>{{ ($user->head_approver->name ?? '' )}}</b></h4>
+                    <h4>Endorser: <br><b>{{ ($user->head_approver->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Approved By: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
                 </div>
             </div>
         </div>

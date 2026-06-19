@@ -23,6 +23,11 @@ use App\Models\PettyLiquid;
 use App\Models\PettyLiquidItem;
 use App\Models\Company;
 use App\Models\Product;
+use App\Models\LotDetail;
+use App\Models\SampleProduct;
+use App\Models\EmployeeCostCenter;
+use App\Models\CustomerCostCenter;
+use App\Models\StockCostCenter;
 use App\Models\User;
 
 use App\Http\Requests\FormAddRequest;
@@ -44,6 +49,8 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Traits\SettingTrait;
+use App\Http\Traits\PsstXmlTrait;
+use App\Http\Traits\PsrfXmlTrait;
 
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
@@ -55,6 +62,8 @@ use Auth;
 class FormController extends Controller
 {
     use SettingTrait;
+    use PsstXmlTrait;
+    use PsrfXmlTrait;
 
     public function index(Request $request)
     {
@@ -210,33 +219,75 @@ class FormController extends Controller
         ]);
     }
 
+    public function employee_cost_center_api(Request $request)
+    {
+        $search    = $request->query('search');
+        $company   = $request->query('company_id');
+
+        $products = EmployeeCostCenter::where('company_id', $company)
+            ->where('gl_code', '600160')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('employee_name', 'like', '%' . $search . '%')
+                    ->orWhere('employee_code', 'like', '%' . $search . '%');
+                });
+            })
+            ->limit(10) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'           => $item->employee_code,
+                    'text'         => $item->employee_code. ' - (' .$item->employee_name.')',
+                    'gl_code'  => $item->gl_code, 
+                    'gl_description'  => $item->gl_description, 
+                    'analysis_category'  => $item->analysis_category, 
+                    'department_code' => $item->department_code, 
+                    'department'  => $item->department, 
+                    'employee_code'  => $item->employee_code, 
+                    'employee_name'  => $item->employee_name, 
+                ];
+            });
+            
+
+        return response()->json(['results' => $products]);
+    }
+
+    public function customer_cost_center_api(Request $request)
+    {
+        $search    = $request->query('search');
+        $company   = $request->query('company_id');
+
+        $customers = CustomerCostCenter::where('company_id', $company)
+            ->where('gl_code', '600160')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('customer', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+                });
+            })
+            ->limit(10) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'           => $item->customer,
+                    'text'         => $item->customer. ' - (' .$item->name.')',
+                    'gl_code'  => $item->gl_code, 
+                    'gl_description'  => $item->gl_description, 
+                    'analysis_category'  => $item->analysis_category, 
+                    'customer'  => $item->customer, 
+                    'name'  => $item->name, 
+                ];
+            });
+            
+
+        return response()->json(['results' => $customers]);
+    }
+
     public function product_api(Request $request)
     {
         $search = $request->query('search');
 
-        // $product_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
-        //     ->get('http://192.168.11.240/refreshable/public/api/invMaster');
-
-        // $products_collect = collect($product_api->json());
-
-        // $results = $products_collect
-        //     ->when($search, function ($collection) use ($search) {
-
-        //         return $collection->filter(function ($item) use ($search) {
-        //             return false !== stripos($item['Stock Description'], $search) || 
-        //                 false !== stripos($item['StockCode'], $search);
-        //         });
-        //     })
-        //     ->take(5)
-        //     ->map(function ($item) {
-        //         return [
-        //             'id'   => $item['StockCode'], 
-        //             'text' => $item['StockCode'] . ' - ' . $item['Stock Description'], 
-        //         ];
-        //     })
-        //     ->values();
-
-        $products = Product::select('id', 'description', 'stock_code as text', 'size') // Added uom if you have it
+        $products = Product::select('id', 'description', 'stock_code as text', 'size')
             ->when($search, function ($query) use ($search) {
                 $query->where('stock_code', 'like', '%' . $search . '%')
                     ->orWhere('description', 'like', '%' . $search . '%');
@@ -255,11 +306,79 @@ class FormController extends Controller
         return response()->json(['results' => $products]);
     }
 
+    public function lot_detail_api(Request $request)
+    {
+        $search    = $request->query('search');
+        $company   = $request->query('company_id');
+        $warehouse = $request->query('warehouse');
+
+        $products = LotDetail::where('company_id', $company)
+            ->where('warehouse', $warehouse)
+            
+            ->when($search, function ($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('stock_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->limit(10) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'           => $item->stock_code,
+                    'text'         => $item->stock_code,
+                    'description'  => $item->description, 
+                    'quantity_pcs' => $item->quantity_pcs, 
+                    'quantity_cs'  => $item->quantity_cs, 
+                ];
+            });
+
+        return response()->json(['results' => $products]);
+    }
+
+    public function sample_product_api(Request $request)
+    {
+        $search    = $request->query('search');
+        $company   = $request->query('company_id');
+
+        $products = SampleProduct::where('company_id', $company)
+            ->when($search, function ($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('stock_code', 'like', '%' . $search . '%')
+                    ->orWhere('description', 'like', '%' . $search . '%');
+                });
+            })
+            ->limit(10) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'           => $item->stock_code,
+                    'text'         => $item->stock_code,
+                    'description'  => $item->description, 
+                    'quantity_pcs' => $item->quantity_pcs, 
+                    'quantity_cs'  => $item->quantity_cs, 
+                ];
+            });
+            
+
+        return response()->json(['results' => $products]);
+    }
+
     public function security($id) 
     {
         $all_form = AllForm::findOrFail(decrypt($id));
+        $receiverOptions = GatePass::whereNotNull('receivers')
+        ->where('id', $all_form->model_id)
+        ->pluck('receivers')
+        ->flatten()
+        ->unique()
+        ->filter()
+        ->mapWithKeys(function ($name) {
+            return [$name => $name];
+        })
+        ->toArray();
 
-        return view('security')->with([
+        return view('security', compact('receiverOptions'))->with([
             'all_form' => $all_form
         ]);
     }
@@ -274,6 +393,7 @@ class FormController extends Controller
             'approver_id' => decrypt($request->approver_id) ?? null,
             'beva_approver_id' => decrypt($request->beva_approver_id) ?? null,
             'department_id' => decrypt($request->department_id) ?? null,
+            'display' => $request->display,
         ]);
         $form->save();
 
@@ -298,8 +418,9 @@ class FormController extends Controller
             'name' => $request->name,
             'category_id' => decrypt($request->category_id),
             'approver_id' => decrypt($request->approver_id),
-            'beva_approver_id' => decrypt($request->beva_approver_id),
+            'beva_approver_id' => decrypt($request->beva_approver_id) ?? null,
             'department_id' => decrypt($request->department_id),
+            'display' => $request->display,
         ]);
         $form->save();
 
@@ -351,6 +472,46 @@ class FormController extends Controller
         ]);
     }
 
+    public function listForm($id, Request $request)
+    {
+        $form = Form::findOrFail(decrypt($id));
+        $prefix = strtolower($form->prefix);
+        $search = trim($request->get('search') ?? '');
+        $user_id = Auth::user()->id;
+        $user_department = Auth::user()->department_id;
+
+        $status = $request->query('status');
+        $form_id = $form->id ?? $request->query('form_id');
+
+
+        $my_forms = AllForm::orderBy('created_at', 'DESC')
+            ->where(function($query) use ($user_department, $user_id) {
+                $query->where('user_id', $user_id)
+                      ->orwhereJsonContains('department_id', $user_department);
+            })
+            ->where('form_id', $form_id)
+            ->when($status, function($q) use ($status) {
+                $q->where('status', $status);
+            })
+       
+            ->paginate($this->getDataPerPage())->onEachSide(1);
+
+        if ($request->ajax()) {
+            return view('pages.forms.lists.'.$prefix, compact('my_forms'))->render();
+        }
+
+        // dd($my_forms);
+
+
+        return view('pages.forms.listForm',)->with([
+            'form' => $form,
+            'prefix' => $prefix,
+            'my_forms' => $my_forms,
+            'search' => $search,
+            'form_id' => $form_id,
+        ]);
+    }
+
     public function printPDF($id) 
     {
         $forms = AllForm::findOrFail(decrypt($id)); 
@@ -361,6 +522,21 @@ class FormController extends Controller
         ]);
 
         return $pdf->stream();
+    }
+
+    public function psstXml($id) 
+    {
+        $psst = ProductTransfer::findOrFail(decrypt($id)); 
+
+        return $this->downloadXml($psst);
+    }
+
+    public function psrfXml($id) 
+    {
+        $psrf = ProductSample::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlPsrf($psrf);
+        
     }
 
     public function store_psrf($id, PSRFStoreRequest $request)
@@ -380,15 +556,32 @@ class FormController extends Controller
         $psrf = new ProductSample([
             'form_id' => $form->id,
             'company_id' => $request->company_id,
+            'requested_by' => $request->requested_by,
+            'customer' => $request->customer,
             'recipient' => $request->recipient,
             'activity_name' => $request->activity_name,
             'objective' => $request->objective,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
         ]);
-
       
         $psrf->save();
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $psrf->id, 'psrf-attachments');
+
+            $psrf->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
 
         if(!empty($psrf_item)){
             foreach ($psrf_item['items'] as $key => $items){
@@ -405,14 +598,17 @@ class FormController extends Controller
                 $psrf_items->save();
             }
         }
-        
+
+        $endorser = $user->department->approver_ids;
+        $department_ids = [9, 2];
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
+            'department_id' => $department_ids,
             'model_id' => $psrf->id,
             'model_type' => 'App\Models\ProductSample',
-            'endorser' => $user->department->head_id,
+            'endorser' => $endorser,
             'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
@@ -425,7 +621,14 @@ class FormController extends Controller
                 'control_number' => $psrf_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -460,6 +663,22 @@ class FormController extends Controller
 
         $psst->save();
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $psst->id, 'psst-attachments');
+
+            $psst->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
         if(!empty($psst_item)){
             foreach ($psst_item['items'] as $key => $items){
                 $psst_items = new ProductTransferItem([
@@ -473,13 +692,17 @@ class FormController extends Controller
                 $psst_items->save();
             }
         }
+
+        $endorser = $user->department->approver_ids;
+        $department_ids = [9];
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $psst->id,
             'model_type' => 'App\Models\ProductTransfer',
-            'endorser' => $user->department->head_id,
+            'department_id' => $department_ids,
+            'endorser' => $endorser,
             'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
@@ -491,7 +714,13 @@ class FormController extends Controller
                 'control_number' => $psst_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -521,7 +750,12 @@ class FormController extends Controller
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
             'received_by' => $request->received_by,
+            'receivers' => $request->received_by,
             'psrf_form_id' => $request->psrf_form_id ?? null,
+            'numberof' => $request->numberof,
+            'balance' => $request->numberof,
+            'note' => $request->note,
+            'category' => $request->category,
         ]);
 
         $gate->save();
@@ -557,6 +791,37 @@ class FormController extends Controller
             ]);
         }
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $gate->id, 'gate-pass-attachments');
+
+            $gate->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
+        $marketing = Department::where('name', 'MARKETING')->first();
+        $it = Department::where('name', 'IT')->first();
+
+        $endorser = [];
+
+        if($gate->category != 'Product Sample'){
+            if($gate->category == 'IT Equipment'){
+                $endorser = $it->approver_ids;
+            } elseif ($gate->category == 'Marketing Materials') {
+                $endorser = $marketing->approver_ids;
+            } else {
+                $endorser = $user->department->approver_ids;
+            }
+        }
+
         $approver = $form->department->approver_ids;
         
         $all_forms = new AllForm([
@@ -564,6 +829,8 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $gate->id,
             'model_type' => 'App\Models\GatePass',
+            'department_id' => [$form->department->id],
+            'endorser' => $endorser,
             'approver' => $approver,
             'status' => $request->status,
         ]);
@@ -583,6 +850,17 @@ class FormController extends Controller
             }
 
             // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        } elseif($all_forms->status == 'endorsement') {
+            $gate->update([
+                'control_number' => $gate_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
         }
 
         $control_number = $all_forms->model->control_number;
@@ -642,7 +920,8 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $rfp->id,
             'model_type' => 'App\Models\RequestPayment',
-            'approver' => $user->head_approver_id,
+            'department_id' => [$form->department->id],
+            'approver' => $user->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -653,7 +932,14 @@ class FormController extends Controller
                 'control_number' => $rfp_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -693,6 +979,22 @@ class FormController extends Controller
 
         $rca->save();
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $rca->id, 'rca-attachments');
+
+            $rca->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
         if(!empty($rca_item)){
             foreach ($rca_item['items'] as $key => $items){
                 $rca_items = new RequestCashItem([
@@ -705,16 +1007,18 @@ class FormController extends Controller
                 $rca_items->save();
             }
         }
-        
+
+        $endorser = $user->department->approver_ids;
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $rca->id,
             'model_type' => 'App\Models\RequestCash',
+            'department_id' => [$form->department->id],
             'admin_id' => $user->department->admin_id,
-            'endorser' => $user->head_approver_id,
-            'approver' => $form->approver_id,
+            'endorser' => $endorser,
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -796,7 +1100,7 @@ class FormController extends Controller
             'model_id' => $lca->id,
             'model_type' => 'App\Models\LiquidCash',
             'endorser' => $user->head_approver_id,
-            'approver' => $form->approver_id,
+            'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
 
@@ -842,6 +1146,22 @@ class FormController extends Controller
 
         $pca->save();
 
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $pca->id, 'pca-attachments');
+
+            $pca->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
         if(!empty($pca_item)){
             foreach ($pca_item['items'] as $key => $items){
                 $pca_items = new PettyCashItem([
@@ -859,7 +1179,9 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $pca->id,
             'model_type' => 'App\Models\PettyCash',
-            'approver' => $form->approver_id,
+            'model_type' => 'App\Models\PettyCash',
+            'department_id' => [$form->department->id],
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -870,7 +1192,14 @@ class FormController extends Controller
                 'control_number' => $pca_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -938,7 +1267,7 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $pcl->id,
             'model_type' => 'App\Models\PettyLiquid',
-            'approver' => $form->approver_id,
+            'approver' => [$form->approver_id],
             'status' => $request->status,
         ]);
 

@@ -74,12 +74,17 @@
                 <tbody>
                     @foreach($forms->model->psst_form_item()->get() as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['item_code'] }}</td>
-                            <td>{{ $item['item_description'] }}</td>
-                            <td>{{ $item['uom'] }}</td>
-                            <td>{{ $item['quantity'] }}</td>
-                            <td>{{ $item['remarks'] }}</td>
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td class="align-middle">
+                                <div class="gallery text-center">
+                                    <img class="popup-image" src="{{ asset('images/AllProducts/'.$item['item_code'].'.png') }}" alt="SKU IMAGE" height="150" width="150">
+                                </div>
+                                {{ $item['item_code'] }}
+                            </td>
+                            <td class="align-middle">{{ $item['item_description'] }}</td>
+                            <td class="align-middle">{{ $item['uom'] }}</td>
+                            <td class="align-middle">{{ $item['quantity'] }}</td>
+                            <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -94,13 +99,32 @@
                 
             </div>
             <div class="col-6 text-right">
+                @if($forms->status == 'approved' && $user->department->prefix == 'SCM')
+
+                    @if(!empty($sct_number))
+                        <small class="form-text text-muted mb-3">
+                            SCT(Supply Chain Transfer) has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            {{$sct_number}}
+                        </label>
+                    @else
+                        <small class="form-text text-muted mb-3">
+                            This Form has been APPROVED. <br>Click the button below to download XML for SCT.
+                        </small>
+                        <a type="button" href="{{route( 'psst.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-blue" style="margin-right: 5px;">
+                            <i class="fas fa-file-download"></i> Download XML for SCT
+                        </a>
+                        
+                    @endif
+                @endif
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
                     <div class="form-group">
                         <input type="hidden" id="status" name="status" form="approve" value="endorsement">
 
                         <small class="form-text text-muted mb-3">
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 You are endorser of this Form.
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
@@ -109,7 +133,7 @@
                             @endif
                         </small>
                         <label>
-                            @if($forms->endorser == $user->id && $forms->status == 'endorsement')
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
                                 <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
@@ -172,21 +196,21 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->noted->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
-                <h3><b>{{ ($forms->endorsed->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($forms->noted->name ?? '') }}</b></h3>
 
                 <div class="line"></div>
                 <h4>Endorsed By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($forms->approved->name ?? '' )}}</b></h3>
+                <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Approved By</h4>

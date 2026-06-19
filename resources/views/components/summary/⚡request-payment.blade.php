@@ -96,15 +96,15 @@ new class extends Component
                 </div>
                 <div class="col-6">
                     <h4>Ref. No.: <b>{{ $control_number }}</b></h4>
-                    <h4>Deparment: <b>{{ $department->name ?? '' }}</b></h4>
-                    <h4>Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h4>
+                    <h5>Deparment: <b>{{ $department->name ?? '' }}</b></h5>
+                    <h5>Cost Center: <b>{{ $data['cost_center'] ?? '' }}</b></h5>
                 </div>
             </div>
             <div class="row mb-3 text-left">
                 <div class="col-6">
-                    <h4>Payable to: <b>{{ ($data['payable'] ?? '' )}}</b></h4>
-                    <h4>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h4>
-                    <h4 class="mb-3">Instructions: <b>{{ ($data['instructions'] ?? '' )}}</b></h4>
+                    <h5>Payable to: <b>{{ ($data['payable'] ?? '' )}}</b></h5>
+                    <h5>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h5>
+                    <h5 class="mb-3">Instructions: <b>{{ ($data['instructions'] ?? '' )}}</b></h5>
                     <h2>Amount: 
                         <b>
            
@@ -118,7 +118,7 @@ new class extends Component
                     </h2>
                 </div>
                 <div class="col-6">
-                    <h4>Date Submitted: <b>{{ date('F d, Y') }}</b></h4>
+                    <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
                 </div>
             </div>
             <div class="row text-left mb-3">
@@ -129,10 +129,10 @@ new class extends Component
                 
             <div class="row text-center">
                 <div class="col-6">
-                    <h4>Prepared By: <br><b>{{ ($user->name ?? '' )}}</b></h4>
+                    <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-6">
-                    <h4>Approved By: <br><b>{{ ($user->head_approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>{{ ($user->department->name ?? '' )}} Department Approvers</b></h4>
                 </div>
             </div>
         </div>

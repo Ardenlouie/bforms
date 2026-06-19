@@ -11,15 +11,9 @@ use Illuminate\Support\Facades\Session;
 class Product extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     protected $connection = 'mysql2';
     protected $table='products';
-
-    public function getConnectionName()
-    {
-        return Session::get('db_connection', 'mysql'); // Default to 'mysql' if not set
-    }
 
     protected $fillable = [
         'brand_id',
@@ -42,6 +36,8 @@ class Product extends Model
         'bar_code',
         'warehouse',
     ];
+
+    
 
     public function price_codes() {
         return $this->hasMany('App\Models\PriceCode');

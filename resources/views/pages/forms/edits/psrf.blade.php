@@ -4,9 +4,17 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies, $all_form->model->company_id)->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
+            <div class="col-lg-5">
+                <div class="form-group">
+                    <label class="mb-0">Requested By <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select id="employee_cost_center" name="requested_by" class="form-control" style="width: 100%;" form="update_psrf"></select>
+                    <small class="text-danger">{{$errors->first('requested_by')}}</small>
                 </div>
             </div>
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
@@ -17,17 +25,24 @@
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Recipient</label>
+                    <label class="mb-0">Customer <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select id="customer_cost_center" name="customer" class="form-control" style="width: 100%;" form="update_psrf"></select>
+                    <small class="text-danger">{{$errors->first('customer')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-2"></div>
+            <div class="col-lg-5">
+                <div class="form-group">
+                    <label class="mb-0">Recipient <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="recipient" form="update_psrf" value="{{$all_form->model->recipient}}"> 
                     <small class="text-danger">{{$errors->first('recipient')}}</small>
                 </div>
             </div>
-            <div class="col-lg-3"></div>
         </div>
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Activity Name</label>
+                    <label class="mb-0">Activity Name <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="activity_name" form="update_psrf" value="{{$all_form->model->activity_name}}"> 
                     <small class="text-danger">{{$errors->first('activity_name')}}</small>
                 </div>
@@ -35,7 +50,7 @@
             <div class="col-lg-3"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Program Date</label>
+                    <label class="mb-0">Program Date <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="date" class="form-control" name="program_date" form="update_psrf" value="{{$all_form->model->program_date}}"> 
                     <small class="text-danger">{{$errors->first('program_date')}}</small>
                 </div>
@@ -44,7 +59,7 @@
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Objective</label>
+                    <label class="mb-0">Objective <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="objective" form="update_psrf" value="{{$all_form->model->objective}}"> 
                     <small class="text-danger">{{$errors->first('objective')}}</small>
                 </div>
@@ -52,7 +67,7 @@
 
             <div class="col-lg-7">
                 <div class="form-group">
-                    <label class="mb-0">Special Instructions</label>
+                    <label class="mb-0">Special Instructions <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="special_instructions" form="update_psrf" value="{{$all_form->model->special_instructions}}"> 
                     <small class="text-danger">{{$errors->first('special_instructions')}}</small>
                 </div>
@@ -60,6 +75,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
+                <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
                 <table class="table table-responsive table-bordered text-center" id="dynamicTable">
                     <thead>
                         <tr>
@@ -81,14 +97,53 @@
                             <td class="row-number">{{ $index + 1 }}</td>
                             <td><select name="items[{{ $index }}][sku-select]" value="{{ $item['item_code'] }}" style="width: 100%;" class="form-control text-center sku-select"></select></td>
                             <td ><input type="text" name="items[{{ $index }}][desc]" value="{{ $item['item_description'] }}" class="form-control text-center desc" disabled/></td>             
-                            <td ><input type="text" name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom" /></td>
-                            <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty" value="1" min="1" /></td>
+                            <td>
+                                <select name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom">
+                                    <option value="PCS">PCS</option>
+                                    <option value="CS">CS</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1"/>
+                                <small class="form-text text-muted">
+                                    Available:
+                                </small>
+                                <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
+                            </td>
                             <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
+                    <h6>{{$all_form->model->file_name}}</h6>
+                    <input
+                        form="update_psrf"
+                        type="file"
+                        id="file_name"
+                        name="file_name"
+                        accept="application/pdf"
+                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                    > 
+                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="form-group">
+                    <b>Attachment Preview</b>
+                    <iframe
+                        src="{{ ($all_form->model->file_name == null && '') ? (asset('/'.$all_form->model->path)) : '' }}"
+                        id="pdfPreview"
+                        width="100%"
+                        height="500"
+                        style="border:1px solid #ccc;"
+                    ></iframe>
+                </div>
             </div>
         </div>
     </div>
@@ -119,67 +174,72 @@
         i++;
         let table = document.querySelector("#dynamicTable tbody");
         let newRow = document.createElement("tr");
+        
         newRow.innerHTML = `
             <td class="row-number"></td>
             <td><select name="items[${i}][sku-select]" class="form-control sku-select" style="width: 100%;"></select></td>
-            <td><input type="text" name="items[${i}][desc]" placeholder="Enter Item Description" class="form-control text-center desc" disabled/></td>
+            <td><input type="text" name="items[${i}][desc]" class="form-control text-center desc" disabled/></td>
             <td>
                 <select name="items[${i}][uom]" class="form-control text-center uom">
                     <option value="PCS">PCS</option>
                     <option value="CS">CS</option>
-                    <option value="IN">IN</option>
                 </select>
             </td>
-            <td><input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
+            <td>
+                <input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" />
+                <small class="form-text text-muted">
+                    Available:
+                </small>
+                <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
+            </td>
             <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
         `;
+
         table.appendChild(newRow);
         let $newSelect = $(newRow).find('.sku-select');
         initSelect2($newSelect);
+        updateRowNumbers();3
 
-        updateRowNumbers();
-        emitPSRF();
     });
 
     $(document).on('input', '.qty', function() {
         let val = parseFloat($(this).val());
+        let $row = $(this).closest('tr');
+        updateRowQuantity($row);
         
-        if (val <= 0 || isNaN(val)) {
+        if (val <= 0 || isNaN(val) || val > available) {
             $(this).addClass('is-invalid');
         } else {
             $(this).removeClass('is-invalid');
         }
     });
 
+
     document.addEventListener("click", function (e) {
         if (e.target && e.target.classList.contains("removeRow")) {
             e.target.closest("tr").remove();
+
             updateRowNumbers();
-            emitPSRF();
-
         }
     });
 
-
-    document.addEventListener("input", function (e) {
-        if (e.target.name.includes("[sku]")) {
-                checkDuplicateNames();
-        }
-    });
 
     function initSelect2(element) {
+        let company = document.querySelector('select[name="company_id"]').value;
+
         element.select2({
             placeholder: "Select Product",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('products.ajax') }}", 
+                url: "{{ route('sample_product.ajax') }}", 
                 dataType: 'json',
                 delay: 250, 
                 data: function (params) {
                     return {
-                        search: params.term 
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
                     };
                 },
                 processResults: function (data) {
@@ -193,36 +253,45 @@
             let data = e.params.data; 
             let $row = $(this).closest('tr');
 
+
+            $row.data('product-info', data);
             $row.find('.desc').val(data.description);
-            
-            emitPSRF(); 
+            $row.find('.totalQty').val(data.quantity_pcs);
+
+            updateRowQuantity($row);
+
         });
     }
 
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            recipient: document.querySelector('input[name="recipient"]').value || "-",
-            submitted: document.querySelector('input[name="date_submitted"]').value || "-",
-            activity: document.querySelector('input[name="activity_name"]').value || "-",
-            program: document.querySelector('input[name="program_date"]').value || "-",
-            objective: document.querySelector('input[name="objective"]').value || "-",
-            special: document.querySelector('input[name="special_instructions"]').value || "-",
-        };
+    $(document).on('change', '.uom', function() {
+        let $row = $(this).closest('tr');
+        updateRowQuantity($row);
+    });
 
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let sku = row.querySelector(".sku-select").value || "-";
-            let desc = row.querySelector(".desc").value || "-";
-            let uom = row.querySelector(".uom").value || "-";
-            let qty = parseFloat(row.querySelector(".qty").value) || 1;
-            let remarks = row.querySelector(".remarks").value || "-";
+    function updateRowQuantity($row) {
+        let data = $row.data('product-info');
+        let uom = $row.find('.uom').val(); 
+        let $qtyInput = $row.find('.qty'); 
+        let $totalQtyDisplay = $row.find('.totalQty'); 
+        if (!data) return;
 
-            items.push({ sku, desc, uom, qty, remarks });
-        });
 
-        Livewire.dispatch('loadPsrfSummary',{ data, items });
+        let available = (uom === 'CS') ? data.quantity_cs : data.quantity_pcs;
+
+        $totalQtyDisplay.val(available);
+
+        $qtyInput.attr('max', available);
+
+        if (parseInt($qtyInput.val()) > available) {
+            $qtyInput.val(available);
+            errorMessage = "Quantity adjusted to maximum available stock.";
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Quantity Limit',
+                text: errorMessage
+            });
+        }
     }
 
     function updateRowNumbers() {
@@ -231,32 +300,66 @@
         });
     }
 
-    function checkDuplicateNames() {
-        const names = [];
-        const inputs = document.querySelectorAll('input[name*="[sku]"]');
-        let hasDuplicate = false;
-
-        inputs.forEach(input => {
-            const name = input.value.trim().toLowerCase();
-            if (name !== "") {
-                if (names.includes(name)) {
-                    input.classList.add("is-invalid");
-                    hasDuplicate = true;
-                } else {
-                    input.classList.remove("is-invalid");
-                    names.push(name);
-                }
-            }
-        });
-
-        if (hasDuplicate) {
-            alert("Duplicate Item Code are not allowed in the same form!");
-        }
-    }
-
     updateRowNumbers();
 </script>
+<script>
+    $(document).ready(function() {
 
+        let company = document.querySelector('select[name="company_id"]').value;
+
+        $('#employee_cost_center').select2({
+            placeholder: "Select Employee Cost Center",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                dataType: 'json',
+                delay: 250, // Wait 250ms before sending request (debounce)
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+});
+</script>
+<script>
+    $(document).ready(function() {
+
+        let company = document.querySelector('select[name="company_id"]').value;
+
+        $('#customer_cost_center').select2({
+            placeholder: "Select Customer Cost Center",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('customer_cost.ajax') }}", // Create this route in web.php
+                dataType: 'json',
+                delay: 250, // Wait 250ms before sending request (debounce)
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+});
+</script>
 <script>
     $(function() {
         $('body').on('click', '.btn-draft', function(e) {
@@ -362,13 +465,15 @@
 
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
-                control_number: document.querySelector('input[name="control_number"]').value,
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
+                requested_by: document.querySelector('select[name="requested_by"]').value || "-",
+                customer: document.querySelector('select[name="customer"]').value || "-",
                 recipient: document.querySelector('input[name="recipient"]').value || "-",
                 activity: document.querySelector('input[name="activity_name"]').value || "-",
                 program: document.querySelector('input[name="program_date"]').value || "-",
                 objective: document.querySelector('input[name="objective"]').value || "-",
                 special: document.querySelector('input[name="special_instructions"]').value || "-",
+                file_name: document.querySelector('input[name="file_name"]').value || "-",
             };
 
             let items = [];
@@ -385,6 +490,18 @@
             Livewire.dispatch('loadPsrfSummary',{ data, items });
             $('#modal-preview').modal('show');
         });
+    });
+</script>
+<script>
+    document.getElementById('file_name').addEventListener('change', function () {
+        const file = this.files[0];
+        const iframe = document.getElementById('pdfPreview');
+
+        if (file && file.type === 'application/pdf') {
+            iframe.src = URL.createObjectURL(file);
+        } else {
+            iframe.src = '';
+        }
     });
 </script>
 @endpush

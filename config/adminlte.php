@@ -320,6 +320,85 @@ return [
             'can'       => 'bforms approver',
             'active'    => ['approvers', 'approver*']
         ],
+        
+        [
+            'text'  => 'HR',
+            'url'   => '#',
+            'icon'  => 'fa fa-fw fa-users',
+            'can'   => ['bforms hr'],
+            'submenu' => [
+                [
+                    'text'      => 'GATE PASS',
+                    'url'       => 'forms/list/eyJpdiI6IkpVVUw0QjlmTHNpQ3BTYVorODFKY3c9PSIsInZhbHVlIjoiaU1hby93UDc0UDI1OXo3YktPRkZXUT09IiwibWFjIjoiM2Y5MGEyYjkzZmZlNjQ3MjUyZGVkYmIwYzA2OTNjZjgxZDc4ZTQwYzY1OGJlNzgxNTcwNWUxNDkwMDk0MTI2NSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms hr'
+                ],
+            ],
+        ],
+        [
+            'text'  => 'SCM',
+            'url'   => '#',
+            'icon'  => 'fa fa-fw fa-truck',
+            'can'   => ['bforms scm'],
+            'submenu' => [
+                [
+                    'text'      => 'PSRF',
+                    'url'       => 'forms/list/eyJpdiI6InVZTW9RQzZCRS9wVVIvZk9lbE9ncUE9PSIsInZhbHVlIjoiYU55UCs3cTJqZ0h3Y1dvK2UrMFMxQT09IiwibWFjIjoiYWNiY2E5MTkwZjNjNzg0MjcyOGZiMmM2MTI0MjNjODA0ZmJiMDQzNDJhMmExMDIwZjBmMDAyODhlZWNkYzY2OSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms scm'
+                ],
+                [
+                    'text'      => 'PSST',
+                    'url'       => 'forms/list/eyJpdiI6ImZrclhIOWtCbGJPOFNqL0V0dmI3b2c9PSIsInZhbHVlIjoiMGVLN0FtWE9lSnVCUU55WkRBVzlBQT09IiwibWFjIjoiOTgzODQ2NjVhZDNjM2IyNWU0ODIzODJiNmRhODVmOWEzMjk3ZTNlMTUzMTk4MzdiZDJiYjIzYzU4YTU4ZDliOSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms scm'
+                ],
+            ],
+        ],
+        [
+            'text'  => 'Finance',
+            'url'   => '#',
+            'icon'  => 'fa fa-fw fa-dollar-sign',
+            'can'   => ['bforms finance'],
+            'submenu' => [
+                [
+                    'text'      => 'Request for Payment',
+                    'url'       => 'forms/list/eyJpdiI6IlE4UDNhamtUclBvNzNPaGJZMUd1V3c9PSIsInZhbHVlIjoiNngvdVVTbS9yNTZPalVSRGZNVVE0UT09IiwibWFjIjoiMTFiZGIxM2Q1ZDIzMDE5OGNmODA5NDhmMTkyNDYzN2RhZTZkM2Y1MjcyNmE4ZmM3ZjgxM2VhN2Q3NWI4ZGIwYSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+                [
+                    'text'      => 'Cash Advance',
+                    'url'       => 'forms/list/eyJpdiI6IkhReWU4UUN5b1REb2NQS2F4S211MVE9PSIsInZhbHVlIjoiaW84MEFnY3JtYXFVbHVKa2NaQjJLUT09IiwibWFjIjoiZDk2MzNmMzJkZThjNTcxNDcyNGU4NzdhZmM1M2UzNDYwMGFmN2JkMTUxOTI5YzYxNjUwMTYwMzVmOGNlNjhmYyIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+                [
+                    'text'      => 'Cash Advance (Liquidation)',
+                    'url'       => 'forms/list/eyJpdiI6Im45SThiaHl2cGNiSy9uVmY3a2RzOUE9PSIsInZhbHVlIjoiaEdvL0NnZ3lrRGJtaEN1TUZFR2Q3UT09IiwibWFjIjoiZGU0MmY0N2JlMzRmNGE5NTVhMjU1YWIxM2U4ZDQ3ODFkMDQwY2Q5ZmIwNDA2MjBlNzcyYmEwZDUzZTQxOTlmZiIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+                [
+                    'text'      => 'Petty Cash Advance',
+                    'url'       => 'forms/list/eyJpdiI6ImNpWTNFTHMrWlZUUWdCQ3M1Uzc2bGc9PSIsInZhbHVlIjoiSFB1M1puK1luUmQwZEJQVVFVYVNtdz09IiwibWFjIjoiZDYyZTQwOGUyYzdmYjc2N2Y3OGYxNmUyYWRjMzJjNzgxNDNhYjYzYTJlM2YzYjY1YThhYzQ2M2I5ZGM1Nzc5ZSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+                [
+                    'text'      => 'Petty Cash Advance (Liquidation)',
+                    'url'       => 'forms/list/eyJpdiI6ImdKK21waFVQeitjdTh6U3prVnoxYXc9PSIsInZhbHVlIjoiWlBVdDh1Z3NNRy9BbXBMUzRXcjdSUT09IiwibWFjIjoiMjQ2NzE3NzdkMmYzMTZhMGYxZGE2ZTQ0OGQ3MDMyNTVjZmJjMmRkOWRkODNiNDFhYzhlNTdiZDg5YmI0ZDAwYSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+                [
+                    'text'      => 'PSRF',
+                    'url'       => 'forms/list/eyJpdiI6InVZTW9RQzZCRS9wVVIvZk9lbE9ncUE9PSIsInZhbHVlIjoiYU55UCs3cTJqZ0h3Y1dvK2UrMFMxQT09IiwibWFjIjoiYWNiY2E5MTkwZjNjNzg0MjcyOGZiMmM2MTI0MjNjODA0ZmJiMDQzNDJhMmExMDIwZjBmMDAyODhlZWNkYzY2OSIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
+            ],
+        ],
         [
             'text'      => 'All Forms',
             'url'       => 'allforms',
@@ -327,13 +406,6 @@ return [
             'can'       => 'superadmin access',
             'active'    => ['allforms', 'allform*']
         ],
-        // [
-        //     'text'      => 'AI Testing',
-        //     'url'       => 'ai-testing',
-        //     'icon'      => 'fas fa-fw fa-robot',
-        //     'can'       => 'ai access',
-        //     'active'    => ['ai-testing']
-        // ],
         [
             'text'  => 'settings',
             'url'   => '#',

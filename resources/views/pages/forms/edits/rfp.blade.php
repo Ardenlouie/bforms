@@ -4,7 +4,7 @@
         <div class="row">
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Company</label>
+                    <label class="mb-0">Company <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('company_id', $companies, $all_form->model->company_id)->class(['form-control', 'form-control', 'is-invalid' => $errors->has('company_id')]) }}
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
@@ -17,7 +17,7 @@
         <div class="row">
             <div class="col-lg-6">
                 <div class="form-group">
-                    <label class="mb-0">Payable to</label>
+                    <label class="mb-0">Payable to <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="payable" form="update_rfp" value="{{ $all_form->model->payable }}"> 
                     <small class="text-danger">{{$errors->first('payable')}}</small>
                 </div>
@@ -25,7 +25,7 @@
             <div class="col-lg-2"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Department</label>
+                    <label class="mb-0">Department <small class="text-danger font-italic text-bold">(required)</small></label>
                     {{ html()->select('department_id', $departments ,$all_form->model->department_id)->class(['form-control', 'form-control text-uppercase', 'is-invalid' => $errors->has('department_id')]) }}
                     <small class="text-danger">{{$errors->first('department_id')}}</small>
                 </div>
@@ -34,7 +34,7 @@
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Amount</label>
+                    <label class="mb-0">Amount <small class="text-danger font-italic text-bold">(required)</small></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" id="currency_toggle">
@@ -66,8 +66,8 @@
             <div class="col-lg-3"></div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Cost Center</label>
-                    <select id="cost_center" name="cost_center" class="form-control" style="width: 100%;" form="update_rfp" value="{{$all_form->model->cost_center}}"></select>
+                    <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select id="employee_cost_center" name="cost_center" class="form-control" style="width: 100%;" form="update_rfp" value="{{$all_form->model->cost_center}}"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
@@ -75,7 +75,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="form-group">
-                    <label class="mb-0">Purpose</label>
+                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="purpose" form="update_rfp" value="{{$all_form->model->purpose}}"> 
                     <small class="text-danger">{{$errors->first('purpose')}}</small>
                 </div>
@@ -83,7 +83,7 @@
 
             <div class="col-lg-12">
                 <div class="form-group">
-                    <label class="mb-0">Instructions</label>
+                    <label class="mb-0">Instructions  <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="instructions" form="update_rfp" value="{{$all_form->model->instructions}}"> 
                     <small class="text-danger">{{$errors->first('instructions')}}</small>
                 </div>
@@ -91,7 +91,7 @@
 
             <div class="col-lg-6">
                 <div class="form-group">
-                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }}
+                    {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
                     <h6>{{$all_form->model->file_name}}</h6>
                     <input
                         form="update_rfp"
@@ -240,5 +240,34 @@ $(function() {
             iframe.src = '';
         }
     });
+</script>
+<script>
+    $(document).ready(function() {
+
+        let company = document.querySelector('select[name="company_id"]').value;
+
+        $('#employee_cost_center').select2({
+            placeholder: "Select Employee Cost Center",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                dataType: 'json',
+                delay: 250, // Wait 250ms before sending request (debounce)
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+});
 </script>
 @endpush

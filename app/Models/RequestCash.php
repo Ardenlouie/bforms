@@ -33,6 +33,8 @@ class RequestCash extends Model
         'date_submitted',
         'itenerary',
         'location',
+        'file_name',
+        'path',
     ];
 
     public function form() {

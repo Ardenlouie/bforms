@@ -29,6 +29,8 @@ class ProductTransfer extends Model
         'date_submitted',
         'delivery_instructions',
         'control_number',
+        'file_name',
+        'path',
     ];
 
     public function form() {
