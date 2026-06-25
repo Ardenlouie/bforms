@@ -37,6 +37,7 @@ new class extends Component
             'items' => $this->items,
             'control_number' => $this->control_number,
             'data' => $this->data,
+            'others' => $data['others'],
         ]);
         
 
@@ -101,7 +102,14 @@ new class extends Component
                     <h5>Received By: <b>{{ ($data['received_by'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h5>Category: <b>{{ ($data['category'] ?? '' )}}</b></h5>
+                    <h5>Category: 
+                        <b>
+                            {{ ($data['category'] ?? '' )}}
+                            @if(!empty($data['others']))
+                             - {{ $data['others'] }}
+                            @endif
+                        </b>
+                    </h5>
                     <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
                     <h5>Note: <b>{{ ($data['note'] ?? '' )}}</b></h5>
                 </div>
@@ -148,6 +156,8 @@ new class extends Component
                                 @elseif($data['category'] == 'Marketing Materials')
                                     Marketing Department Approvers
                                 @elseif($data['category'] == 'Documents')
+                                    {{ ($user->department->name ?? '' )}} Department Approvers
+                                @else
                                     {{ ($user->department->name ?? '' )}} Department Approvers
                                 @endif
                             </b>

@@ -25,6 +25,7 @@ class ProductSampleItem extends Model
         'item_description',
         'uom',
         'quantity',
+        'amount',
         'remarks',
     ];
 

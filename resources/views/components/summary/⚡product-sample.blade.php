@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1;
+    public $control_number, $company_id, $forms, $user, $form_id=1, $total_amount = 0;
     public $data = [], $items = [];
 
     protected $listeners = ['loadPsrfSummary' => 'loadData'];
@@ -25,6 +25,7 @@ new class extends Component
         $this->form_id = $data['form_id'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
+        $this->total_amount = collect($items)->sum('amount');
         
         if(!empty($data['control_number'])){
             $this->control_number = $data['control_number'];
@@ -37,6 +38,7 @@ new class extends Component
             'items' => $this->items,
             'control_number' => $this->control_number,
             'data' => $this->data,
+            'total_amount' => $this->total_amount,
         ]);
 
 
@@ -117,6 +119,7 @@ new class extends Component
                         <th>Item Description</th>
                         <th>UOM</th>
                         <th>Qty</th>
+                        <th>Amount</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
@@ -131,10 +134,21 @@ new class extends Component
                            
                             <td class="align-middle">{{ $item['uom'] }}</td>
                             <td class="align-middle">{{ $item['qty'] }}</td>
+                            <td class="align-middle">{{ number_format($item['amount'], 2) }}</td>
                             <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th colspan="1" class="text-end">TOTAL AMOUNT:</th>
+                        <th><h3>₱{{ number_format($total_amount, 2) }}</h3></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
 
             </table>
             <div class="row text-left mb-3">
@@ -154,7 +168,7 @@ new class extends Component
                         </b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>Finance Department Approvers</b></h4>
                 </div>
             </div>
         </div>

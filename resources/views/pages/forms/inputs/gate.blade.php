@@ -25,12 +25,19 @@
             <div class="col-lg-4">
                 <div class="form-group">
                     <label class="mb-0">Category <small class="text-danger font-italic text-bold">(required)</small></label>
-                        <select class="form-control" name="category" form="add_gate">
+                        <select class="form-control" name="category" id="category" form="add_gate">
                             <option value="IT Equipment">IT Equipment</option>
                             <option value="Marketing Materials">Marketing Materials</option>
                             <option value="Documents">Documents</option>
+                            <option value="Others">Others (Please Specify)</option>
                         </select>
-                    <small class="text-danger">{{$errors->first('point_origin')}}</small>
+                    <small class="text-danger">{{$errors->first('category')}}</small>
+                </div>
+
+                <div class="form-group" id="specify_category_wrapper" style="display: none;">
+                    <label class="mb-0">Please Specify <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="text" class="form-control" name="category_specified" id="category_specified" form="add_gate" placeholder="Enter Category">
+                    <small class="text-danger">{{$errors->first('category_specified')}}</small>
                 </div>
             </div>
         </div>
@@ -331,7 +338,6 @@
             });
             
             if (hasError) {
-                e.preventDefault();
                 e.stopPropagation(); 
 
                 Swal.fire({
@@ -343,6 +349,7 @@
 
                 return false; 
             }
+                e.preventDefault();
 
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
@@ -351,6 +358,7 @@
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 received_by: document.querySelector('input[name="received_by"]').value || "-",
                 category: document.querySelector('select[name="category"]').value || "-",
+                others: document.querySelector('input[name="category_specified"]').value,
                 note: document.querySelector('input[name="note"]').value || "-",
             };
 
@@ -451,4 +459,21 @@ $('#remove_photo').on('click', function() {
     });
 </script>
 
+<script>
+$(document).ready(function() {
+    $('#category').on('change', function() {
+        let selectedValue = $(this).val();
+        let wrapper = $('#specify_category_wrapper');
+        let inputField = $('#category_specified');
+
+        if (selectedValue === 'Others') {
+            wrapper.slideDown(); // Smoothly reveals input
+            inputField.prop('required', true); // Forces validation constraint
+        } else {
+            wrapper.slideUp(); // Hides container
+            inputField.prop('required', false).val(''); // Clears and relaxes constraint
+        }
+    });
+});
+</script>
 @endpush

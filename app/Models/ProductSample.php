@@ -33,6 +33,7 @@ class ProductSample extends Model
         'control_number',
         'file_name',
         'path',
+        'total_amount',
     ];
 
     public function form() {

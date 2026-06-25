@@ -53,7 +53,19 @@
             </div>
             <div class="col-6 text-right">
                 <h4>Delivery Date: <b>{{ date('F d, Y', strtotime($forms->model->delivery_date ?? '')) }}</b></h4>
-                <h4>Point of Origin: <b>{{ ($forms->model->point_origin ?? '' )}}</b></h4>
+                <h4>Point of Origin: 
+                    <b>
+                        @if($forms->model->point_origin == 'VIR')
+                            BEVMI Warehouse
+                        @elseif($forms->model->point_origin == 'CAL')
+                            Maersk Calamba
+                        @elseif($forms->model->point_origin == 'CAL-SDI')
+                            Maersk Calamba - SDI
+                        @else
+                            {{ $forms->model->point_origin }}
+                        @endif
+                    </b>
+                </h4>
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
@@ -90,6 +102,21 @@
                 </tbody>
 
             </table>
+        </div>
+        <div class="row">
+            <div class="col-9 mb-3">
+                <h4>Attachment:</h4>
+                @if(!empty($forms->model->path))
+                    <iframe
+                        src="{{ asset('/'.$forms->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
+                @else
+                    NO ATTACHMENT
+                @endif
+            </div>
         </div>
         <div class="row">
             <div class="col-6">

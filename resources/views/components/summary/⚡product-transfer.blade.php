@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1, $point_origin;
+    public $control_number, $company_id, $forms, $user, $form_id=1;
     public $data = [], $items = [];
 
     protected $listeners = ['loadPsstSummary' => 'loadData'];
@@ -25,8 +25,6 @@ new class extends Component
         $this->form_id = $data['form_id'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->point_origin = Session::get('point_origin');
-
         
         if(!empty($data['control_number'])){
             $this->control_number = $data['control_number'];
@@ -39,6 +37,7 @@ new class extends Component
             'items' => $this->items,
             'control_number' => $this->control_number,
             'data' => $this->data,
+            'others' => $data['others'],
         ]);
 
     }
@@ -100,7 +99,15 @@ new class extends Component
                     <h5>Delivery Instructions: <b>{{ ($data['delivery_instructions'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
-                    <h5>Point of Origin: <b>{{ ($data['point_origin'] ?? '' )}}</b></h5>
+                    <h5>Point of Origin: 
+                        <b>
+                            {{ ($data['point_origin'] ?? '' )}}
+
+                            @if(!empty($data['others']))
+                             - {{ ($data['others'] ?? '' )}}
+                            @endif
+                        </b>
+                    </h5>
                     <h5>Delivery Date: <b>{{ date('F d, Y', strtotime($data['delivery_date'] ?? '')) }}</b></h5>
                     <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
 
@@ -151,7 +158,7 @@ new class extends Component
                         </b></h4>
                 </div>
                 <div class="col-4">
-                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>Finance Department Approvers</b></h4>
                 </div>
             </div>
         </div>
