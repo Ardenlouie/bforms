@@ -23,7 +23,7 @@ new class extends Component
         $this->point_origin = $value;
 
         $response = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
-            ->get("http://192.168.11.240/refreshable/public/api/lotDetail/{$value}");
+            ->get(env('API_URL').'lotDetail/'.$value);
 
 
         $this->wh_detail_collect = collect($response->json());

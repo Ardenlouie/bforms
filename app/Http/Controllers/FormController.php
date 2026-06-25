@@ -23,6 +23,7 @@ use App\Models\PettyLiquid;
 use App\Models\PettyLiquidItem;
 use App\Models\Company;
 use App\Models\Product;
+use App\Models\PriceCode;
 use App\Models\LotDetail;
 use App\Models\SampleProduct;
 use App\Models\EmployeeCostCenter;
@@ -341,13 +342,20 @@ class FormController extends Controller
         $search    = $request->query('search');
         $company   = $request->query('company_id');
 
-        $products = SampleProduct::where('company_id', $company)
-            ->when($search, function ($query) use ($search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('stock_code', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%');
-                });
-            })
+        $products = SampleProduct::where('sample_products.company_id', $company)
+                ->leftJoin('products', 'products.stock_code', '=', 'sample_products.stock_code')
+                ->leftJoin('price_codes', function($join) use ($company) {
+                    $join->on('price_codes.product_id', '=', 'products.id')
+                        ->where('price_codes.code', '=', 'A')
+                        ->where('price_codes.company_id', '=', $company);
+                })
+                ->when($search, function ($query) use ($search) {
+                    $query->where(function($q) use ($search) {
+                        $q->where('sample_products.stock_code', 'like', '%' . $search . '%')
+                        ->orWhere('sample_products.description', 'like', '%' . $search . '%');
+                    });
+                })
+            ->select('sample_products.*', 'price_codes.selling_price', 'products.order_uom_conversion')
             ->limit(10) 
             ->get()
             ->map(function ($item) {
@@ -357,11 +365,47 @@ class FormController extends Controller
                     'description'  => $item->description, 
                     'quantity_pcs' => $item->quantity_pcs, 
                     'quantity_cs'  => $item->quantity_cs, 
+                    'price'  => $item->selling_price, 
+                    'conversion'  => $item->order_uom_conversion, 
                 ];
             });
             
 
         return response()->json(['results' => $products]);
+    }
+
+    public function warehouse_api(Request $request)
+    {
+        $search    = $request->query('search');
+        $company_id   = $request->query('company_id');
+
+        $company = 'BEVI';
+
+        $wh_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
+            ->get(env('API_URL').'invWarehouse/'.$company);
+
+        $wh_collect = collect($wh_api->json()['data'] ?? $wh_api->json());
+
+        $warehouses = $wh_collect
+        ->when($search, function ($collection) use ($search) {
+            return $collection->filter(function ($item) use ($search) {
+                $warehouseValue = data_get($item, 'Warehouse');
+                return str_contains(strtolower($warehouseValue), strtolower($search));
+            });
+        })
+        ->take(10) 
+
+        ->map(function ($item) {
+            $warehouseValue = data_get($item, 'Warehouse');
+            return [
+                'id'          => $warehouseValue,
+                'text'        => $warehouseValue,
+                'description' => $warehouseValue, 
+            ];
+        })
+        ->values();
+            
+        return response()->json(['results' => $warehouses]);
     }
 
     public function security($id) 
@@ -461,6 +505,8 @@ class FormController extends Controller
         foreach($departments as $department) {
             $departments_arr[$department->id] = $department->name;
         }
+
+        
 
         return view('pages.forms.createForm',)->with([
             'form' => $form,
@@ -563,6 +609,7 @@ class FormController extends Controller
             'objective' => $request->objective,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
+            'total_amount' => $psrf_item['total_amount'],
         ]);
       
         $psrf->save();
@@ -585,8 +632,6 @@ class FormController extends Controller
 
         if(!empty($psrf_item)){
             foreach ($psrf_item['items'] as $key => $items){
-
-               
                 $psrf_items = new ProductSampleItem([
                     'psrf_form_id' => $psrf->id,
                     'item_code' => $items['sku'],
@@ -594,6 +639,7 @@ class FormController extends Controller
                     'uom' =>  $items['uom'],
                     'quantity' =>  $items['qty'],
                     'remarks' =>  $items['remarks'],
+                    'amount' =>  $items['amount'],
                 ]);
                 $psrf_items->save();
             }
@@ -609,7 +655,7 @@ class FormController extends Controller
             'model_id' => $psrf->id,
             'model_type' => 'App\Models\ProductSample',
             'endorser' => $endorser,
-            'approver' => [$form->approver_id],
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -652,10 +698,16 @@ class FormController extends Controller
 
         $psst_item = Session::get('psst_item');
 
+        if(!empty($psst_item['others'])){
+            $point_origin = $psst_item['others'];
+        } else {
+            $point_origin = $request->point_origin;
+        }
+
         $psst = new ProductTransfer([
             'form_id' => $form->id,
             'company_id' => $request->company_id,
-            'point_origin' => $request->point_origin,
+            'point_origin' => $point_origin,
             'delivery_date' => $request->delivery_date,
             'objective' => $request->objective,
             'delivery_instructions' => $request->delivery_instructions,
@@ -703,7 +755,7 @@ class FormController extends Controller
             'model_type' => 'App\Models\ProductTransfer',
             'department_id' => $department_ids,
             'endorser' => $endorser,
-            'approver' => [$form->approver_id],
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -742,20 +794,31 @@ class FormController extends Controller
         $form = Form::findOrFail(decrypt($id));
         $date_submitted = date('Y-m-d');
         $date_code = date('Y');
+        $received_by = $request->received_by;
+
+        if($form->prefix == 'gate'){
+            $received_by = [$request->received_by];
+        }
 
         $gate_item = Session::get('gate_item');
+
+        if(!empty($gate_item['others'])){
+            $category = $gate_item['others'];
+        } else {
+            $category = $request->category;
+        }
 
         $gate = new GatePass([
             'form_id' => $form->id,
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
-            'received_by' => $request->received_by,
-            'receivers' => $request->received_by,
+            'received_by' => $received_by,
+            'receivers' => $received_by,
             'psrf_form_id' => $request->psrf_form_id ?? null,
             'numberof' => $request->numberof,
             'balance' => $request->numberof,
             'note' => $request->note,
-            'category' => $request->category,
+            'category' => $category,
         ]);
 
         $gate->save();

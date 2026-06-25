@@ -10,7 +10,7 @@ use App\Models\Department;
 use Illuminate\Http\Request;
 
 use App\Http\Requests\UserAddRequest;
-use App\Http\Requests\USerEditRequest;
+use App\Http\Requests\UserEditRequest;
 
 use Illuminate\Support\Facades\Hash;
 

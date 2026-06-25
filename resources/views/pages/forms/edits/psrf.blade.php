@@ -84,6 +84,7 @@
                             <th style="min-width: 300px;">Item Description</th>
                             <th style="min-width: 100px;">UOM</th>
                             <th>Qty</th>
+                            <th style="min-width: 100px;">Amount</th>
                             <th>Remarks</th>
                             <th><button type="button" name="add" id="addBtn" class="btn btn-success"><i class="fa fa-plus"></i></button></th>
                         </tr>
@@ -104,17 +105,33 @@
                                 </select>
                             </td>
                             <td>
-                                <input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1"/>
+                                <input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty" value="1" min="1"/>
                                 <small class="form-text text-muted">
                                     Available:
                                 </small>
                                 <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
                             </td>
+                            <td>
+                                <input placeholder="0.00" type="number" class="form-control text-center text-bold text-danger totalPrice" disabled />
+                                <small class="form-text text-muted">
+                                    SRP /pc:
+                                </small>
+                                <input type="number" name="items[$index][price]" class="form-control text-center price" disabled/>
+                            </td>  
                             <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                         </tr>
                         @endforeach
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <th></th>
+                            <th colspan="4" class="text-right">TOTAL</th>
+                            <th id="totalAmount">₱{{ number_format(0.00 , 2) }}</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
             <div class="col-lg-6">
@@ -186,20 +203,29 @@
                 </select>
             </td>
             <td>
-                <input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" />
+                <input type="number" name="items[${i}][qty]" class="form-control text-center qty" value="1" min="1" />
                 <small class="form-text text-muted">
                     Available:
                 </small>
                 <input type="number" class="form-control text-center text-bold text-success totalQty"  disabled />
             </td>
-            <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
+            <td>
+                <input placeholder="0.00" type="number" class="form-control text-center text-bold text-danger totalPrice" disabled />
+                <small class="form-text text-muted">
+                    SRP /pc:
+                </small>
+                <input type="number" name="items[${i}][price]" class="form-control text-center price" disabled/>
+            </td>  
+            <td><input type="text" name="items[${i}][remarks]" placeholder="Remarks" class="form-control text-center remarks" /></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
         `;
 
         table.appendChild(newRow);
         let $newSelect = $(newRow).find('.sku-select');
         initSelect2($newSelect);
-        updateRowNumbers();3
+        updateRowNumbers();
+        calculateTotals();
+
 
     });
 
@@ -207,12 +233,14 @@
         let val = parseFloat($(this).val());
         let $row = $(this).closest('tr');
         updateRowQuantity($row);
+        calculateTotals();
         
         if (val <= 0 || isNaN(val) || val > available) {
             $(this).addClass('is-invalid');
         } else {
             $(this).removeClass('is-invalid');
         }
+
     });
 
 
@@ -221,6 +249,8 @@
             e.target.closest("tr").remove();
 
             updateRowNumbers();
+            calculateTotals();
+
         }
     });
 
@@ -256,9 +286,11 @@
 
             $row.data('product-info', data);
             $row.find('.desc').val(data.description);
+            $row.find('.price').val(data.price);
             $row.find('.totalQty').val(data.quantity_pcs);
 
             updateRowQuantity($row);
+            calculateTotals();
 
         });
     }
@@ -266,19 +298,24 @@
     $(document).on('change', '.uom', function() {
         let $row = $(this).closest('tr');
         updateRowQuantity($row);
+        calculateTotals();
+
     });
 
     function updateRowQuantity($row) {
         let data = $row.data('product-info');
         let uom = $row.find('.uom').val(); 
+        let qty = $row.find('.qty').val(); 
         let $qtyInput = $row.find('.qty'); 
         let $totalQtyDisplay = $row.find('.totalQty'); 
+        let $totalPriceDisplay = $row.find('.totalPrice'); 
         if (!data) return;
 
-
         let available = (uom === 'CS') ? data.quantity_cs : data.quantity_pcs;
+        let availablePrice = (uom === 'CS') ? (data.conversion * qty) * data.price : data.price * qty;
 
         $totalQtyDisplay.val(available);
+        $totalPriceDisplay.val(availablePrice.toFixed(2));
 
         $qtyInput.attr('max', available);
 
@@ -300,7 +337,21 @@
         });
     }
 
+    function calculateTotals() {
+        let totalAmount = 0;
+
+        document.querySelectorAll("#dynamicTable tbody tr").forEach(row => {
+            let qty = parseFloat(row.querySelector(".qty").value) || 0;
+            let price = parseFloat(row.querySelector(".totalPrice").value) || 0;
+
+            totalAmount += price;
+        });
+
+        document.getElementById("totalAmount").textContent = totalAmount.toFixed(2);
+    }
+
     updateRowNumbers();
+    calculateTotals();
 </script>
 <script>
     $(document).ready(function() {
@@ -450,7 +501,6 @@
             });
             
             if (hasError || hasDuplicate) {
-                e.preventDefault();
                 e.stopPropagation(); 
 
                 Swal.fire({
@@ -463,9 +513,13 @@
                 return false; 
             }
 
+            e.preventDefault();
+
+
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
+                control_number: document.querySelector('input[name="control_number"]').value,
                 requested_by: document.querySelector('select[name="requested_by"]').value || "-",
                 customer: document.querySelector('select[name="customer"]').value || "-",
                 recipient: document.querySelector('input[name="recipient"]').value || "-",
@@ -483,8 +537,9 @@
                 let uom = row.querySelector(".uom").value || "-";
                 let qty = parseFloat(row.querySelector(".qty").value) || 1;
                 let remarks = row.querySelector(".remarks").value || "-";
+                let amount = parseFloat(row.querySelector(".totalPrice").value) || 1;
 
-                items.push({ sku, desc, uom, qty, remarks });
+                items.push({ sku, desc, uom, qty, remarks, amount });
             });
    
             Livewire.dispatch('loadPsrfSummary',{ data, items });

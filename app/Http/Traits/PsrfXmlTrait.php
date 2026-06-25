@@ -116,10 +116,11 @@ trait PsrfXmlTrait
             $uom_convert = Product::where('stock_code', $sku_code)->first();
 
             $ps_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
-                ->get('http://192.168.11.240/refreshable/public/api/productSample/'.$sku_code.'/'.$quantity);
+                ->get(env('API_URL').'productSample/'.$sku_code.'/'.$quantity);
 
             $ps_bevi_collect = $ps_api->json();
 
+            // dd($ps_bevi_collect);
 
             foreach($ps_bevi_collect as $key => $product_sample){
                 $entry_amount = $product_sample['UnitCost'] * $product_sample['Allocated'];

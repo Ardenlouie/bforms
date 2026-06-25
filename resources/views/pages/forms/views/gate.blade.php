@@ -51,7 +51,8 @@
             </div>
             <div class="col-6">
                 <h4>Purpose: <b>{{ ($forms->model->purpose ?? '' )}}</b></h4>
-                <h4>Received By: <b>{{ ($forms->model->received_by ?? '' )}}</b></h4>
+                <h4>Received By: <b>{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</b></h4>
+
             </div>
             <div class="col-6 text-right">
                 <h4>Category: <b>{{ ($forms->model->category ?? '' )}}</b></h4>

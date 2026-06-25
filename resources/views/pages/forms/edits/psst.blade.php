@@ -26,12 +26,21 @@
             <div class="col-lg-4">
                 <div class="form-group">
                     <label class="mb-0">Point of Origin <small class="text-danger font-italic text-bold">(required)</small></label>
-                        <select class="form-control" name="point_origin" form="update_psst" value="{{ $all_form->model->point_origin }}">
+                        <select class="form-control" name="point_origin" id="point_origin" form="update_psst" value="{{ $all_form->model->point_origin }}">
                             <option value="VIR">BEVMI Warehouse (VIR)</option>
                             <option value="CAL">Maersk Calamba Warehouse (CAL)</option>
                             <option value="CAL-SDI">Maersk Calamba Warehouse - SDI (CAL-SDI)</option>
+                            <option value="OTHERS">Others (Please Specify)</option>
                         </select>
                     <small class="text-danger">{{$errors->first('point_origin')}}</small>
+                </div>
+
+                <div class="form-group" id="specify_origin_wrapper" style="display: none;">
+                    <label class="mb-0">Please Specify <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <!-- <input type="text" class="form-control" name="point_origin_specified" id="point_origin_specified" form="add_psst" placeholder="Enter Warehouse (ex. CER, DVO, CEB)"> -->
+                    <select id="warehouse" name="point_origin_specified" class="form-control" style="width: 100%;" form="update_psst"></select>
+                   
+                    <small class="text-danger">{{$errors->first('point_origin_specified')}}</small>
                 </div>
             </div>
         </div>
@@ -370,7 +379,6 @@
             });
             
             if (hasError || hasDuplicate) {
-                e.preventDefault();
                 e.stopPropagation(); 
 
                 Swal.fire({
@@ -382,12 +390,15 @@
 
                 return false; 
             }
+            
+                e.preventDefault();
 
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 control_number: document.querySelector('input[name="control_number"]').value,
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 point_origin: document.querySelector('select[name="point_origin"]').value || "-",
+                others: document.querySelector('select[name="point_origin_specified"]').value,
                 delivery_date: document.querySelector('input[name="delivery_date"]').value || "-",
                 objective: document.querySelector('input[name="objective"]').value || "-",
                 delivery_instructions: document.querySelector('input[name="delivery_instructions"]').value || "-",
@@ -421,5 +432,53 @@
             iframe.src = '';
         }
     });
+</script>
+
+<script>
+$(document).ready(function() {
+    $('#point_origin').on('change', function() {
+        let selectedValue = $(this).val();
+        let wrapper = $('#specify_origin_wrapper');
+        let inputField = $('#point_origin_specified');
+
+        if (selectedValue === 'OTHERS') {
+            wrapper.slideDown(); // Smoothly reveals input
+            inputField.prop('required', true); // Forces validation constraint
+        } else {
+            wrapper.slideUp(); // Hides container
+            inputField.prop('required', false).val(''); // Clears and relaxes constraint
+        }
+    });
+});
+</script>
+
+<script>
+    $(document).ready(function() {
+
+        let company = document.querySelector('select[name="company_id"]').value;
+
+        $('#warehouse').select2({
+            placeholder: "Select Warehouse",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('warehouse.ajax') }}", // Create this route in web.php
+                dataType: 'json',
+                delay: 250, // Wait 250ms before sending request (debounce)
+                data: function (params) {
+                    return {
+                        search: params.term,
+                        company_id: $('select[name="company_id"]').val()
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        });
+});
 </script>
 @endpush

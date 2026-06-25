@@ -104,17 +104,19 @@ class MyFormController extends Controller
     public function show($id) {
         $forms = AllForm::findOrFail(decrypt($id));
         $user = Auth::user();
-        $po_number = 'RS 32305611';
+        $po_number = $forms->model->control_number;
         $company = $forms->model->company->name;
         $sct_number = null;
 
-        if($forms->form->prefix == 'psst'){
+        if($forms->form->prefix == 'psst' && $forms->status == 'approved'){
             $sct_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
-                ->get('http://192.168.11.240/refreshable/public/api/sor_master/'.$po_number.'/'.$company);
-
+                ->get(env('API_URL').'sor_master/'.$po_number.'/'.$company);
+                
             $sct = $sct_api->json();
 
-            $sct_number = $sct['SalesOrder'];
+            if(!empty($sct)){
+                $sct_number = $sct['SalesOrder'];
+            }
         }
 
         $folderPath = 'uploads/gate-pass-images/to-release/' . $forms->model->id;
@@ -197,6 +199,7 @@ class MyFormController extends Controller
             'objective' => $request->objective,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
+            'total_amount' => $psrf_item['total_amount'],
         ]);
 
         DB::table('psrf_form_items')->where('psrf_form_id', $all_forms->model->id)->delete();
@@ -210,6 +213,7 @@ class MyFormController extends Controller
                     'uom' =>  $items['uom'],
                     'quantity' =>  $items['qty'],
                     'remarks' =>  $items['remarks'],
+                    'amount' =>  $items['amount'],
                 ]);
                 $psrf_items->save();
             }
@@ -274,9 +278,15 @@ class MyFormController extends Controller
         
         $psst_item = Session::get('psst_item');
 
+        if(!empty($psst_item['others'])){
+            $point_origin = $psst_item['others'];
+        } else {
+            $point_origin = $request->point_origin;
+        }
+
         $all_forms->model->update([
             'company_id' => $request->company_id,
-            'point_origin' => $request->point_origin,
+            'point_origin' => $point_origin,
             'objective' => $request->objective,
             'delivery_instructions' => $request->delivery_instructions,
             'delivery_date' => $request->delivery_date,
@@ -358,6 +368,12 @@ class MyFormController extends Controller
 
         $gate_item = Session::get('gate_item');
 
+        if(!empty($gate_item['others'])){
+            $category = $gate_item['others'];
+        } else {
+            $category = $request->category;
+        }
+
         $all_forms->model->update([
             'form_id' => $all_forms->form->id,
             'company_id' => $request->company_id,
@@ -366,7 +382,7 @@ class MyFormController extends Controller
             'receivers' => $request->received_by,
             'note' => $request->note,
             'numberof' => $request->numberof,
-            'category' => $request->category,
+            'category' => $category,
         ]);
 
         DB::table('gate_pass_items')->where('gate_pass_id', $all_forms->model->id)->delete();

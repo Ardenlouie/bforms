@@ -129,7 +129,7 @@
         <div class="row invoice-info mb-3 text-lg">
             <div class="col-6 invoice-col">
                 <b>Purpose: </b><br>{{$all_form->model->purpose}}<br>
-                <b>Received By: </b><br>{{$all_form->model->received_by}}<br>
+                <b>Received By: </b><br>{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}<br>
             </div>
             <div class="col-6 invoice-col">
                 <b>Category: </b><br>{{$all_form->model->category}}<br>
@@ -337,7 +337,6 @@ $(function() {
         // }
 
         // if (hasError) {
-        //     e.preventDefault();
         //     Swal.fire({
         //         icon: 'error',
         //         title: 'Validation Error',
@@ -345,6 +344,9 @@ $(function() {
         //     });
         //     return false;
         // }
+
+        e.preventDefault();
+
         takePhoto();
 
     });

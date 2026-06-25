@@ -167,7 +167,7 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
+
     });
 
     document.addEventListener("click", function (e) {
@@ -175,7 +175,7 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
+
 
         }
     });
@@ -188,31 +188,6 @@
   
     });
 
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            cost_center: document.querySelector('select[name="cost_center"]').value || "-",
-            name: document.querySelector('input[name="name"]').value || "-",
-            purpose: document.querySelector('input[name="purpose"]').value || "-",
-            rca_date: document.querySelector('input[name="rca_date"]').value || "-",
-            travel: document.querySelector('input[name="travel"]').value || "-",
-            itenerary: document.querySelector('input[name="itenerary"]').value || "-",
-            location: document.querySelector('input[name="location"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-            let days = parseFloat(row.querySelector(".days").value) || 0;
-            let remarks = row.querySelector(".remarks").value || "-";
-
-            items.push({ desc, amount, days, remarks });
-        });
-
-        Livewire.dispatch('loadRcaSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {

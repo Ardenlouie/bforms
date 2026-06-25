@@ -73,6 +73,7 @@
                         <th>Item Description</th>
                         <th>UOM</th>
                         <th>QTY</th>
+                        <th>Amount</th>
                         <th>Remarks</th>
                     </tr>
                 </thead>
@@ -89,10 +90,22 @@
                             <td class="align-middle">{{ $item['item_description'] }}</td>
                             <td class="align-middle">{{ $item['uom'] }}</td>
                             <td class="align-middle">{{ $item['quantity'] }}</td>
+                            <td class="align-middle">{{ $item['amount'] }}</td>
                             <td class="align-middle">{{ $item['remarks'] }}</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th colspan="1" class="text-end">TOTAL AMOUNT:</th>
+                        <th><h3>₱{{ number_format($forms->model->total_amount, 2) }}</h3></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
 
             </table>
         </div>

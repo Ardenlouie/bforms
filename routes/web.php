@@ -61,6 +61,7 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('/sample-product-ajax', [FormController::class, 'sample_product_api'])->name('sample_product.ajax');
         Route::get('/employee-cost-ajax', [FormController::class, 'employee_cost_center_api'])->name('employee_cost.ajax');
         Route::get('/customer-cost-ajax', [FormController::class, 'customer_cost_center_api'])->name('customer_cost.ajax');
+        Route::get('/warehouse-ajax', [FormController::class, 'warehouse_api'])->name('warehouse.ajax');
         Route::get('/psst-xml/{id}', [FormController::class, 'psstXml'])->name('psst.xml');
         Route::get('/psrf-xml/{id}', [FormController::class, 'psrfXml'])->name('psrf.xml');
 

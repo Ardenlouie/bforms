@@ -63,7 +63,15 @@ new class extends Component
             
             $imageName = $receiver.'-capture_' . time() . '.png';
             
-            Storage::disk('uploads')->put('gate-pass-images/to-release/' .$this->forms->model->id. '/' . $imageName, base64_decode($image));
+            $directory = public_path('uploads/gate-pass-images/to-release/' . $this->forms->model->id);
+
+            // Ensure the nested directories exist before saving
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            // Save the file straight into your web-root public folder
+            file_put_contents($directory . '/' . $imageName, base64_decode($image));
         
         }
 

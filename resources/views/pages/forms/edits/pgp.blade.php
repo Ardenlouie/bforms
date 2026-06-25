@@ -86,8 +86,13 @@
                 <div class="form-group">
                     <label>Received By <small class="text-danger font-italic text-bold">(required)</small></label>
                     <div id="receivers-container">
-                        <input type="text" class="form-control mb-2" name="received_by[]" form="update_gate" required placeholder="Receiver 1 Name"> 
-
+                    <input type="text" 
+                        class="form-control mb-2" 
+                        name="received_by[]" 
+                        form="update_gate" 
+                        required placeholder="Receiver 1 Name"
+                        value="{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}">
+                       
                     </div>
                 </div>
             </div>
@@ -236,7 +241,6 @@
             });
             
             if (hasError) {
-                e.preventDefault();
                 e.stopPropagation(); 
 
                 Swal.fire({
@@ -249,6 +253,8 @@
                 return false; 
             }
 
+                e.preventDefault();
+
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 control_number: document.querySelector('input[name="control_number"]').value,
@@ -256,6 +262,7 @@
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 numberof: document.querySelector('input[name="numberof"]').value || "-",
                 category: document.querySelector('input[name="category"]').value || "-",
+                others: "",
                 note: document.querySelector('input[name="note"]').value || "-",
                 received_by: Array.from(document.querySelectorAll('input[name="received_by[]"]'))
                   .map(input => input.value.trim() || "-")

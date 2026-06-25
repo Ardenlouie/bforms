@@ -208,10 +208,10 @@
                         This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
                     </small>
                     <div class="mb-3">
-                        {!! DNS2D::getBarcodeSVG(route('security', encrypt($forms->id)), 'QRCODE') !!}
+                        <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
                     </div>
 
-                    <a href="data:image/png+xml;base64,{{ base64_encode(DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10)) }}" 
+                    <a href="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE', 10, 10) }}" 
                         download="QR_Code_{{ $forms->model->control_number }}.png" 
                         class="btn bg-green">
                             <i class="fas fa-download"></i> Download QR Code
