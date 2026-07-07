@@ -8,7 +8,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Http\Traits\SettingTrait;
 
-class XmlFormNotification extends Notification
+
+class ReceivedFormNotification extends Notification
 {
     use Queueable;
     use SettingTrait;
@@ -42,13 +43,13 @@ class XmlFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM APPROVED - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
+        $subject = "B-FORM RECEIVED - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
 
         // $prefix = strtolower($this->all_forms->form->prefix);
 
         $introLines = [
-            "A ".$this->all_forms->form->name." with number \"<strong>{$this->all_forms->model->control_number}</strong>\" has been APPROVED! and Available for DFM Extraction"
+            "The ".$this->all_forms->form->name." with number \"<strong>{$this->all_forms->model->control_number}</strong>\" has been RECEIVED by Receiver!"
         ];
         $outroLines = [
             "You can view or print your B-FORM at your earliest convenience by clicking the button above."
@@ -61,7 +62,7 @@ class XmlFormNotification extends Notification
                 'class' => 'button'
             ],
             [
-                'url' => url('printPDF/' . encrypt($this->all_forms->id)),
+                'url' => url('aknoPDF/' . encrypt($this->all_forms->id)),
                 'label' => 'Print PDF',
                 'class' => 'button'
             ]
@@ -87,8 +88,8 @@ class XmlFormNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'B-FORM APPROVED',
-            'message' => 'A '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been approved! and Available for DFM Extraction',
+            'title' => 'B-FORM RECEIVED',
+            'message' => 'The '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been received by receiver!',
             'action_url' => url('/myform/show/' . encrypt($this->all_forms->id)),
         ];
     }

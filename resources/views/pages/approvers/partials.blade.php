@@ -7,7 +7,7 @@
             <th>Date Submitted</th>
             <th>Status</th>
             <th>Next Approver</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -54,7 +54,9 @@
                     @elseif($approval->status == 'processing')
                         <span class="badge bg-navy"><b>For Processing</b></span>
                     @elseif($approval->status == 'checked')
-                        <span class="badge bg-purple"><b>Received & Checked</b></span>
+                        <span class="badge bg-purple"><b>Checked</b></span>
+                    @elseif($approval->status == 'received')
+                        <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
                     @elseif($approval->status == 'partially_released')
@@ -92,7 +94,9 @@
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($approval->status == 'checked')
-                        <span class="badge badge-success">Completed</span>
+                        <span class="badge bg-purple"><b>Checked</b></span>
+                    @elseif($approval->status == 'received')
+                        <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @else
@@ -102,31 +106,31 @@
                 </td>
                 <td class="align-middle text-right">
                     @if(in_array($user_id, $approval->endorser ?? []) && $approval->status == 'endorsement')
-                        <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
-                            <i class="fa fa-pen-alt text-purple"></i>
+                        <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Sign
                         </a>
                     @elseif(in_array($user_id, $approval->approver ?? []) && $approval->status == 'approval')
-                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
-                            <i class="fa fa-pen-alt text-purple"></i>
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Sign
                         </a>
                     @elseif($approval->admin_id == $user_id && $approval->status == 'confirmation')
-                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn">
-                            <i class="fa fa-pen-alt text-purple"></i>
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Sign
                         </a>
                     @else
-
                     @endif
 
-                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked')
-                        <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="show" class="btn">
-                            <i class="fa fa-file-contract text-orange"></i>
+                    <a href="#" title="view" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn btn-view btn-dark btn-xs mb-0 ml-0">
+                        <i class="fa fa-eye"></i> View
+                    </a>
+                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked' || $approval->status == 'received')
+                        <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
+                            <i class="fa fa-file-contract"></i> Show
                         </a>
                     @endif
-                    <a href="#" title="view" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn-view btn ">
-                        <i class="fa fa-eye text-dark"></i>
-                    </a>
-                    <a href="#" title="signatures" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn-signatures btn ">
-                        <i class="fa fa-file-signature text-success"></i>
+                    
+                    <a href="#" title="signatures" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn btn-signatures btn-success btn-xs mb-0 ml-0">
+                        <i class="fa fa-file-signature"></i> Approvers
                     </a>
                 </td>
             </tr>

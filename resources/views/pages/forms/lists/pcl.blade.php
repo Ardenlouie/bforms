@@ -9,7 +9,7 @@
             <th>Date Submitted</th>
             <th>Status</th>
             <th>Next Approver</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -112,20 +112,20 @@
                 </td>
                 <td class="align-middle text-right">
                     @if($my_form->status == 'draft' || $my_form->status == 'declined')
-                        <a href="{{ route('myforms.edit', encrypt($my_form->id)) }}" title="edit" class="btn-edit btn ">
-                            <i class="fa fa-edit text-warning"></i>
+                        <a href="{{ route('myforms.edit', encrypt($my_form->id)) }}" title="edit" class="btn-edit btn bg-warning btn-xs mb-0 ml-0 ">
+                            <i class="fa fa-edit"></i> Edit
                         </a>
                     @endif
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked')
-                        <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn">
-                            <i class="fa fa-file-contract text-orange"></i>
-                        </a>
-                    @endif
-                    <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn ">
-                        <i class="fa fa-eye text-dark"></i>
+                    <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
+                        <i class="fa fa-eye"></i> View
                     </a>
-                    <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn ">
-                        <i class="fa fa-file-signature text-success"></i>
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received')
+                        <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
+                            <i class="fa fa-file-contract"></i> Show
+                        </a>
+                    @endif
+                    <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
+                        <i class="fa fa-file-signature"></i> Approvers
                     </a>
                 </td>
             </tr>

@@ -103,7 +103,7 @@ new class extends Component
                         <b>
                             {{ ($data['point_origin'] ?? '' )}}
 
-                            @if(!empty($data['others']))
+                            @if(!empty($data['others']) && $data['point_origin'] == 'OTHERS')
                              - {{ ($data['others'] ?? '' )}}
                             @endif
                         </b>

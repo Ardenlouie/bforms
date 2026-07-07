@@ -23,17 +23,18 @@
 
                     <h3 class="profile-username text-center">{{$user->name}}</h3>
 
-                    <p class="text-muted text-center">{{implode(', ', $user->getRoleNames()->toArray()) ?? '-'}}</p>
+                    <p class="text-muted text-center">{{ $user->position->position ?? '' }}</p>
+                    <p class="text-muted text-center text-uppercase">({{implode(', ', $user->getRoleNames()->toArray()) ?? '-'}})</p>
 
                     <ul class="list-group list-group-unbordered mb-3">
                         <li class="list-group-item">
-                            <b>{{ __('adminlte::profile.followers') }}</b> <a class="float-right">1,322</a>
+                            <b>Forms Created</b> <a class="float-right">{{ $creates }}</a>
                         </li>
                         <li class="list-group-item">
-                            <b>{{ __('adminlte::profile.following') }}</b> <a class="float-right">543</a>
+                            <b>Forms Endorsed</b> <a class="float-right">{{ $endorses }}</a>
                         </li>
                         <li class="list-group-item">
-                            <b>{{ __('adminlte::profile.friends') }}</b> <a class="float-right">13,287</a>
+                            <b>Forms Approved</b> <a class="float-right">{{ $approves }}</a>
                         </li>
                     </ul>
                 </div>

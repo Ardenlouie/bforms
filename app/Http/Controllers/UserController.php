@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\AllForm;
 use App\Models\Company;
 use App\Models\Position;
 use App\Models\Role;
@@ -92,6 +93,7 @@ class UserController extends Controller
         $user = new User([
             'company_id' => decrypt($request->company_id),
             'department_id' => decrypt($request->department_id),
+            'position_id' => decrypt($request->position_id),
             'name' => $request->name,
             'email' => $request->email,
             'password' => $password,
@@ -215,6 +217,7 @@ class UserController extends Controller
         $user->update([
             'company_id' => decrypt($request->company_id),
             'department_id' => decrypt($request->department_id),
+            'position_id' => decrypt($request->position_id),
             'name' => $request->name,
             'email' => $request->email,
             'cost_center' => $request->cost_center,
@@ -240,9 +243,15 @@ class UserController extends Controller
 
     public function profile($id) {
         $user = User::findOrFail(decrypt($id));
+        $creates = AllForm::where('user_id', $user->id)->count();
+        $endorses = AllForm::where('noted_id', $user->id)->count();
+        $approves = AllForm::where('signed_id', $user->id)->count();
 
         return view('profile')->with([
-            'user' => $user
+            'user' => $user,
+            'creates' => $creates,
+            'endorses' => $endorses,
+            'approves' => $approves,
         ]);
     }
 

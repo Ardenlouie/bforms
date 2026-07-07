@@ -14,12 +14,14 @@ use App\Models\User;
 
 use App\Http\Requests\AllFormUpdateRequest;
 use App\Http\Requests\AllFormCheckRequest;
+use App\Http\Requests\AllFormReceiveRequest;
 
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
 use App\Notifications\DeclineFormNotification;
 use App\Notifications\XmlFormNotification;
 use App\Notifications\CheckedFormNotification;
+use App\Notifications\ReceivedFormNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -228,33 +230,44 @@ class ApproverController extends Controller
         }
     }
 
-    public function check($id, AllFormCheckRequest $request) 
+    public function receive($id, AllFormReceiveRequest $request) 
     {
         $all_forms = AllForm::findOrFail(decrypt($id)); 
-
-        $all_forms->update([
-            'status' => $request->status,
-        ]);
-
         $control_number = $all_forms->model->control_number;
         $form_name = $all_forms->form->name;
 
-        if($all_forms->form_id == 9){
-            $gate = GatePass::where('id', $all_forms->model_id)->first();
-            $all_forms = AllForm::where('model_id', $gate->psrf_form_id)
-            ->where('model_type', 'App\Models\ProductSample')->first(); 
+        if (!empty($request->signature)) {
+            $image = $request->signature;
             
-            $all_forms->update([
-                'status' => 'checked',
-            ]);
+            $image = str_replace('data:image/png;base64,', '', $image);
+            $image = str_replace(' ', '+', $image);
+            
+            $imageName = $all_forms->model->control_number.'-receiver-signature.png';
+            
+            $directory = public_path('uploads/gate-pass-images/receiver-signature/' . $all_forms->form->form_id);
+
+            if (!file_exists($directory)) {
+                mkdir($directory, 0755, true);
+            }
+
+            file_put_contents($directory . '/' . $imageName, base64_decode($image));
+        
         }
 
-        activity('checked')
-            ->performedOn($all_forms)
-            ->log('Security has check '.$form_name.' ['.$control_number.']');
+        $all_forms->update([
+            'status' => $request->status,
+            'date_received' => date('Y-m-d'),
+        ]);
+   
+        $all_forms->user->notify(new ReceivedFormNotification($all_forms));
 
-        return redirect()->route('home')->with([
-            'message_success' => $form_name.' ['.$control_number.'] was checked'
+        activity('received')
+            ->performedOn($all_forms)
+            ->log('Receiver has receive items on Gate Pass ['.$control_number.']');
+
+        return redirect()->route('receive', encrypt($all_forms->id))->with([
+            'message_success' => 'Items on ['.$control_number.'] was received!'
         ]);
     }
+
 }

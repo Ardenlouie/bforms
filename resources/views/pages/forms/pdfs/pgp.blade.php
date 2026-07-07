@@ -240,12 +240,22 @@
         <tr>
             <td class="label">Purpose:</td>
             <td>{{ $forms->model->purpose }}</td>
-            <td class="label">Date Submitted:</td>
-            <td>{{ $forms->model->date_submitted }}</td>
+            @if(!empty($forms->model->psrf_form_id))
+            <td class="label">PSRF Ref No.:</td>
+            <td>{{ ($forms->model->psrf_form->control_number ?? '' )}}</td>
+            @endif
+        </tr>
+        <tr>
+            <td class="label">Category:</td>
+            <td>{{ $forms->model->category }}</td>
+            <td class="label">Note:</td>
+            <td>{{ $forms->model->note }}</td>
         </tr>
         <tr>
             <td class="label">Received By:</td>
-            <td>{{ $forms->model->received_by }}</td>
+            <td>{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</td>
+            <td class="label">Date Submitted:</td>
+            <td>{{ $forms->model->date_submitted }}</td>
         </tr>
 
     </table>
@@ -263,7 +273,7 @@
         <tbody>
             @foreach($forms->model->gate_pass_item()->get() as $index => $item)
             @php
-                list($sku, $desc, $size) = explode(' - ', $item['item_description']);
+                list($sku, $desc) = explode(' - ', $item['item_description']);
             @endphp
             <tr>
                 <td>{{ $index + 1 }}</td>
@@ -292,9 +302,9 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+            <img src="{{ public_path($forms->noted->signature ?? $forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->date_endorsed }}</div>
-            <div class="sig-name">{{ $forms->endorsed->name }}</div>
+            <div class="sig-name">{{$forms->noted->name ?? $forms->endorsed->name }}</div>
             <div class="sig-line">Endorsed By</div>
             @endif
         </div>

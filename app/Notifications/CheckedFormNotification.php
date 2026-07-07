@@ -41,7 +41,7 @@ class CheckedFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM CHECKED AND RELEASED [".$this->all_forms->model->control_number.']';
+        $subject = "B-FORM CHECKED - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
 
         // $prefix = strtolower($this->all_forms->form->prefix);
@@ -86,8 +86,8 @@ class CheckedFormNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'B-FORM CHECKED AND RELEASED',
-            'message' => 'The '.$this->all_forms->form->name.' has been checked and released by security!',
+            'title' => 'B-FORM CHECKED',
+            'message' => 'The '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been checked and released by security!',
             'action_url' => url('/myform/show/' . encrypt($this->all_forms->id)),
         ];
     }

@@ -43,7 +43,7 @@ class SubmitFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM SUBMISSION [".$this->all_forms->model->control_number.']';
+        $subject = "B-FORM SUBMISSION - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
         $introLines = [
             "A new ".$this->all_forms->form->name." with number \"<strong>{$this->all_forms->model->control_number}</strong>\" has been submitted and requires your signature."
@@ -72,7 +72,7 @@ class SubmitFormNotification extends Notification
     {
         return [
             'title' => 'B-FORM SUBMITTED',
-            'message' => 'A new '.$this->all_forms->form->name.' has been submitted and requires your signature.',
+            'message' => 'A new '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been submitted and requires your signature.',
             'action_url' => url('/approver/show/' . encrypt($this->all_forms->id)),
         ];
     }

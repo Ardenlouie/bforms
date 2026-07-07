@@ -240,24 +240,27 @@
         <tr>
             <td class="label">Recipient:</td>
             <td>{{ $forms->model->recipient }}</td>
-            <td class="label">Date Submitted:</td>
-            <td>{{ $forms->model->date_submitted }}</td>
-        </tr>
-        <tr>
-            <td class="label">Activity Name:</td>
-            <td>{{ $forms->model->recipient }}</td>
+            <td class="label">Requested By:</td>
+            <td>{{ $forms->model->requested_by }}</td>
+            
         </tr>
         <tr>
             <td class="label">Program Date:</td>
             <td>{{ $forms->model->program_date }}</td>
+            <td class="label">Customer:</td>
+            <td>{{ $forms->model->customer }}</td>
         <tr>
         <tr>
             <td class="label">Objective:</td>
             <td>{{ $forms->model->objective }}</td>
-        <tr>
+            <td class="label">Activity Name:</td>
+            <td>{{ $forms->model->activity_name }}</td>
+        </tr>
         <tr>
             <td class="label">Special Instructions:</td>
             <td>{{ $forms->model->special_instructions }}</td>
+            <td class="label">Date Submitted:</td>
+            <td>{{ $forms->model->date_submitted }}</td>
         <tr>
     </table>
 
@@ -390,9 +393,9 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+            <img src="{{ public_path($forms->noted->signature ?? $forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->date_endorsed }}</div>
-            <div class="sig-name">{{ $forms->endorsed->name }}</div>
+            <div class="sig-name">{{$forms->noted->name ?? $forms->endorsed->name }}</div>
             <div class="sig-line">Endorsed By</div>
             @endif
         </div>
