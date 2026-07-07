@@ -29,7 +29,7 @@
     <div class="{{ $auth_type ?? 'login' }}-box">
 
         {{-- Logo --}}
-        <div class="{{ $auth_type ?? 'login' }}-logo">
+        <div class="{{ $auth_type ?? 'login' }}-logo" hidden>
             <a href="{{ $dashboard_url }}">
 
                 {{-- Logo Image --}}
@@ -57,7 +57,7 @@
         </div>
 
         {{-- Card Box --}}
-        <div class="card {{ config('adminlte.classes_auth_card', 'card-outline card-primary') }}">
+        <!-- <div class="card {{ config('adminlte.classes_auth_card', 'card-outline card-primary') }}">
 
             {{-- Card Header --}}
             @hasSection('auth_header')
@@ -80,7 +80,7 @@
                 </div>
             @endif
 
-        </div>
+        </div> -->
 
     </div>
 @stop
@@ -88,4 +88,22 @@
 @section('adminlte_js')
     @stack('js')
     @yield('js')
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const accessKeyField = document.getElementById("access_key_field");
+            const maskToggle = document.getElementById("mask_toggle");
+
+            // Event listener to toggle between text fields and hidden password inputs
+            maskToggle.addEventListener("click", function() {
+                if (accessKeyField.type === "password") {
+                    accessKeyField.type = "text";
+                    maskToggle.classList.replace("fa-eye", "fa-eye-slash");
+                } else {
+                    accessKeyField.type = "password";
+                    maskToggle.classList.replace("fa-eye-slash", "fa-eye");
+                }
+            });
+        });
+    </script>
 @stop

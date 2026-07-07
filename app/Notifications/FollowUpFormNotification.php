@@ -42,7 +42,7 @@ class FollowUpFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM FOLLOW-UP [".$this->all_forms->model->control_number.']';
+        $subject = "B-FORM FOLLOW-UP - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
 
         $introLines = [
@@ -71,7 +71,7 @@ class FollowUpFormNotification extends Notification
     {
         return [
             'title' => 'B-FORM FOLLOW-UP',
-            'message' => 'Pending '.$this->all_forms->form->name.' that requires your signature.',
+            'message' => 'Pending '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] that requires your signature.',
             'action_url' => url('/approver/show/' . encrypt($this->all_forms->id)),
         ];
     }

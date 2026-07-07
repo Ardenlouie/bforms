@@ -40,6 +40,7 @@ class AllForm extends Model
         'date_endorsed',
         'date_approved',
         'date_checked',
+        'date_received',
         'status',
         'remarks',
     ];

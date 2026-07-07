@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>{{ $forms->form->name }}</title>
+<title>AKNOWLEDGEMENT RECEIPT</title>
     <link rel="shortcut icon" href="{{ public_path('/images/logonobg.png')}}" />
 
 <style>
@@ -232,48 +232,43 @@
         </tr>
     </table>
     <div class="header">
-        <h1>{{ $forms->form->name }}</h1>
+        <h1>AKNOWLEDGEMENT RECEIPT</h1>
     </div>
 
     <!-- Info Section -->
     <table class="info-table">
         <tr>
-            <td class="label">Objective:</td>
-            <td>{{ $forms->model->objective }}</td>
-            <td class="label">Point of Origin:</td>
-            <td>{{ $forms->model->point_origin }}</td>
+            <td class="label">Purpose:</td>
+            <td>{{ $forms->model->purpose }}</td>
+            @if(!empty($forms->model->psrf_form_id))
+            <td class="label">PSRF Ref No.:</td>
+            <td>{{ ($forms->model->psrf_form->control_number ?? '' )}}</td>
+            @endif
+        </tr>
         <tr>
-        <tr>
-            <td class="label">Delivery Instructions:</td>
-            <td>{{ $forms->model->delivery_instructions }}</td>
-            <td class="label">Date Submitted:</td>
-            <td>{{ $forms->model->date_submitted }}</td>
-        <tr>
-        <tr>
-            <td class="label">Delivery Date:</td>
-            <td>{{ $forms->model->delivery_date }}</td>
-        <tr>
-        
-        
-        
+            <td class="label">Category:</td>
+            <td>{{ $forms->model->category }}</td>
+            <td class="label">Note:</td>
+            <td>{{ $forms->model->note }}</td>
+        </tr>
+
     </table>
 
     <table class="data">
         <thead>
             <tr>
                 <th>No.</th>
-                <th style="width: 70px;">Item Code</th>
-                <th >Item Description</th>
+                <th >Release Item</th>
                 <th>UOM</th>
                 <th>QTY</th>
                 <th style="width: 50px;">Remarks</th>
             </tr>
         </thead>
+        @if($forms->form->prefix == 'gate')
         <tbody>
-            @foreach($forms->model->psst_form_item()->get() as $index => $item)
+            @foreach($forms->model->gate_pass_item()->get() as $index => $item)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $item['item_code'] ?? '' }}</td>
                 <td>{{ $item['item_description'] ?? '' }}</td>
                 <td>{{ $item['uom'] ?? '' }}</td>
                 <td>{{ number_format($item['quantity'] ?? 0, 0) }}</td>
@@ -281,6 +276,25 @@
             </tr>
             @endforeach
         </tbody>
+        @elseif($forms->form->prefix == 'pgp')
+        <tbody>
+            @foreach($forms->model->gate_pass_item()->get() as $index => $item)
+            @php
+                list($sku, $desc) = explode(' - ', $item['item_description']);
+            @endphp
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>
+                    <img class="product-img" src="{{ public_path('/images/AllProducts/'.$sku.'.png') }}" alt="SKU IMAGE" height="80" width="80"><br>
+                    {{ $item['item_description'] ?? '' }}
+                </td>
+                <td>{{ $item['uom'] ?? '' }}</td>
+                <td>{{ number_format($item['quantity'] ?? 0, 0) }}</td>
+                <td>{{ $item['remarks'] ?? '' }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+        @endif
     </table>
     <p></p>
 
@@ -291,25 +305,14 @@
             <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->model->date_submitted }}</div>
             <div class="sig-name">{{ $forms->user->name }}</div>
-            <div class="sig-line">Prepared By</div>
+            <div class="sig-line">Released By</div>
         </div>
 
         <div class="sig-column">
-            @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->noted->signature ?? $forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
-            <div >{{ $forms->date_endorsed }}</div>
-            <div class="sig-name">{{$forms->noted->name ?? $forms->endorsed->name }}</div>
-            <div class="sig-line">Endorsed By</div>
-            @endif
-        </div>
-
-        <div class="sig-column">
-            @if( !empty($forms->date_approved) && $forms != 'declined' )
-            <img src="{{ public_path($forms->signed->signature ?? $forms->approved->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
-            <div >{{ $forms->date_approved }}</div>
-            <div class="sig-name">{{ ($forms->signed->name ?? $forms->approved->name )}}</div>
-            <div class="sig-line">Approved By</div>
-            @endif
+            <img src="{{ public_path('uploads/gate-pass-images/receiver-signature/'.$forms->model->control_number.'-receiver-signature.png') }}" alt="sign photo" class="sign-img" height="75" width="150">
+            <div >{{ $forms->date_received }}</div>
+            <div class="sig-name">{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</div>
+            <div class="sig-line">Received By</div>
         </div>
     </div>
 

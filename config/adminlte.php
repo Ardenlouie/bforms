@@ -410,7 +410,7 @@ return [
             'text'  => 'settings',
             'url'   => '#',
             'icon'  => 'fa fa-fw fa-cog',
-            'can'   => ['user access', 'role access', 'company access', 'position access', 'system logs', 'system settings'],
+            'can'   => ['superadmin access'],
             'submenu' => [
                 // [
                 //     'text'      => 'org_structures',
@@ -419,67 +419,67 @@ return [
                 //     'can'       => 'org structure access',
                 //     'active'    => ['org-structures', 'org-structure*']
                 // ],
-                // [
-                //     'text'      => 'positions',
-                //     'url'       => 'positions',
-                //     'icon'      => 'fas fa-fw fa-user-tag',
-                //     'can'       => 'position access',
-                //     'active'    => ['positions', 'position*']
-                // ],
                 [
                     'text'      => 'Forms',
                     'url'       => 'forms',
                     'icon'      => 'fas fa-fw fa-file',
-                    'can'       => 'company access',
+                    'can'       => 'superadmin access',
                     'active'    => ['forms']
                 ],
                 [
                     'text'      => 'companies',
                     'url'       => 'companies',
                     'icon'      => 'fas fa-fw fa-building',
-                    'can'       => 'company access',
+                    'can'       => 'superadmin access',
                     'active'    => ['companies', 'company*']
                 ],
                 [
                     'text'      => 'Departments',
                     'url'       => 'departments',
                     'icon'      => 'fas fa-fw fa-layer-group',
-                    'can'       => 'company access',
+                    'can'       => 'superadmin access',
                     'active'    => ['departments', 'department*']
+                ],
+                [
+                    'text'      => 'positions',
+                    'url'       => 'positions',
+                    'icon'      => 'fas fa-fw fa-user-tag',
+                    'can'       => 'superadmin access',
+                    'active'    => ['positions', 'position*']
                 ],
                 [
                     'text'      => 'users',
                     'url'       => 'users',
                     'icon'      => 'fas fa-fw fa-users',
-                    'can'       => 'user access',
+                    'can'       => 'superadmin access',
                     'active'    => ['users', 'user*']
                 ],
                 [
                     'text'      => 'roles',
                     'url'       => 'roles',
                     'icon'      => 'fas fa-fw fa-user-lock',
-                    'can'       => 'role access',
+                    'can'       => 'superadmin access',
                     'active'    => ['roles', 'role*']
                 ],
                 [
                     'text'      => 'system_settings',
                     'url'       => 'system-setting',
                     'icon'      => 'fas fa-fw fa-cogs',
-                    'can'       => 'system settings',
+                    'can'       => 'superadmin access',
                     'active'    => ['system-setting']
                 ],
                 [
                     'text'      => 'system_logs',
                     'url'       => 'system-logs',
                     'icon'      => 'fas fa-fw fa-stream',
-                    'can'       => 'system logs',
+                    'can'       => 'superadmin access',
                     'active'    => ['system-logs']
                 ],
                 [
                     'text'      => 'error_logs',
                     'url'       => 'error-logs',
                     'icon'      => 'fas fa-fw fa-bug',
-                    'can'       => 'system logs',
+                    'can'       => 'superadmin access',
                     'active'    => ['error-logs']
                 ],
             ],

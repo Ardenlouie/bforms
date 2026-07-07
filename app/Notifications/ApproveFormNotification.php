@@ -42,7 +42,7 @@ class ApproveFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM APPROVED [".$this->all_forms->model->control_number.']';
+        $subject = "B-FORM APPROVED - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
 
         // $prefix = strtolower($this->all_forms->form->prefix);
@@ -88,7 +88,7 @@ class ApproveFormNotification extends Notification
     {
         return [
             'title' => 'B-FORM APPROVED',
-            'message' => 'Your '.$this->all_forms->form->name.' has been approved!',
+            'message' => 'Your '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been approved!',
             'action_url' => url('/myform/show/' . encrypt($this->all_forms->id)),
         ];
     }

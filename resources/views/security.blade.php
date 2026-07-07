@@ -27,7 +27,9 @@
             @elseif($all_form->status == 'approved')
                 <span class="badge badge-success"><b>Approved</b></span>
             @elseif($all_form->status == 'checked')
-                <span class="badge bg-purple"><b>Received & Checked</b></span>
+                <span class="badge bg-purple"><b>Checked</b></span>
+            @elseif($all_form->status == 'received')
+                <span class="badge bg-lime"><b>Received</b></span>
             @elseif($all_form->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($all_form->status == 'partially_released')
@@ -230,9 +232,9 @@
         @endif
     </div>
     <div class="card-footer text-center">
-        @if($all_form->status == 'approved')
+        @if($all_form->status == 'approved' || $all_form->status == 'checked' || $all_form->status == 'received')
         <div class="row mb-3">
-            <div class="col-4">
+            <div class="col-6">
                 <img src="{{ asset($all_form->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
@@ -244,7 +246,7 @@
             </div>
             @if( !empty($all_form->date_endorsed) )
 
-            <div class="col-4">
+            <div class="col-6">
                 <img src="{{ asset($all_form->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
@@ -256,7 +258,7 @@
             </div>
             @endif
             
-            <div class="col-4">
+            <div class="col-6">
                 <img src="{{ asset($all_form->signed->signature ?? $all_form->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
@@ -269,22 +271,17 @@
         </div>
         @endif
         
-        @if($all_form->status == 'checked')
+        @if($all_form->status == 'checked' || $all_form->status == 'received')
         <div class="form-group float-right">
             <label class="form-text text-muted mb-3">
                 This Form is already checked by Security.
             </label>
         </div>
         @else
-        <form action="{{ route('form.check',encrypt($all_form->id)) }}" method="POST" id="check">
-        @csrf 
-            <input type="hidden" id="status" name="status" form="check" value="approved">
-
-            <div class="col-12">
-                <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
-                    <i class="fas fa-clipboard-check"></i> CHECK</a>
-            </div>
-        </form>
+        <div class="col-12">
+            <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
+                <i class="fas fa-clipboard-check"></i> CHECK</a>
+        </div>
         @endif
 
         <div class="modal fade" id="modal-checked">

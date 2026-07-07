@@ -14,7 +14,9 @@
             @elseif($forms->status == 'approved')
                 <span class="badge badge-success"><b>Approved</b></span>
             @elseif($forms->status == 'checked')
-                <span class="badge bg-purple"><b>Received & Checked</b></span>
+                <span class="badge bg-purple"><b>Checked</b></span>
+            @elseif($forms->status == 'received')
+                <span class="badge bg-lime"><b>Received</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'partially_released')
@@ -135,13 +137,17 @@
             @endif
         @endif
         <div class="row">
-            <div class="col-6">
+            <div class="col-8">
                 <a type="button" href="{{route( 'printPDF', encrypt($forms->id) )}}" target="_blank" class="btn bg-gradient-navy" style="margin-right: 5px;">
-                    <i class="fas fa-download"></i> Generate PDF
+                    <i class="fas fa-download"></i> Generate PDF (Gate Pass)
                 </a>
-                
+                @if($forms->status == 'received')
+                <a type="button" href="{{route( 'aknoPDF', encrypt($forms->id) )}}" target="_blank" class="btn bg-gradient-lime" style="margin-right: 5px;">
+                    <i class="fas fa-download"></i> Generate PDF (Aknowledgement Receipt)
+                </a>
+                @endif
             </div>
-            <div class="col-6 text-right">
+            <div class="col-4 text-right">
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
                     <div class="form-group">
@@ -219,13 +225,38 @@
                             <i class="fas fa-download"></i> Download QR Code
                     </a>
                 </div>
+                @elseif($forms->status == 'checked')
+                <div class="form-group text">    
+                    <small class="form-text text-muted mb-3">
+                        This Form has been CHECKED!<br>For Receiving, Please copy the link or show the QR CODE below.
+                    </small>
+                    
+                    <div class="mb-0">
+                        <small class="text-muted d-block font-weight-bold">RECEIVER URL</small>
+                        <a href="{{ route('receive', encrypt($forms->id)) }}" class="target-link text-success font-weight-bold" target="_blank">
+                            {{ route('receive', encrypt($forms->id)) }}
+                        </a>
+                    </div>
+                    <button type="button" class="btn btn-success mb-3 copy-btn" data-clipboard-text="{{ route('receive', encrypt($forms->id)) }}">
+                        <i class="fa fa-copy"></i> Copy Link
+                    </button>
+                    <div class="mb-3">
+                        <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('receive', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
+                    </div>
+
+                    <a href="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('receive', encrypt($forms->id)), 'QRCODE', 10, 10) }}" 
+                        download="QR_Code_{{ $forms->model->control_number }}.png" 
+                        class="btn bg-green">
+                            <i class="fas fa-download"></i> Download QR Code
+                    </a>
+                </div>
                 @endif
             </div>
             
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved' || $forms->status == 'partially_released' || $forms->status == 'checked')
+        @if($forms->status == 'approved' || $forms->status == 'partially_released' || $forms->status == 'checked' || $forms->status == 'received')
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
@@ -276,5 +307,66 @@ function showFullImage(url) {
     });
 }
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const copyButtons = document.querySelectorAll('.copy-btn');
 
+    copyButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const linkText = this.getAttribute('data-clipboard-text');
+            if (!linkText) return;
+
+            // Save original button state
+            const originalHTML = this.innerHTML;
+
+            // --- UNIFIED COPY LOGIC WITH FALLBACK ---
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                // Modern Secure Browser approach
+                navigator.clipboard.writeText(linkText)
+                    .then(() => showSuccessState(this, originalHTML))
+                    .catch(err => console.error('Modern copy failed: ', err));
+            } else {
+                // Older/Unsecure Browser fallback approach
+                const textArea = document.createElement("textarea");
+                textArea.value = linkText;
+                
+                // Avoid scrolling to bottom of page when appending
+                textArea.style.top = "0";
+                textArea.style.left = "0";
+                textArea.style.position = "fixed";
+                
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showSuccessState(this, originalHTML);
+                    } else {
+                        console.error('Fallback copy command was unsuccessful');
+                    }
+                } catch (err) {
+                    console.error('Fallback copy failed: ', err);
+                }
+
+                document.body.removeChild(textArea);
+            }
+        });
+    });
+
+    // Helper function to handle UI changes
+    function showSuccessState(btn, originalHTML) {
+        btn.innerHTML = '<i class="fa fa-check"></i> Copied!';
+        btn.className = 'btn btn-dark mb-3 copy-btn';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.className = 'btn btn-success mb-3 copy-btn';
+            btn.disabled = false;
+        }, 2000);
+    }
+});
+</script>
 @endpush

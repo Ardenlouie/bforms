@@ -278,7 +278,7 @@ class MyFormController extends Controller
         
         $psst_item = Session::get('psst_item');
 
-        if(!empty($psst_item['others'])){
+        if($request->point_origin == 'OTHERS'){
             $point_origin = $psst_item['others'];
         } else {
             $point_origin = $request->point_origin;
@@ -368,7 +368,7 @@ class MyFormController extends Controller
 
         $gate_item = Session::get('gate_item');
 
-        if(!empty($gate_item['others'])){
+        if($request->point_origin == 'Others'){
             $category = $gate_item['others'];
         } else {
             $category = $request->category;

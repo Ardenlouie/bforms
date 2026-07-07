@@ -292,6 +292,7 @@
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 numberof: document.querySelector('input[name="numberof"]').value || "-",
                 category: document.querySelector('input[name="category"]').value || "-",
+                others: "",
                 note: document.querySelector('input[name="note"]').value || "-",
                 received_by: Array.from(document.querySelectorAll('input[name="received_by[]"]'))
                   .map(input => input.value.trim() || "-")

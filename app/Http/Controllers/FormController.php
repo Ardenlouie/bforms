@@ -535,6 +535,7 @@ class FormController extends Controller
                 $query->where('user_id', $user_id)
                       ->orwhereJsonContains('department_id', $user_department);
             })
+            ->where('status', '!=', 'draft')
             ->where('form_id', $form_id)
             ->when($status, function($q) use ($status) {
                 $q->where('status', $status);
@@ -558,12 +559,33 @@ class FormController extends Controller
         ]);
     }
 
+    public function receive($id) 
+    {
+        $forms = AllForm::findOrFail(decrypt($id));
+
+        return view('receive')->with([
+            'forms' => $forms
+        ]);
+    }
+
     public function printPDF($id) 
     {
         $forms = AllForm::findOrFail(decrypt($id)); 
         $prefix = $forms->form->prefix;
 
         $pdf = PDF::loadView('pages.forms.pdfs.'.$prefix, [
+            'forms' => $forms,
+        ]);
+
+        return $pdf->stream();
+    }
+
+    public function aknoPDF($id) 
+    {
+        $forms = AllForm::findOrFail(decrypt($id)); 
+        $prefix = $forms->form->prefix;
+
+        $pdf = PDF::loadView('pages.forms.pdfs.akno', [
             'forms' => $forms,
         ]);
 
@@ -698,7 +720,7 @@ class FormController extends Controller
 
         $psst_item = Session::get('psst_item');
 
-        if(!empty($psst_item['others'])){
+        if($request->point_origin == 'OTHERS'){
             $point_origin = $psst_item['others'];
         } else {
             $point_origin = $request->point_origin;
@@ -801,8 +823,8 @@ class FormController extends Controller
         }
 
         $gate_item = Session::get('gate_item');
-
-        if(!empty($gate_item['others'])){
+        
+        if($request->point_origin == 'Others'){
             $category = $gate_item['others'];
         } else {
             $category = $request->category;

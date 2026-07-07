@@ -62,6 +62,10 @@
                             <span class="float-right">{{$user->company->name ?? '-'}}</span>
                         </li>
                         <li class="list-group-item py-1">
+                            <b class="text-uppercase">DEPARTMENT:</b>
+                            <span class="float-right">{{$user->department->name ?? '-'}}</span>
+                        </li>
+                        <li class="list-group-item py-1">
                             <b class="text-uppercase">{{__('adminlte::positions.position')}}:</b>
                             <span class="float-right">{{$user->position->position ?? '-'}}</span>
                         </li>

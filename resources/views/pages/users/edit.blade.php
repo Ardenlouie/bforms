@@ -59,6 +59,14 @@
 
                     <div class="col-lg-3">
                         <div class="form-group">
+                            {{ html()->label(__('Position'), 'position_id')->class(['mb-0']) }}
+                            {{ html()->select('position_id', $positions, $position_selected_id)->class(['form-control', 'form-control-sm text-uppercase', 'is-invalid' => $errors->has('position_id')]) }}
+                            <small class="text-danger">{{$errors->first('position_id')}}</small>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3">
+                        <div class="form-group">
                             {{ html()->label(__('Head Approver'), 'head_approver_id')->class(['mb-0']) }}
                             {{ html()->select('head_approver_id', $heads, $head_selected_id)->class(['form-control', 'form-control-sm text-uppercase', 'is-invalid' => $errors->has('head_approver_id')]) }}
                             <small class="text-danger">{{$errors->first('head_approver_id')}}</small>
@@ -92,14 +100,6 @@
                             @if($errors->has('cost_center'))
                                 <small class="text-danger d-block mt-2">{{ $errors->first('cost_center') }}</small>
                             @endif
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3" hidden>
-                        <div class="form-group">
-                            {{ html()->label(__('adminlte::positions.position'), 'position_id')->class(['mb-0']) }}
-                            {{ html()->select('position_id', $positions, $position_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('position_id')]) }}
-                            <small class="text-danger">{{$errors->first('position_id')}}</small>
                         </div>
                     </div>
                 </div>

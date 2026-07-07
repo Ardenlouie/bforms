@@ -5,35 +5,51 @@ use App\Models\Department;
 use App\Models\Category;
 use App\Models\Form;
 use Livewire\WithPagination;
+use App\Http\Traits\SettingTrait;
 
 new class extends Component
 {
+    use SettingTrait;
     use WithPagination;
     protected $paginationTheme = 'bootstrap';
-    public $activeTab = 'tab1';
-    public $departments, $categories, $category_id=1;
+    public $activeTab = 'tab0';
+    public $departments, $categories, $category_id = '', $search = '', $item_per_page;
 
 
     public function mount() {
 
-        $this->item_per_page = '5';
+        $this->item_per_page = '10';
 
         $this->categories = Category::all()->keyBy('id');
 
     }
 
-    public function changeTab($tab, $category_id)
+    public function updatedSearch() {
+        $this->resetPage('forms-page');
+    }
+
+    public function changeTab($tab, $categoryId = '')
     {
         $this->activeTab = $tab;
 
-        $this->category_id = $category_id;
+        $this->category_id = $categoryId;
 
         $this->resetPage('forms-page');
 
     }
 
     public function getFormsProperty() {
-        return Form::where('category_id', $this->category_id)->where('display', 1)->get();
+        return Form::where('display', 1)
+                    ->when($this->category_id, function($query) {
+                        $query->where('category_id', $this->category_id);
+                    })
+                    ->when($this->search, function($query) {
+                        $query->where(function($qry) {
+                            $qry->where('prefix', 'like', '%'.$this->search.'%')
+                            ->orWhere('name', 'like', '%'.$this->search.'%');
+                        });
+                    })
+                    ->paginate($this->item_per_page, ['*'], 'forms-page')->onEachSide(1);
     }
 
     public function navigateToForm($id)
@@ -54,8 +70,20 @@ new class extends Component
 
         <div class="card-body">
             <div class="row ">
+                <div class="col-lg-3"></div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <input type="text" placeholder="Search" class="form-control form-control-md text-center" wire:model.live ="search">
+                    </div>
+                </div>
                 <div class="col-lg-12 mb-3">
                     <ul class="nav nav-tabs justify-content-center">
+                        <li class="nav-item">
+                            <a class="btn nav-link {{ $activeTab === 'tab0' ? 'active bg-navy text-white' : 'btn-outline-secondary' }}" 
+                            wire:click="changeTab('tab0', '')">
+                                <b>ALL</b>
+                            </a>
+                        </li>
                         @foreach($this->categories as $key => $category)
                         <li class="nav-item text-center">
                             <a class="btn nav-link {{ $activeTab === 'tab'.$key ? 'active bg-navy text-white' : 'btn-outline-secondary' }}" 
@@ -64,40 +92,41 @@ new class extends Component
                             </a>
                         </li>
                         @endforeach
-                        <li class="nav-item">
-                        </li>
+                        
                     </ul>
                 </div>
             </div>
             <div class="tab-content">
-                @foreach($this->categories as $key => $category)
-                <div class="tab-pane {{ $activeTab === 'tab'.$key ? 'active' : '' }}" id="tab{{$key}}">
-                    <div class="row justify-content-center">
-                        <div class="col-md-6 ">
-                            @foreach($this->forms as $key =>$form)
-                                <div x-data="{ loading: false }">
-                                    <a href="/forms/list/{{ encrypt($form->id) }}" 
-                                        class="btn bg-primary btn-block mb-3"
-                                        @click="loading = true"
-                                        :class="loading ? 'disabled' : ''"
-                                        >
-                                        <template x-if="!loading">
-                                            <span>{{ $form->name }}</span>
-                                        </template>
-                                        
-                                        <template x-if="loading">
-                                            <span><i class="fas fa-circle-notch fa-spin"></i> Please wait...</span>
-                                        </template>
-                                    </a>
-                                </div>
-                            @endforeach
+                <div class="row justify-content-center">
+                    <div class="col-md-6 ">
+                        @foreach($this->forms as $key =>$form)
+                            <div x-data="{ loading: false }">
+                                <a href="/forms/list/{{ encrypt($form->id) }}" 
+                                    class="btn bg-primary btn-block mb-3"
+                                    @click="loading = true"
+                                    :class="loading ? 'disabled' : ''"
+                                    >
+                                    <template x-if="!loading">
+                                        <span>{{ $form->name }}</span>
+                                    </template>
+                                    
+                                    <template x-if="loading">
+                                        <span><i class="fas fa-circle-notch fa-spin"></i> Please wait...</span>
+                                    </template>
+                                </a>
+                            </div>
+                        @endforeach
 
-                        </div>
                     </div>
-
                 </div>
-                @endforeach
             </div>
+            @if($item_per_page != 'all')
+            <div class="row">
+                <div class="col-12">
+                    {{$this->forms->links()}}
+                </div>
+            </div>
+            @endif
 
         </div>
     </div>

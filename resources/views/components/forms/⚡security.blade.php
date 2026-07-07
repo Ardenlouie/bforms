@@ -25,6 +25,7 @@ new class extends Component
     protected $listeners = [
         'checkedForm' => 'loadData',
         'submitForm' => 'submit',
+        'receiveForm' => 'receive',
     ];
 
 
@@ -104,7 +105,10 @@ new class extends Component
         }
 
         if ($allBalancesZero) {
-            $this->forms->update(['status' => 'checked']);
+            $this->forms->update([
+                'status' => 'checked',
+                'date_checked' => date('Y-m-d'),
+                ]);
 
             $all_forms = $this->forms;
 

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\TestNotification;
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\FollowUpFormNotification;
+
 use Illuminate\Support\Facades\Notification;
 
 class NotificationController extends Controller
@@ -51,14 +52,31 @@ class NotificationController extends Controller
 
         if($all_forms->status == 'endorsement'){
 
-            $all_forms->endorsed->notify(new FollowUpFormNotification($all_forms));
+            // $all_forms->endorsed->notify(new FollowUpFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new FollowUpFormNotification($all_forms));
+            }
 
         } elseif($all_forms->status == 'approval'){
 
-            $all_forms->approved->notify(new FollowUpFormNotification($all_forms));
+            // $all_forms->approved->notify(new FollowUpFormNotification($all_forms));
 
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new FollowUpFormNotification($all_forms));
+            }
         }
 
-        return back();
+        activity('follow-up')
+            ->performedOn($all_forms)
+            ->log(':causer.name has follow up '.$all_forms->form->name.' ['.$all_forms->model->control_number.']');
+
+        return back()->with([
+            'message_success' => $all_forms->form->name.' ['.$all_forms->model->control_number.'] next approver/s has been notified.'
+        ]);
     }
 }

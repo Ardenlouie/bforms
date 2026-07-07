@@ -26,12 +26,16 @@ Route::get('/', function () {
     return view('home');
 });
 
+Route::get('receive/{id}', [FormController::class, 'receive'])->name('receive');
+
 Auth::routes();
 
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
 Route::get('printPDF/{id}', [FormController::class, 'printPDF'])->name('printPDF');
+Route::get('aknoPDF/{id}', [FormController::class, 'aknoPDF'])->name('aknoPDF');
+Route::post('receive/form/{id}', [ApproverController::class, 'receive'])->name('form.receive');
 
 Route::get('lang/{locale}', function ($locale) {
     if (!in_array($locale, ['en', 'ja', 'zh-CN'])) {
@@ -77,6 +81,8 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::post('store/lca/{id}', [FormController::class, 'store_lca'])->name('store.lca');
         Route::post('store/pca/{id}', [FormController::class, 'store_pca'])->name('store.pca');
         Route::post('store/pcl/{id}', [FormController::class, 'store_pcl'])->name('store.pcl');
+
+
     });
 
     // MY FORMS ROUTES
@@ -93,6 +99,7 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::post('update/lca/{id}', [MyFormController::class, 'update_lca'])->name('update.lca');
         Route::post('update/pca/{id}', [MyFormController::class, 'update_pca'])->name('update.pca');
         Route::post('update/pcl/{id}', [MyFormController::class, 'update_pcl'])->name('update.pcl');
+
     });
 
     // APPROVER ROUTES
@@ -100,20 +107,20 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('approvers', [ApproverController::class, 'index'])->name('approver.index');
         Route::get('approver/show/{id}', [ApproverController::class, 'show'])->name('approver.show');
 
-        Route::post('check/form/{id}', [ApproverController::class, 'check'])->name('form.check');
         Route::post('approve/form/{id}', [ApproverController::class, 'approve'])->name('approve.form');
     });
 
     // ALL FORMS ROUTES
     Route::group(['middleware' => 'permission:superadmin access'], function() {
         Route::get('allforms', [AllFormController::class, 'index'])->name('allforms.index');
+    });
+
+    // EXPORT REFRESHABLE
+    Route::group(['middleware' => 'permission:bforms access'], function() {
         Route::get('export-gate', [AllFormController::class, 'export_gate'])->name('export.gate');
         Route::get('export-psrf', [AllFormController::class, 'export_psrf'])->name('export.psrf');
         Route::get('export-psst', [AllFormController::class, 'export_psst'])->name('export.psst');
-
-
     });
-
 
     // PROFILE
     Route::get('profile/{id}', [UserController::class, 'profile'])->name('profile');

@@ -42,7 +42,7 @@ class DeclineFormNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $subject = "B-FORM DECLINED [".$this->all_forms->model->control_number.']';
+        $subject = "B-FORM DECLINED - ".$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.']';
         $greeting = "Hello, {$notifiable->name}";
 
         $introLines = [
@@ -71,7 +71,7 @@ class DeclineFormNotification extends Notification
     {
         return [
             'title' => 'B-FORM DECLINED',
-            'message' => 'Your '.$this->all_forms->form->name.' has been declined!',
+            'message' => 'Your '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been declined!',
             'action_url' => url('/myform/show/' . encrypt($this->all_forms->id)),
         ];
     }
