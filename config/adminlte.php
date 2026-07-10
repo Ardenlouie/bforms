@@ -314,6 +314,13 @@ return [
             'active'    => ['dashboard', 'dashboard*']
         ],
         [
+            'text'      => 'Security',
+            'url'       => 'security',
+            'icon'      => 'fas fa-fw fa-user-shield',
+            'can'       => 'bforms security',
+            'active'    => ['security', 'security*']
+        ],
+        [
             'text'      => 'My Forms',
             'url'       => 'myforms',
             'icon'      => 'fas fa-fw fa-file-alt',

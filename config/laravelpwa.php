@@ -5,8 +5,8 @@ return [
     'manifest' => [
         'name' => env('APP_NAME', 'B-Forms'),
         'short_name' => 'B-Forms',
-        'start_url' => '/',
-        'background_color' => '#000364',
+        'start_url' => '/security',
+        'background_color' => '#00012b',
         'theme_color' => '#ff0000',
         'display' => 'standalone',
         'orientation'=> 'any',

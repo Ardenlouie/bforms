@@ -49,6 +49,7 @@ Route::get('error-logs', '\Rap2hpoutre\LaravelLogViewer\LogViewerController@inde
 
 Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
 
+    Route::get('security', [HomeController::class, 'scanning'])->name('scanning')->middleware('permission:bforms security');
     Route::get('security/{id}', [FormController::class, 'security'])->name('security')->middleware('permission:bforms security');
 
     // FORM ROUTES
