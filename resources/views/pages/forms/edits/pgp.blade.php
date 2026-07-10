@@ -36,12 +36,21 @@
                     <h4><b>[{{ $psrf_number->control_number }}]</b></h4>
                 </div>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md-8">
                 <div class="form-group">
-                    <label>Note <small class=" font-italic text-bold">(optional)</small></label>
+                    <label class="mb-0">Note <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="note" form="update_gate" value="{{ $all_form->model->note }}"> 
                 </div>
             </div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Release Date<small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="date" class="form-control" name="release_date" form="update_gate" value="{{ $all_form->model->release_date }}"> 
+                    <small class="text-danger">{{$errors->first('release_date')}}</small>
+                </div>
+            </div> 
         </div>
         <div class="row">
             <div class="col-md-12 table-responsive ">
@@ -260,6 +269,7 @@
                 control_number: document.querySelector('input[name="control_number"]').value,
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
+                release_date: document.querySelector('input[name="release_date"]').value || "-",
                 numberof: document.querySelector('input[name="numberof"]').value || "-",
                 category: document.querySelector('input[name="category"]').value || "-",
                 others: "",

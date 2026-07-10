@@ -40,9 +40,10 @@
                          alt="{{ Auth::user()->name }}">
                 @endif
                 <p class="@if(!config('adminlte.usermenu_image')) mt-0 @endif">
-                    {{ Auth::user()->name }}
+                    {{ Auth::user()->name }} [{{ Auth::user()->company->name ?? '' }}]
+
                     @if(config('adminlte.usermenu_desc'))
-                        <small>{{ Auth::user()->position->position ?? '' }}</small>
+                        <small>[{{ Auth::user()->department->name ?? '' }}] {{ Auth::user()->position->position ?? '' }}</small>
                         <small class="text-uppercase">({{ Auth::user()->adminlte_desc() ?? '' }})</small>
                     @endif
                 </p>

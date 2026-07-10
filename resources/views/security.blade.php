@@ -132,11 +132,13 @@
             <div class="col-6 invoice-col">
                 <b>Purpose: </b><br>{{$all_form->model->purpose}}<br>
                 <b>Received By: </b><br>{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}<br>
+                <b>Note: </b><br>{{$all_form->model->note}}<br>
             </div>
             <div class="col-6 invoice-col">
                 <b>Category: </b><br>{{$all_form->model->category}}<br>
-                <b>Date Submitted: </b><br>{{$all_form->model->date_submitted}}<br>
-                <b>Note: </b><br>{{$all_form->model->note}}<br>
+                <b>Date Submitted: </b><br>{{ date('F d, Y', strtotime($all_form->model->date_submitted ?? '')) }}<br>
+                <h3><b>Release Date: </b><br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</h3><br>
+
             </div>
         </div>
         <div class="row mb-3">
@@ -185,14 +187,16 @@
             <div class="col-6 invoice-col">
                 <b>Purpose: </b><br>{{$all_form->model->purpose}}<br>
                 <b>No. of Receiver/s: </b><br>{{$all_form->model->numberof}}<br>
+                <b>Received By: </b><br>{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}<br>
+                <b>Note: </b><br>{{$all_form->model->note}}<br>
             </div>
             <div class="col-6 invoice-col">
-                <b>Date Submitted: </b><br>{{$all_form->model->date_submitted}}<br>
-                <b>Received By: </b><br>{{ is_array($all_form->model->received_by) ? implode(', ', $all_form->model->received_by) : $all_form->model->received_by }}<br>
+                <b>Category: </b><br>{{$all_form->model->category}} <br>
+                <b>Date Submitted: </b><br>{{ date('F d, Y', strtotime($all_form->model->date_submitted ?? '')) }}<br>
+                <h3><b>Release Date: </b><br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</h3><br>
             </div>
         </div>
        
-        
         <div class="row mb-3">
             <div class="p-0 table-responsive">
                 <table class="table table-striped table-hover mb-0 rounded text-center ">
@@ -274,13 +278,19 @@
         @if($all_form->status == 'checked' || $all_form->status == 'received')
         <div class="form-group float-right">
             <label class="form-text text-muted mb-3">
-                This Form is already checked by Security.
+                This Gate Pass is already checked by Security.
             </label>
         </div>
-        @else
+        @elseif($all_form->model->release_date && \Carbon\Carbon::parse($all_form->model->release_date)->isToday())
         <div class="col-12">
             <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
                 <i class="fas fa-clipboard-check"></i> CHECK</a>
+        </div>
+        @else
+        <div class="form-group float-right">
+            <label class="form-text text-muted mb-3">
+                This Gate Pass is not for release today.
+            </label>
         </div>
         @endif
 

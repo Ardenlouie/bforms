@@ -824,7 +824,7 @@ class FormController extends Controller
 
         $gate_item = Session::get('gate_item');
         
-        if($request->point_origin == 'Others'){
+        if($request->category == 'Others'){
             $category = $gate_item['others'];
         } else {
             $category = $request->category;
@@ -839,6 +839,7 @@ class FormController extends Controller
             'psrf_form_id' => $request->psrf_form_id ?? null,
             'numberof' => $request->numberof,
             'balance' => $request->numberof,
+            'release_date' => $request->release_date,
             'note' => $request->note,
             'category' => $category,
         ]);
