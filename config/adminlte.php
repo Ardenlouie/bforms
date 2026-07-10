@@ -307,6 +307,13 @@ return [
             'active'    => ['home']
         ],
         [
+            'text'      => 'Dashboard',
+            'url'       => 'dashboard',
+            'icon'      => 'fas fa-fw fa-tachometer-alt',
+            'can'       => 'superadmin access',
+            'active'    => ['dashboard', 'dashboard*']
+        ],
+        [
             'text'      => 'My Forms',
             'url'       => 'myforms',
             'icon'      => 'fas fa-fw fa-file-alt',

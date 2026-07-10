@@ -111,6 +111,7 @@ new class extends Component
                         </b>
                     </h5>
                     <h5>Date Submitted: <b>{{ date('F d, Y') }}</b></h5>
+                    <h5>Release Date: <b>{{ date('F d, Y', strtotime($data['release_date'] ?? '')) }}</b></h5>
                     <h5>Note: <b>{{ ($data['note'] ?? '' )}}</b></h5>
                 </div>
          

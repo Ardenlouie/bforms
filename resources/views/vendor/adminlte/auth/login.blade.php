@@ -326,12 +326,12 @@
 @endif
 
 @section('auth_header', __('adminlte::adminlte.login_message'))
-
-
     <div class="portal-container">
-        <div class="brand-side">
-            <img src="{{ asset(config('adminlte.logo_img')) }}"
-                         alt="{{ config('adminlte.logo_img_alt') }}" style="height: 80%; width: 100%">
+        <div class="brand-side"  >
+            <a href="/">
+                <img src="{{ asset(config('adminlte.logo_img')) }}"
+                    alt="{{ config('adminlte.logo_img_alt') }}" style="height: 100%; width: 100%">
+            </a>
             <h1 class="brand-title">B-<span>FORMS</span></h1>
             <p class="brand-text">BEVI Beauty Elements Ventures Inc. Streamlining documentation, Online forms approval, and Authorization tasks securely in one central operational hub.</p>
         </div>

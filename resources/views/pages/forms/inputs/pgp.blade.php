@@ -26,12 +26,21 @@
                     <h4><b>[{{ $all_form->model->control_number }}]</b></h4>
                 </div>
             </div>
+        </div>
+        <div class="row">
             <div class="col-md-8">
                 <div class="form-group">
-                    <label>Note <small class=" font-italic text-bold">(optional)</small></label>
+                    <label class="mb-0" >Note <small class=" font-italic text-bold">(optional)</small></label>
                     <input type="text" class="form-control" name="note" form="add_gate" > 
                 </div>
             </div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Release Date<small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="date" class="form-control" name="release_date" form="add_gate" value="{{ date('Y-m-d') }}"> 
+                    <small class="text-danger">{{$errors->first('release_date')}}</small>
+                </div>
+            </div>  
         </div>
         <div class="row">
             <div class="col-md-12 table-responsive">
@@ -292,6 +301,7 @@
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
                 numberof: document.querySelector('input[name="numberof"]').value || "-",
                 category: document.querySelector('input[name="category"]').value || "-",
+                release_date: document.querySelector('input[name="release_date"]').value || "-",
                 others: "",
                 note: document.querySelector('input[name="note"]').value || "-",
                 received_by: Array.from(document.querySelectorAll('input[name="received_by[]"]'))

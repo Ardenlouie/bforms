@@ -57,7 +57,7 @@ new class extends Component
 
         if (!empty($data['imageUrl'])) {
             $image = $data['imageUrl'];
-            $receiver = $data['receiverName'];
+            $receiver = $data['receiverName'].' ('.date('m.d.Y[h.i_A]').')';
             
             $image = str_replace('data:image/png;base64,', '', $image);
             $image = str_replace(' ', '+', $image);

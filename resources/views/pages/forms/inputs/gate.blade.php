@@ -9,19 +9,7 @@
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
             </div>
-        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
-        <input type="hidden" name="numberof"  value="1">
-
-        </div>  
-        <div class="row">
-            <div class="col-lg-5">
-                <div class="form-group">
-                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="purpose" form="add_gate"> 
-                    <small class="text-danger">{{$errors->first('purpose')}}</small>
-                </div>
-            </div>
-            <div class="col-lg-3"></div>
+            <div class="col-lg-4"></div>
             <div class="col-lg-4">
                 <div class="form-group">
                     <label class="mb-0">Category <small class="text-danger font-italic text-bold">(required)</small></label>
@@ -40,13 +28,33 @@
                     <small class="text-danger">{{$errors->first('category_specified')}}</small>
                 </div>
             </div>
-        </div>
+        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
+        <input type="hidden" name="numberof"  value="1">
+
+        </div>  
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Receive By <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="text" class="form-control" name="received_by" form="add_gate"> 
                     <small class="text-danger">{{$errors->first('received_by')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Release Date<small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="date" class="form-control" name="release_date" form="add_gate" value="{{ date('Y-m-d') }}"> 
+                    <small class="text-danger">{{$errors->first('release_date')}}</small>
+                </div>
+            </div>            
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="form-group">
+                    <label class="mb-0">Purpose <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="text" class="form-control" name="purpose" form="add_gate"> 
+                    <small class="text-danger">{{$errors->first('purpose')}}</small>
                 </div>
             </div>
             <div class="col-lg-7">
@@ -356,6 +364,7 @@
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 numberof: "1",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
+                release_date: document.querySelector('input[name="release_date"]').value || "-",
                 received_by: document.querySelector('input[name="received_by"]').value || "-",
                 category: document.querySelector('select[name="category"]').value || "-",
                 others: document.querySelector('input[name="category_specified"]').value,

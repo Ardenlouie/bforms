@@ -12,7 +12,7 @@
 
         <!-- Online Users -->
         <li class="nav-item">
-            <a href="#" class="nav-link" id="btn-online-users" hidden>
+            <a href="#" class="nav-link" id="btn-online-users">
                 <i class="fa fa-user"></i>
                 <span class="navbar-badge">
                     <i class="fa fa-circle text-success"></i>

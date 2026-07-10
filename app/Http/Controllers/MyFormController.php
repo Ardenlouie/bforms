@@ -368,7 +368,7 @@ class MyFormController extends Controller
 
         $gate_item = Session::get('gate_item');
 
-        if($request->point_origin == 'Others'){
+        if($request->category == 'Others'){
             $category = $gate_item['others'];
         } else {
             $category = $request->category;
@@ -380,6 +380,7 @@ class MyFormController extends Controller
             'purpose' => $request->purpose,
             'received_by' => $request->received_by,
             'receivers' => $request->received_by,
+            'release_date' => $request->release_date,
             'note' => $request->note,
             'numberof' => $request->numberof,
             'category' => $category,

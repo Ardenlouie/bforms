@@ -40,6 +40,7 @@ class GatePass extends Model
         'path',
         'note',
         'category',
+        'release_date',
     ];
 
     public function form() {
