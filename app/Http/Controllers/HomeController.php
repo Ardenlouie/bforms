@@ -28,5 +28,14 @@ class HomeController extends Controller
         return view('home');
     }
 
+    public function scanning()
+    {
+
+        
+        return view('pages.security.index')->with([
+
+        ]);
+    }
+
     
 }
