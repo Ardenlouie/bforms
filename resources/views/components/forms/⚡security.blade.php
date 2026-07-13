@@ -58,11 +58,12 @@ new class extends Component
         if (!empty($data['imageUrl'])) {
             $image = $data['imageUrl'];
             $receiver = $data['receiverName'].' ('.date('m.d.Y[h.i_A]').')';
+            $guardDuty = $data['guardDuty'];
             
             $image = str_replace('data:image/png;base64,', '', $image);
             $image = str_replace(' ', '+', $image);
             
-            $imageName = $receiver.'-capture_' . time() . '.png';
+            $imageName = $receiver.'-'.$guardDuty.'-capture_' . time() . '.png';
             
             $directory = public_path('uploads/gate-pass-images/to-release/' . $this->forms->model->id);
 
@@ -93,7 +94,8 @@ new class extends Component
 
             $gate->update([
                 'balance' => $remaining_balance,
-                'receivers' => $updated_receivers
+                'receivers' => $updated_receivers,
+                'released_by' => $data['guardDuty'],
             ]);
 
             $receiver = $data['receiverName'];
@@ -108,7 +110,7 @@ new class extends Component
             $this->forms->update([
                 'status' => 'checked',
                 'date_checked' => date('Y-m-d'),
-                ]);
+            ]);
 
             $all_forms = $this->forms;
 
@@ -132,7 +134,7 @@ new class extends Component
 
         activity('checked')
             ->performedOn($this->forms)
-            ->log('Security has check '.$form_name.' ['.$control_number.']');
+            ->log(':causer.name has check '.$form_name.' ['.$control_number.']');
 
         return redirect()->route('security', encrypt($this->forms->id))->with([
             'message_success' => '1 '.$form_name.' ['.$control_number.'] was released!'

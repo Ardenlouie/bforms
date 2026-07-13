@@ -107,13 +107,13 @@
                 @endif
             </div>
         </div>
-        @if($forms->status == 'checked' || $forms->status == 'partially_released')
+        @if($forms->status == 'checked' || $forms->status == 'partially_released' || $forms->status == 'received')
             @if(!empty($images))
             <h4>Security Released Item/s: </h4><br>
             <div class="row gallery">
             @forelse($images as $imageUrl)
             @php
-                list($name, $png) = explode('-', $imageUrl);
+                list($name, $guard) = explode('-', $imageUrl);
             @endphp
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card shadow-sm">
@@ -123,6 +123,8 @@
                                 class="img-fluid rounded image-preview" 
                                 style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
                                 onclick="showFullImage('{{ asset($folderPath .'/' . $imageUrl) }}')">
+                            <h4>Released by: {{ $guard }}</h4>
+
                         </div>
                     </div>
                 </div>

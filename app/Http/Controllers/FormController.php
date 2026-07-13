@@ -631,7 +631,7 @@ class FormController extends Controller
             'objective' => $request->objective,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
-            'total_amount' => $psrf_item['total_amount'],
+            'total_amount' => $psrf_item['total_amount'] ?? 0,
         ]);
       
         $psrf->save();

@@ -1,4 +1,4 @@
-<form action="{{ route('update.gate', encrypt($all_form->id)) }}" method="POST" id="update_gate">
+<form action="{{ route('update.gate', encrypt($all_form->id)) }}" method="POST" id="update_gate" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
