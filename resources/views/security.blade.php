@@ -137,8 +137,9 @@
             <div class="col-6 invoice-col">
                 <b>Category: </b><br>{{$all_form->model->category}}<br>
                 <b>Date Submitted: </b><br>{{ date('F d, Y', strtotime($all_form->model->date_submitted ?? '')) }}<br>
-                <h3><b>Release Date: </b><br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</h3><br>
-
+            </div>
+            <div class="col-12 invoice-col text-center">
+                <h3><b class="text-danger">Release Date: <br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</b><h3>
             </div>
         </div>
         <div class="row mb-3">
@@ -193,7 +194,9 @@
             <div class="col-6 invoice-col">
                 <b>Category: </b><br>{{$all_form->model->category}} <br>
                 <b>Date Submitted: </b><br>{{ date('F d, Y', strtotime($all_form->model->date_submitted ?? '')) }}<br>
-                <h3><b>Release Date: </b><br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</h3><br>
+            </div>
+            <div class="col-12 invoice-col text-center">
+                <h3><b class="text-danger">Release Date: <br>{{ date('F d, Y', strtotime($all_form->model->release_date?? '')) }}</b><h3>
             </div>
         </div>
        
@@ -243,10 +246,10 @@
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
                 <h6>{{ ($all_form->model->date_submitted ?? '' )}}</h6>
-                <h3><b>{{ ($all_form->user->name ?? '' )}}</b></h3>
+                <h5><b>{{ ($all_form->user->name ?? '' )}}</b></h5>
 
                 <div class="line"></div>
-                <h4>Prepared By</h4>
+                <h6>Prepared By</h6>
             </div>
             @if( !empty($all_form->date_endorsed) )
 
@@ -255,10 +258,10 @@
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_endorsed ?? '' )}}</h6>
-                <h3><b>{{ ($all_form->noted->name ?? '' )}}</b></h3>
+                <h5><b>{{ ($all_form->noted->name ?? '' )}}</b></h5>
 
                 <div class="line"></div>
-                <h4>Endorsed By</h4>
+                <h6>Endorsed By</h6>
             </div>
             @endif
             
@@ -267,10 +270,10 @@
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_approved ?? '' )}}</h6>
-                <h3><b>{{ ($all_form->signed->name ?? $all_form->approved->name ?? '')}}</b></h3>
+                <h5><b>{{ ($all_form->signed->name ?? $all_form->approved->name ?? '')}}</b></h5>
 
                 <div class="line"></div>
-                <h4>Approved By</h4>
+                <h6>Approved By</h6>
             </div>
         </div>
         @endif
@@ -419,6 +422,19 @@ async function takePhoto() {
         }
     });
 
+    const { value: guard } = await Swal.fire({
+        title: "Guard on Duty",
+        input: "text",
+        inputPlaceholder: "Enter name...",
+        inputLabel: "Enter name of guard on duty releasing this items",
+        showCancelButton: true,
+        inputValidator: (value) => {
+            if (!value) return "You must enter a name!";
+        }
+    });
+
+    if (!guard) return;
+
     if (capturedImage) {
         Swal.fire({
             title: name,
@@ -434,6 +450,7 @@ async function takePhoto() {
                 let data = {
                     imageUrl: capturedImage,
                     receiverName: name,
+                    guardDuty: guard,
                 };
                 
                 Swal.fire({

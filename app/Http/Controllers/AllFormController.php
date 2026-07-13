@@ -74,10 +74,47 @@ class AllFormController extends Controller
     public function show($id) {
         $forms = AllForm::findOrFail(decrypt($id));
         $user = Auth::user();
+        $po_number = $forms->model->control_number;
+        $company = $forms->model->company->name;
+        $sct_number = null;
+
+        if($forms->form->prefix == 'psst' && $forms->status == 'approved'){
+            $sct_api = Http::withToken('UaHxtws9LHZ47QG21lBXjQgka3Fe93H5xV1Y6HBQDN4=')
+                ->get(env('API_URL').'sor_master/'.$po_number.'/'.$company);
+                
+            $sct = $sct_api->json();
+
+            if(!empty($sct)){
+                $sct_number = $sct['SalesOrder'];
+            }
+        }
+
+        $folderPath = 'uploads/gate-pass-images/to-release/' . $forms->model->id;
+        $directory = public_path($folderPath); 
+        
+        if (!File::exists($directory)) {
+            return view('pages.my-forms.show', [
+                'images' => [],
+                'folderPath' => $folderPath,
+                'forms' => $forms,
+                'user' => $user,
+                'sct_number' => $sct_number,
+            ]);
+        }
+
+        $files = File::files($directory);
+
+        $images = [];
+        foreach ($files as $file) {
+            $images[] = $file->getFilename();
+        }
 
         return view('pages.all-forms.show')->with([
             'forms' => $forms,
             'user' => $user,
+            'images' => $images,
+            'folderPath' => $folderPath,
+            'sct_number' => $sct_number,
         ]);
     }
 

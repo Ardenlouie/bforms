@@ -65,7 +65,10 @@
                 <h4>Category: <b>{{ ($forms->model->category ?? '' )}}</b></h4>
 
                 @if(!empty($forms->model->psrf_form_id))
-                <h4>PSRF Ref No.: <b>{{ ($forms->model->psrf_form->control_number ?? '' )}}</b></h4>
+                @php
+                    $psrf_id =  \App\Models\AllForm::where('model_type', 'App\Models\ProductSample')->where('model_id', $forms->model->psrf_form_id)->first();
+                @endphp
+                <h4>PSRF Ref No.: <a target="_blank" href="{{ route('myforms.show', encrypt($psrf_id->id)) }}"><b>{{ ($forms->model->psrf_form->control_number ?? '' )}}</b></a></h4>
                 @endif
                 <h4>Note: <b>{{ ($forms->model->note ?? '' )}}</b></h4>
 
@@ -112,7 +115,7 @@
             <div class="row gallery">
             @forelse($images as $imageUrl)
             @php
-                list($name, $png) = explode('-', $imageUrl);
+                list($name, $guard) = explode('-', $imageUrl);
             @endphp
                 <div class="col-md-3 col-sm-6 mb-3">
                     <div class="card shadow-sm">
@@ -122,6 +125,8 @@
                                 class="img-fluid rounded image-preview" 
                                 style="height: 150px; width: 100%; object-fit: cover; cursor: pointer;"
                                 onclick="showFullImage('{{ asset($folderPath .'/' . $imageUrl) }}')">
+                            <h4>Release by: {{ $guard }}</h4>
+
                         </div>
                     </div>
                 </div>

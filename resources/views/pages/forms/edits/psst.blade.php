@@ -1,4 +1,4 @@
-<form action="{{ route('update.psst', encrypt($all_form->id)) }}" method="POST" id="update_psst">
+<form action="{{ route('update.psst', encrypt($all_form->id)) }}" method="POST" id="update_psst" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">

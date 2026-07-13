@@ -307,20 +307,6 @@ return [
             'active'    => ['home']
         ],
         [
-            'text'      => 'Dashboard',
-            'url'       => 'dashboard',
-            'icon'      => 'fas fa-fw fa-tachometer-alt',
-            'can'       => 'superadmin access',
-            'active'    => ['dashboard', 'dashboard*']
-        ],
-        [
-            'text'      => 'Security',
-            'url'       => 'security',
-            'icon'      => 'fas fa-fw fa-user-shield',
-            'can'       => 'bforms security',
-            'active'    => ['security', 'security*']
-        ],
-        [
             'text'      => 'My Forms',
             'url'       => 'myforms',
             'icon'      => 'fas fa-fw fa-file-alt',
@@ -412,6 +398,20 @@ return [
                     'can'       => 'bforms finance',
                 ],
             ],
+        ],
+        [
+            'text'      => 'Dashboard',
+            'url'       => 'dashboard',
+            'icon'      => 'fas fa-fw fa-tachometer-alt',
+            'can'       => 'superadmin access',
+            'active'    => ['dashboard', 'dashboard*']
+        ],
+        [
+            'text'      => 'Security',
+            'url'       => 'security',
+            'icon'      => 'fas fa-fw fa-user-shield',
+            'can'       => 'bforms security',
+            'active'    => ['security', 'security*']
         ],
         [
             'text'      => 'All Forms',
