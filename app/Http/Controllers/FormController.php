@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use App\Models\Category;
+use App\Models\Brand;
 use App\Models\Form;
 use App\Models\AllForm;
 use App\Models\ProductSample;
@@ -506,6 +507,12 @@ class FormController extends Controller
             $departments_arr[$department->id] = $department->name;
         }
 
+        $brands = Brand::all();
+        $brands_arr = [];
+        foreach($brands as $brand) {
+            $brands_arr[$brand->id] = $brand->brand;
+        }
+
         
 
         return view('pages.forms.createForm',)->with([
@@ -514,6 +521,7 @@ class FormController extends Controller
             'users' => $users_arr,
             'companies' => $companies_arr,
             'departments' => $departments_arr,
+            'brands' => $brands_arr,
             'prefix' => $prefix,
         ]);
     }
@@ -669,13 +677,30 @@ class FormController extends Controller
 
         $endorser = $user->department->approver_ids;
         $department_ids = [9, 2];
-        
+
+        if(!empty($psrf_item) && $user->department->name == 'MARKETING'){
+            $skus = collect($psrf_item['items'])->pluck('sku')->unique()->toArray();
+
+            $products = Product::whereIn('stock_code', $skus)->get();
+
+            $brandNames = $products->pluck('brand')->unique()->toArray();
+
+            $brands = Brand::whereIn('brand', $brandNames)->get();
+
+            $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
+            $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
+        }
+
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'department_id' => $department_ids,
             'model_id' => $psrf->id,
             'model_type' => 'App\Models\ProductSample',
+            'brands' => $bm_ids ?? null,
+            'group_brands' => $gbm_ids ?? null,
+            'bm_signs' => $bm_ids ?? null,
+            'gbm_signs' => $gbm_ids ?? null,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -697,6 +722,17 @@ class FormController extends Controller
             }
 
             // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+        } elseif ($all_forms->status == 'confirming') {
+            $psrf->update([
+                'control_number' => $psrf_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+
+            $brands = User::whereIn('id', $all_forms->brands ?? [])->get();
+
+            if ($brands->isNotEmpty()) {
+                Notification::send($brands, new SubmitFormNotification($all_forms));
+            }
         }
 
         $control_number = $all_forms->model->control_number;

@@ -6,7 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Facades\Hash;
 
 use App\Models\{
-    User, Company, Role, Position, OrgStructure, AllForm
+    User, Company, Role, Position, OrgStructure, AllForm, Brand
 };
 
 class DeleteModel extends Component
@@ -62,6 +62,7 @@ class DeleteModel extends Component
             'Position' => ['model' => Position::class, 'route' => '/positions'],
             'OrgStructure' => ['model' => OrgStructure::class, 'route' => '/org-structures'],
             'AllForm' => ['model' => AllForm::class, 'route' => '/allforms'],
+            'Brand' => ['model' => Brand::class, 'route' => '/brands'],
         ];
 
         if (isset($modelMapping[$type])) {

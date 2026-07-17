@@ -180,6 +180,8 @@
         });
     });
 </script>
+
+
 <script>
     $(function() {
         $('body').on('click', '.btn-endorse', function(e) {

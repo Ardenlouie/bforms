@@ -4,16 +4,27 @@ use Livewire\Component;
 use App\Models\ProductSample;
 use App\Models\ProductSampleItem;
 use App\Models\Company;
+use App\Models\AllForm;
+use App\Models\Product;
+use App\Models\Brand;
 use App\Models\Form;
+use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
+
+use App\Notifications\SubmitFormNotification;
 
 new class extends Component
 {
     public $control_number, $company_id, $forms, $user, $form_id=1, $total_amount = 0;
     public $data = [], $items = [];
 
-    protected $listeners = ['loadPsrfSummary' => 'loadData'];
+    protected $listeners = [
+        'loadPsrfSummary' => 'loadData',
+        'brandForm' => 'brandForm',
+        'groupBrandForm' => 'groupBrandForm',
+    ];
 
     public function loadData($data, $items)
     {
@@ -41,7 +52,6 @@ new class extends Component
             'total_amount' => $this->total_amount,
         ]);
 
-
     }
 
     private function generateControlNumber() {
@@ -64,6 +74,98 @@ new class extends Component
         } while(ProductSample::withTrashed()->where('control_number', $control_number)->where('company_id', $this->company_id)->exists());
 
         return $control_number;
+    }
+
+    public function brandForm($all_form)
+    {
+        $all_forms = AllForm::findOrFail($all_form);
+
+        $date_confirming = date('Y-m-d');
+
+        $current_bm = $all_forms->bm_signs ?? [];
+
+        $bm_to_remove = Auth::user()->id;
+
+        $updated_bm = array_filter($current_bm, function($name) use ($bm_to_remove) {
+            return trim($name) !== trim($bm_to_remove);
+        });
+
+        $updated_bm = array_values($updated_bm);
+
+        $all_forms->update([
+            'bm_signs' => $updated_bm,
+        ]);
+
+        if (empty($all_forms->bm_signs)) {
+            $all_forms->update([
+                'status' => 'confirmed',
+                'date_confirming' => $date_confirming,
+            ]);
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $group_brands = User::whereIn('id', $all_forms->group_brands ?? [])->get();
+
+            if ($group_brands->isNotEmpty()) {
+                Notification::send($group_brands, new SubmitFormNotification($all_forms));
+            }
+        } 
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        activity('approved')
+            ->performedOn($all_forms)
+            ->log(':causer.name has approve '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('approver.show', encrypt($all_forms->id))->with([
+            'message_success' => $form_name.' ['.$control_number.'] was approved'
+        ]);
+    }
+
+    public function groupBrandForm($all_form)
+    {
+        $all_forms = AllForm::findOrFail($all_form);
+
+        $date_confirmed = date('Y-m-d');
+
+        $current_gbm = $all_forms->gbm_signs ?? [];
+
+        $gbm_to_remove = Auth::user()->id;
+
+        $updated_gbm = array_filter($current_gbm, function($name) use ($gbm_to_remove) {
+            return trim($name) !== trim($gbm_to_remove);
+        });
+
+        $updated_gbm = array_values($updated_gbm);
+
+        $all_forms->update([
+            'gbm_signs' => $updated_gbm,
+        ]);
+
+        if (empty($all_forms->gbm_signs)) {
+            $all_forms->update([
+                'status' => 'endorsement',
+                'date_confirmed' => $date_confirmed,
+            ]);
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+        } 
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        activity('approved')
+            ->performedOn($all_forms)
+            ->log(':causer.name has approve '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('approver.show', encrypt($all_forms->id))->with([
+            'message_success' => $form_name.' ['.$control_number.'] was approved'
+        ]);
     }
 };
 ?>
@@ -157,7 +259,6 @@ new class extends Component
                 </div>
             </div>
             <div class="row text-center">
-                
                 <div class="col-4">
                     <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>

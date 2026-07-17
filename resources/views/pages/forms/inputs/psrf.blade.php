@@ -72,6 +72,7 @@
             </div>
         </div>
         <div class="row">
+            <input type="hidden" id="department" name="department" value="{{ $requestor->department->name }}">
             <div class="col-md-12 table-responsive">
                 <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
                 <table class="table table-bordered text-center" id="dynamicTable">
@@ -430,7 +431,9 @@
         $('body').on('click', '.btn-confirm', function(e) {
             let hasError = false;
             let errorMessage = "";
-            const objectiveInput = document.querySelector('input[name="objective"]'); 
+            const objectiveInput = document.querySelector('input[name="objective"]');
+            const department = document.querySelector('input[name="department"]'); 
+            const dept = department.value.trim();
 
             if (objectiveInput) {
                 const val = objectiveInput.value.trim();
@@ -473,7 +476,11 @@
                     });
                     
                     Swal.showLoading();
-                    $('#status').val('endorsement');
+                    if (dept === 'MARKETING') {
+                        $('#status').val('confirming');
+                    } else {
+                        $('#status').val('endorsement');
+                    }
                     $('#add_psrf').submit();
 
                 }
@@ -540,6 +547,7 @@
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
                 requested_by: document.querySelector('select[name="requested_by"]').value || "-",
                 customer: document.querySelector('select[name="customer"]').value || "-",
+                department: document.querySelector('input[name="department"]').value || "-",
                 recipient: document.querySelector('input[name="recipient"]').value || "-",
                 activity: document.querySelector('input[name="activity_name"]').value || "-",
                 program: document.querySelector('input[name="program_date"]').value || "-",

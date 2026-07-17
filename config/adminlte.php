@@ -455,6 +455,13 @@ return [
                     'active'    => ['departments', 'department*']
                 ],
                 [
+                    'text'      => 'Brands',
+                    'url'       => 'brands',
+                    'icon'      => 'fas fa-fw fa-registered',
+                    'can'       => 'superadmin access',
+                    'active'    => ['brands', 'brand*']
+                ],
+                [
                     'text'      => 'positions',
                     'url'       => 'positions',
                     'icon'      => 'fas fa-fw fa-user-tag',

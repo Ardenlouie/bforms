@@ -47,6 +47,10 @@
                         <span class="badge badge-info">Endorsement</span>
                     @elseif($all_form->status == 'confirmation')
                         <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($all_form->status == 'confirming')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($all_form->status == 'confirmed')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($all_form->status == 'approval')
                         <span class="badge badge-primary">Final Approval</span>
                     @elseif($all_form->status == 'draft')
@@ -71,6 +75,8 @@
                     @php
                         $approvers = \App\Models\User::whereIn('id', $all_form->approver ?? [])->get();
                         $endorsers = \App\Models\User::whereIn('id', $all_form->endorser ?? [])->get();
+                        $brands = \App\Models\User::whereIn('id', $all_form->bm_signs ?? [])->get();
+                        $group_brands = \App\Models\User::whereIn('id', $all_form->gbm_signs ?? [])->get();
                     @endphp
 
                     @if($all_form->status == 'endorsement')
@@ -78,17 +84,41 @@
                             <span class="badge badge-info">
                                 <i class="fas fa-file-signature"></i> {{ $endorser->name }}
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($all_form->status == 'approval')
                         @foreach($approvers as $id => $approver)
                             <span class="badge badge-primary">
                                 <i class="fas fa-file-signature"></i> {{ $approver->name }}
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($all_form->status == 'confirmation')
                         <span class="badge badge-navy">
                             <i class="fas fa-file-signature"></i> {{$all_form->admin->name}}
                         </span>
+                    @elseif($all_form->status == 'confirming')
+                        @foreach($brands as $id => $brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
+                    @elseif($all_form->status == 'confirmed')
+                        @foreach($group_brands as $id => $group_brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $group_brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
                     @elseif($all_form->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($all_form->status == 'checked')
@@ -110,6 +140,9 @@
                     </a>
                     <a href="{{ route('myforms.edit', encrypt($all_form->id)) }}" title="edit" class="btn-edit btn bg-warning btn-xs mb-0 ml-0">
                         <i class="fa fa-edit"></i> Edit
+                    </a>
+                    <a href="{{ route('myforms.show', encrypt($all_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
+                        <i class="fa fa-file-contract"></i> Show
                     </a>
                     <a href="#" title="delete" data-id="{{encrypt($all_form->id)}}" class="btn-delete btn bg-danger btn-xs mb-0 ml-0 ">
                         <i class="fa fa-trash-alt"></i> Delete

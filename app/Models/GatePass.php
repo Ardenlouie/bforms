@@ -41,6 +41,7 @@ class GatePass extends Model
         'note',
         'category',
         'release_date',
+        'released_by',
     ];
 
     public function form() {

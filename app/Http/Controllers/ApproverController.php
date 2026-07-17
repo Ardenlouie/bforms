@@ -26,6 +26,8 @@ use App\Notifications\ReceivedFormNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 use App\Http\Traits\SettingTrait;
 use Auth;
@@ -52,6 +54,8 @@ class ApproverController extends Controller
             ->where(function ($query) use ($user_id) {
                 $query->whereJsonContains('approver', $user_id)
                     ->orWhereJsonContains('endorser', $user_id)
+                    ->orWhereJsonContains('brands', $user_id)
+                    ->orWhereJsonContains('group_brands', $user_id)
                     ->orWhere('admin_id', $user_id)
                     ->orWhere('processor', $user_id);
             })
@@ -112,7 +116,7 @@ class ApproverController extends Controller
         $directory = public_path($folderPath); 
         
         if (!File::exists($directory)) {
-            return view('pages.my-forms.show', [
+            return view('pages.approvers.show', [
                 'images' => [],
                 'folderPath' => $folderPath,
                 'forms' => $forms,
@@ -144,6 +148,71 @@ class ApproverController extends Controller
         $user = Auth::user();
 
         if($all_forms->admin_id == $user->id && $request->status == 'endorsement'){
+            $date_confirm = date('Y-m-d');
+
+            $all_forms->update([
+                'date_confirm' => $date_confirm,
+            ]);
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+    
+        } elseif ($all_forms->admin_id == $user->id && $request->status == 'declined') {
+
+            $all_forms->update([
+                'remarks' => $request->remarks,
+            ]);
+
+            $all_forms->user->notify(new DeclineFormNotification($all_forms));
+
+        }
+
+        if(in_array($user->id, $all_forms->brands ?? []) && $request->status == 'confirming'){
+            $date_confirming = date('Y-m-d');
+
+            $current_bm = $all_forms->bm_signs ?? [];
+
+            $bm_to_remove = $user->id;
+
+            $updated_bm = array_filter($current_bm, function($name) use ($bm_to_remove) {
+                return trim($name) !== trim($bm_to_remove);
+            });
+
+            $updated_bm = array_values($updated_bm);
+
+            $all_forms->update([
+                'bm_signs' => $updated_bm,
+            ]);
+
+            if (empty($all_forms->bm_signs)) {
+                $all_forms->update([
+                    'status' => 'confirmed',
+                    'date_confirming' => $date_confirming,
+                ]);
+                // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+                $group_brands = User::whereIn('id', $all_forms->group_brands ?? [])->get();
+
+                if ($group_brands->isNotEmpty()) {
+                    Notification::send($group_brands, new SubmitFormNotification($all_forms));
+                }
+            } 
+
+        } elseif (in_array($user->id, $all_forms->brands ?? []) && $request->status == 'declined') {
+
+            $all_forms->update([
+                'remarks' => $request->remarks,
+            ]);
+
+            $all_forms->user->notify(new DeclineFormNotification($all_forms));
+
+        }
+
+        if(in_array($user->id, $all_forms->group_brands ?? []) && $request->status == 'confirmed'){
             $date_confirmed = date('Y-m-d');
 
             $all_forms->update([
@@ -157,7 +226,7 @@ class ApproverController extends Controller
                 Notification::send($endorsers, new SubmitFormNotification($all_forms));
             }
     
-        } elseif ($all_forms->admin_id == $user->id && $request->status == 'declined') {
+        } elseif (in_array($user->id, $all_forms->group_brands ?? []) && $request->status == 'declined') {
 
             $all_forms->update([
                 'remarks' => $request->remarks,

@@ -6,12 +6,13 @@ use App\Models\ProductSampleItem;
 use App\Models\Company;
 use App\Models\Form;
 use App\Models\AllForm;
+use App\Models\User;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
-    public $forms, $user, $form_id;
+    public $forms, $user, $form_id, $brands, $group_brands;
     public $data = [];
 
     protected $listeners = ['viewSignatures' => 'loadData'];
@@ -22,6 +23,9 @@ new class extends Component
 
         $this->form_id = $data['id'];
         $this->forms= AllForm::where('id', $this->form_id)->first();
+
+        $this->brands = User::whereIn('id', $this->forms->brands ?? [])->get();
+        $this->group_brands = User::whereIn('id', $this->forms->group_brands ?? [])->get();
 
     }
 
@@ -59,6 +63,52 @@ new class extends Component
                     <tr>
                         <td>Admin In-charge</td>
                         <td>{{ $forms->admin->name ?? ''}}</td>
+                        <td>
+                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
+                            {{ $forms->date_confirmed }}
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
+                            <span class="badge badge-success"><b>Signed</b></span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
+                    @if(!empty($forms->brands))
+                    <tr>
+                        <td>Confirm by</td>
+                        <td>
+                            @foreach($brands as $id => $brand)
+                                {{ $brand->name }}
+                                @if(!$loop->last)
+                                    <span class="mx-1 text-muted font-weight-bold">/</span>
+                                @endif
+                            @endforeach
+                        </td>
+                        <td>
+                            @if(!empty($forms->date_confirming) && $forms->status != 'declined')
+                            {{ $forms->date_confirming }}
+                            @endif
+                        </td>
+                        <td>
+                            @if(!empty($forms->date_confirming) && $forms->status != 'declined')
+                            <span class="badge badge-success"><b>Signed</b></span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endif
+                    @if(!empty($forms->group_brands))
+                    <tr>
+                        <td>Confirm by</td>
+                        <td>
+                            @foreach($group_brands as $id => $group_brand)
+                                {{ $group_brand->name }}
+                                @if(!$loop->last)
+                                    <span class="mx-1 text-muted font-weight-bold">/</span>
+                                @endif
+                            @endforeach
+                        </td>
                         <td>
                             @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
                             {{ $forms->date_confirmed }}

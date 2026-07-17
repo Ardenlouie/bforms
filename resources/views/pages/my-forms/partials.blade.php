@@ -46,6 +46,10 @@
                         <span class="badge badge-secondary"><b>DRAFT</b></span>
                     @elseif($my_form->status == 'confirmation')
                         <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($my_form->status == 'confirming')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($my_form->status == 'confirmed')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($my_form->status == 'endorsement')
                         <span class="badge badge-info"><b>Endorsement</b></span>
                     @elseif($my_form->status == 'approval')
@@ -71,6 +75,8 @@
                     @php
                         $approvers = \App\Models\User::whereIn('id', $my_form->approver ?? [])->get();
                         $endorsers = \App\Models\User::whereIn('id', $my_form->endorser ?? [])->get();
+                        $brands = \App\Models\User::whereIn('id', $my_form->bm_signs ?? [])->get();
+                        $group_brands = \App\Models\User::whereIn('id', $my_form->gbm_signs ?? [])->get();
                     @endphp
 
                     @if($my_form->status == 'draft')
@@ -78,19 +84,43 @@
                     @elseif($my_form->status == 'endorsement')
                         @foreach($endorsers as $id => $endorser)
                             <span class="badge badge-info">
-                                <i class="fas fa-file-signature"></i> {{ $endorser->name }}
+                                <i class="fas fa-file-signature"></i> {{ $endorser->name }} 
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($my_form->status == 'approval')
                         @foreach($approvers as $id => $approver)
                             <span class="badge badge-primary">
-                                <i class="fas fa-file-signature"></i> {{ $approver->name }}
+                                <i class="fas fa-file-signature"></i> {{ $approver->name }} 
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($my_form->status == 'confirmation')
                         <span class="badge badge-warning">
                             <i class="fas fa-file-signature"></i> {{$my_form->admin->name}}
                         </span>
+                    @elseif($my_form->status == 'confirming')
+                        @foreach($brands as $id => $brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
+                    @elseif($my_form->status == 'confirmed')
+                        @foreach($group_brands as $id => $group_brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $group_brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
                     @elseif($my_form->status == 'processing')
                         {{$my_form->processed->name}}
                     @elseif($my_form->status == 'approved')

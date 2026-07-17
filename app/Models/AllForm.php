@@ -20,6 +20,10 @@ class AllForm extends Model
     protected $casts = [
         'approver' => 'array', 
         'endorser' => 'array', 
+        'brands' => 'array', 
+        'group_brands' => 'array', 
+        'bm_signs' => 'array', 
+        'gbm_signs' => 'array', 
         'department_id' => 'array', 
     ];
 
@@ -31,10 +35,14 @@ class AllForm extends Model
         'model_type',
         'admin_id',
         'processor',
+        'brands',
+        'group_brands',
         'endorser',
         'approver',
         'noted_id',
         'signed_id',
+        'date_confirm',
+        'date_confirming',
         'date_confirmed',
         'date_processed',
         'date_endorsed',
@@ -43,6 +51,8 @@ class AllForm extends Model
         'date_received',
         'status',
         'remarks',
+        'bm_signs',
+        'gbm_signs',
     ];
 
     public function user() {
@@ -94,6 +104,24 @@ class AllForm extends Model
     public function hasEndorser($userId)
     {
         return in_array($userId, $this->endorser ?? []);
+    }
+
+    public function branded() {
+        return $this->belongsTo('App\Models\User', 'brands', 'id');
+    }
+
+    public function hasBrand($userId)
+    {
+        return in_array($userId, $this->brands ?? []);
+    }
+
+    public function group_branded() {
+        return $this->belongsTo('App\Models\User', 'group_brands', 'id');
+    }
+
+    public function hasGroupBrand($userId)
+    {
+        return in_array($userId, $this->group_brands ?? []);
     }
 
 
