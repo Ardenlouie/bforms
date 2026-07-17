@@ -74,6 +74,8 @@
             </div>
         </div>
         <div class="row">
+            <input type="hidden" id="department" name="department" value="{{ $all_form->user->department->name }}">
+            
             <div class="col-md-12">
                 <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
                 <table class="table table-responsive table-bordered text-center" id="dynamicTable">
@@ -433,6 +435,8 @@
     $(function() {
         $('body').on('click', '.btn-confirm', function(e) {
             e.preventDefault();
+            const department = document.querySelector('input[name="department"]'); 
+            const dept = department.value.trim();
 
             Swal.fire({
                 title: "Final Confirmation",
@@ -453,7 +457,11 @@
                     });
 
                     Swal.showLoading();
-                    $('#status').val('endorsement');
+                    if (dept === 'MARKETING') {
+                        $('#status').val('confirming');
+                    } else {
+                        $('#status').val('endorsement');
+                    }
                     $('#update_psrf').submit();
 
                 }
@@ -522,6 +530,7 @@
                 control_number: document.querySelector('input[name="control_number"]').value,
                 requested_by: document.querySelector('select[name="requested_by"]').value || "-",
                 customer: document.querySelector('select[name="customer"]').value || "-",
+                department: document.querySelector('input[name="department"]').value || "-",
                 recipient: document.querySelector('input[name="recipient"]').value || "-",
                 activity: document.querySelector('input[name="activity_name"]').value || "-",
                 program: document.querySelector('input[name="program_date"]').value || "-",

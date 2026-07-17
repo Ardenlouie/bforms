@@ -47,6 +47,10 @@
                         <span class="badge badge-info">Endorsement</span>
                     @elseif($approval->status == 'confirmation')
                         <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($approval->status == 'confirming')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
+                    @elseif($approval->status == 'confirmed')
+                        <span class="badge badge-warning"><b>Confirmation</b></span>
                     @elseif($approval->status == 'approval')
                         <span class="badge badge-primary">Final Approval</span>
                     @elseif($approval->status == 'approved')
@@ -71,6 +75,8 @@
                     @php
                         $approvers = \App\Models\User::whereIn('id', $approval->approver ?? [])->get();
                         $endorsers = \App\Models\User::whereIn('id', $approval->endorser ?? [])->get();
+                        $brands = \App\Models\User::whereIn('id', $approval->bm_signs ?? [])->get();
+                        $group_brands = \App\Models\User::whereIn('id', $approval->gbm_signs ?? [])->get();
                     @endphp
 
                     @if($approval->status == 'endorsement')
@@ -78,17 +84,41 @@
                             <span class="badge badge-info">
                                 <i class="fas fa-file-signature"></i> {{ $endorser->name }}
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($approval->status == 'approval')
                         @foreach($approvers as $id => $approver)
                             <span class="badge badge-primary">
                                 <i class="fas fa-file-signature"></i> {{ $approver->name }}
                             </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">or</span>
+                            @endif
                         @endforeach
                     @elseif($approval->status == 'confirmation')
                         <span class="badge badge-navy">
                             <i class="fas fa-file-signature"></i> {{$approval->admin->name}}
                         </span>
+                    @elseif($approval->status == 'confirming')
+                        @foreach($brands as $id => $brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
+                    @elseif($approval->status == 'confirmed')
+                        @foreach($group_brands as $id => $group_brand)
+                            <span class="badge badge-warning">
+                                <i class="fas fa-file-signature"></i> {{ $group_brand->name }}
+                            </span>
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">&</span>
+                            @endif
+                        @endforeach
                     @elseif($approval->status == 'processing')
                         {{$approval->processed->name}}
                     @elseif($approval->status == 'approved')
@@ -114,6 +144,14 @@
                             <i class="fa fa-pen-alt"></i> Sign
                         </a>
                     @elseif($approval->admin_id == $user_id && $approval->status == 'confirmation')
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Sign
+                        </a>
+                    @elseif(in_array($user_id, $approval->brands ?? []) && $approval->status == 'confirming')
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Sign
+                        </a>
+                    @elseif(in_array($user_id, $approval->group_brands ?? []) && $approval->status == 'confirmed')
                          <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
                             <i class="fa fa-pen-alt"></i> Sign
                         </a>

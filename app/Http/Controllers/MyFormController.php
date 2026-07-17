@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Department;
 use App\Models\Category;
 use App\Models\Form;
+use App\Models\Brand;
 use App\Models\AllForm;
 use App\Models\ProductSample;
 use App\Models\ProductSampleItem;
@@ -171,12 +172,19 @@ class MyFormController extends Controller
             $departments_arr[$department->id] = $department->name;
         }
 
+        $brands = Brand::all();
+        $brands_arr = [];
+        foreach($brands as $brand) {
+            $brands_arr[$brand->id] = $brand->brand;
+        }
+
         return view('pages.my-forms.edit')->with([
             'all_form' => $all_form,
             'form' => $form,
             'companies' => $companies_arr,
             'departments' => $departments_arr,
             'users' => $users_arr,
+            'brands' => $brands_arr,
 
         ]);
     }
@@ -199,6 +207,7 @@ class MyFormController extends Controller
             'objective' => $request->objective,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
+            'brand_id' => $request->brand_id,
             'total_amount' => $psrf_item['total_amount'] ?? 0,
         ]);
 
@@ -235,7 +244,19 @@ class MyFormController extends Controller
             ]);
         }
 
-        
+        if(!empty($psrf_item) && $all_forms->user->department->name == 'MARKETING'){
+            $skus = collect($psrf_item['items'])->pluck('sku')->unique()->toArray();
+
+            $products = Product::whereIn('stock_code', $skus)->get();
+
+            $brandNames = $products->pluck('brand')->unique()->toArray();
+
+            $brands = Brand::whereIn('brand', $brandNames)->get();
+
+            $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
+            $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
+        }
+
         $all_forms->update([
             'status' => $request->status,
         ]);
@@ -256,6 +277,24 @@ class MyFormController extends Controller
             }
 
             // $all_forms->admin->notify(new SubmitFormNotification($all_forms));
+        } elseif ($all_forms->status == 'confirming') {
+            $all_forms->update([
+                'brands' => $bm_ids ?? null,
+                'group_brands' => $gbm_ids ?? null,
+                'bm_signs' => $bm_ids ?? null,
+                'gbm_signs' => $gbm_ids ?? null,
+            ]);
+
+            $all_forms->model->update([
+                'control_number' => $psrf_item['control_number'],
+                'date_submitted' => $request->date_submitted,
+            ]);
+
+            $brands = User::whereIn('id', $all_forms->brands ?? [])->get();
+
+            if ($brands->isNotEmpty()) {
+                Notification::send($brands, new SubmitFormNotification($all_forms));
+            }
         }
 
         $control_number = $all_forms->model->control_number;

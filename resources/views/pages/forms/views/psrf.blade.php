@@ -7,6 +7,10 @@
                 <span class="badge badge-secondary"><b>DRAFT</b></span>
             @elseif($forms->status == 'confirmation')
                 <span class="badge badge-warning"><b>Admin Confirmation</b></span>
+            @elseif($forms->status == 'confirming')
+                <span class="badge badge-warning"><b>BM Confirmation</b></span>
+            @elseif($forms->status == 'confirmed')
+                <span class="badge badge-warning"><b>GBM Confirmation</b></span>
             @elseif($forms->status == 'endorsement')
                 <span class="badge badge-info"><b>For Endorsement</b></span>
             @elseif($forms->status == 'approval')
@@ -45,7 +49,8 @@
             <div class="col-12 text-center text-uppercase mb-3">
                 
                 <h3><b>{{ $forms->form->name }}</b></h3>
-                
+                <input type="hidden" id="all_form_id" name="all_form_id" value="{{ $forms->id }}">
+            
             </div>
             <div class="col-6">
                 <h4>Recipient: <b>{{ ($forms->model->recipient ?? '' )}}</b></h4>
@@ -179,6 +184,10 @@
                                 You are endorser of this Form.
                             @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
                                 You are approver of this Form.
+                            @elseif(in_array($user->id, $forms->bm_signs ?? []) && $forms->status == 'confirming')
+                                You are approver of this Form.
+                            @elseif(in_array($user->id, $forms->gbm_signs ?? []) && $forms->status == 'confirmed')
+                                You are approver of this Form.
                             @else
                                 
                             @endif
@@ -192,6 +201,12 @@
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
                                 <a href="#" title="admin" class="btn-admin btn bg-success btn-lg">APPROVE</a>
+                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
+                            @elseif(in_array($user->id, $forms->bm_signs ?? []) && $forms->status == 'confirming')
+                                <a href="#" title="brand" class="btn-brand btn bg-success btn-lg">APPROVE</a>
+                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
+                            @elseif(in_array($user->id, $forms->gbm_signs ?? []) && $forms->status == 'confirmed')
+                                <a href="#" title="gbm" class="btn-gbm btn bg-success btn-lg">APPROVE</a>
                                 <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
                             @else
 
@@ -232,6 +247,9 @@
                     @endif
                 @endif
               
+            </div>
+            <div hidden>
+                <livewire:summary.product-sample  />
             </div>
             
             
@@ -274,3 +292,69 @@
         @endif
     </div>
 </div>
+@push('js')
+<script>
+    $(function() {
+        $('body').on('click', '.btn-brand', function(e) {
+            e.preventDefault();
+            const all_form_id = document.querySelector('input[name="all_form_id"]'); 
+            const all_form = all_form_id.value.trim();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want to confirm this Form?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, approve it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Approved!",
+                    text: "Form has been confirmed.",
+                    icon: "success"
+                    });
+                    
+                    Swal.showLoading();
+                    Livewire.dispatch('brandForm', {all_form});
+                }
+                });
+        });
+    });
+</script>
+<script>
+    $(function() {
+        $('body').on('click', '.btn-gbm', function(e) {
+            e.preventDefault();
+            const all_form_id = document.querySelector('input[name="all_form_id"]'); 
+            const all_form = all_form_id.value.trim();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want to confirm this Form?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, approve it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Approved!",
+                    text: "Form has been confirmed.",
+                    icon: "success"
+                    });
+                    
+                    Swal.showLoading();
+                    Livewire.dispatch('groupBrandForm', {all_form});
+                }
+                });
+        });
+    });
+</script>
+@endpush

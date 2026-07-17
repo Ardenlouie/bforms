@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     SystemLogController, SystemSettingController, HomeController,
     NotificationController, PositionController, OrgStructureController,
     AiController, FormController, MyFormController, ApproverController,
-    DepartmentController, AllFormController
+    DepartmentController, AllFormController, BrandController
 };
 
 /*
@@ -157,6 +157,18 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
 
         Route::get('position/{id}/edit', [PositionController::class, 'edit'])->name('position.edit')->middleware('permission:position edit');
         Route::post('position/{id}', [PositionController::class, 'update'])->name('position.update')->middleware('permission:position edit');
+    });
+
+    // BRANDS ROUTES
+    Route::group(['middleware' => 'permission:company access'], function() {
+        Route::get('brands', [BrandController::class, 'index'])->name('brand.index');
+        Route::get('brand/create', [BrandController::class, 'create'])->name('brand.create')->middleware('permission:company create');
+        Route::post('brand', [BrandController::class, 'store'])->name('brand.store')->middleware('permission:company create');
+
+        Route::get('brand/{id}', [BrandController::class, 'show'])->name('brand.show');
+
+        Route::get('brand/{id}/edit', [BrandController::class, 'edit'])->name('brand.edit')->middleware('permission:company edit');
+        Route::post('brand/{id}', [BrandController::class, 'update'])->name('brand.update')->middleware('permission:company edit');
     });
 
     // DEPARTMENTS ROUTES
