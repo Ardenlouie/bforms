@@ -22,8 +22,7 @@
     }
 
     .header img {
-        height: 45px;
-        float: left;
+        height: 35%;
     }
 
     .header h1 {
@@ -202,6 +201,28 @@
         text-transform: uppercase;
         font-size: 11px;
     }
+    
+    /* Container alignment */
+    .badge-container {
+        display: inline-flex;
+        align-items: center;
+        margin: 4px 0;
+    }
+
+    /* Redesigned Success Badge */
+    .badge-success {
+        background-color: #10b981; /* Soft modern green */
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 0.35em 0.75em;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
 
 </style>
 </head>
@@ -283,12 +304,59 @@
         </tbody>
     </table>
     <p></p>
+    @if($forms->status == 'checked' || $forms->status == 'partially_released' || $forms->status == 'received')
+        @if(!empty($images))
+        <h4>Security Released Item/s: </h4>
+        <div class="row gallery">
+        @forelse($images as $imageUrl)
+        @php
+            list($name, $guard) = explode('-', $imageUrl);
+        @endphp
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body p-1">
+                        <h4>{{ $name }}</h4>
+                        <img src="{{ public_path($folderPath .'/' . $imageUrl) }}"
+                            class="img-fluid rounded image-preview" 
+                            style="height: 250px; width: 200px; object-fit: cover; cursor: pointer;"
+                            onclick="showFullImage('{{ public_path($folderPath .'/' . $imageUrl) }}')">
+                        <h4>Released by: {{ $guard }}</h4>
 
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="col-12">
+                <div class="callout callout-info">
+                    <h5><i class="fas fa-info"></i> Note:</h5>
+                    No images uploaded for this Gate Pass ID.
+                </div>
+            </div>
+        @endforelse
+        </div>
+        @endif
+    @endif
+    <p></p>
+    @if($forms->status == 'approved')
+    <div class="header">    
+        <small class="form-text text-muted mb-3">
+            This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
+        </small>
+    <p></p>
+        <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
+    </div>
+    @endif
     <p></p>
 
     <div class="signature-wrapper">
         <div class="sig-column">
-            <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->user->signature))
+                <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->model->date_submitted }}</div>
             <div class="sig-name">{{ $forms->user->name }}</div>
             <div class="sig-line">Prepared By</div>
@@ -296,7 +364,13 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->noted->signature ?? $forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->noted->signature))
+                <img src="{{ public_path($forms->noted->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->date_endorsed }}</div>
             <div class="sig-name">{{$forms->noted->name ?? $forms->endorsed->name }}</div>
             <div class="sig-line">Endorsed By</div>
@@ -305,7 +379,13 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_approved) && $forms != 'declined' )
-            <img src="{{ public_path($forms->signed->signature ?? $forms->approved->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->signed->signature))
+                <img src="{{ public_path($forms->signed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->date_approved }}</div>
             <div class="sig-name">{{ ($forms->signed->name ?? $forms->approved->name )}}</div>
             <div class="sig-line">Approved By</div>

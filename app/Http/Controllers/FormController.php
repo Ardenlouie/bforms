@@ -30,6 +30,7 @@ use App\Models\SampleProduct;
 use App\Models\EmployeeCostCenter;
 use App\Models\CustomerCostCenter;
 use App\Models\StockCostCenter;
+use App\Models\ExpenseAccount;
 use App\Models\User;
 
 use App\Http\Requests\FormAddRequest;
@@ -53,6 +54,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Traits\SettingTrait;
 use App\Http\Traits\PsstXmlTrait;
 use App\Http\Traits\PsrfXmlTrait;
+use App\Http\Traits\RfpXmlTrait;
+use App\Http\Traits\RcaXmlTrait;
+use App\Http\Traits\PcaXmlTrait;
 
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
@@ -66,6 +70,9 @@ class FormController extends Controller
     use SettingTrait;
     use PsstXmlTrait;
     use PsrfXmlTrait;
+    use RcaXmlTrait;
+    use RfpXmlTrait;
+    use PcaXmlTrait;
 
     public function index(Request $request)
     {
@@ -201,6 +208,12 @@ class FormController extends Controller
             $departments_arr[$department->id] = $department->name;
         }
 
+        $expense_accounts = ExpenseAccount::all();
+        $expense_accounts_arr = [];
+        foreach($expense_accounts as $expense_account) {
+            $expense_accounts_arr[$expense_account->id] = $expense_account->name;
+        }
+
         return view('pages.forms.liquid')->with([
             'all_form' => $all_form,
             'form' => $form,
@@ -208,6 +221,7 @@ class FormController extends Controller
             'departments' => $departments_arr,
             'users' => $users_arr,
             'prefix' => $prefix,
+            'expense_accounts' => $expense_accounts_arr,
 
         ]);
     }
@@ -234,7 +248,7 @@ class FormController extends Controller
                     ->orWhere('employee_code', 'like', '%' . $search . '%');
                 });
             })
-            ->limit(10) 
+            ->limit(100) 
             ->get()
             ->map(function ($item) {
                 return [
@@ -267,7 +281,38 @@ class FormController extends Controller
                     ->orWhere('name', 'like', '%' . $search . '%');
                 });
             })
-            ->limit(10) 
+            ->limit(100) 
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id'           => $item->customer,
+                    'text'         => $item->customer. ' - (' .$item->name.')',
+                    'gl_code'  => $item->gl_code, 
+                    'gl_description'  => $item->gl_description, 
+                    'analysis_category'  => $item->analysis_category, 
+                    'customer'  => $item->customer, 
+                    'name'  => $item->name, 
+                ];
+            });
+            
+
+        return response()->json(['results' => $customers]);
+    }
+
+    public function customer_cost_center_cash(Request $request)
+    {
+        $search    = $request->query('search');
+        $company   = $request->query('company_id');
+
+        $customers = CustomerCostCenter::where('company_id', $company)
+            ->where('gl_code', '130010')
+            ->when($search, function ($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('customer', 'like', '%' . $search . '%')
+                    ->orWhere('name', 'like', '%' . $search . '%');
+                });
+            })
+            ->limit(100) 
             ->get()
             ->map(function ($item) {
                 return [
@@ -312,7 +357,15 @@ class FormController extends Controller
     {
         $search    = $request->query('search');
         $company   = $request->query('company_id');
-        $warehouse = $request->query('warehouse');
+
+        $specify   = $request->query('specify');
+        $wh = $request->query('warehouse');
+
+        if($wh == 'OTHERS'){
+            $warehouse = $specify;
+        } else {
+            $warehouse = $wh;
+        }
 
         $products = LotDetail::where('company_id', $company)
             ->where('warehouse', $warehouse)
@@ -323,7 +376,7 @@ class FormController extends Controller
                     ->orWhere('description', 'like', '%' . $search . '%');
                 });
             })
-            ->limit(10) 
+            ->limit(50) 
             ->get()
             ->map(function ($item) {
                 return [
@@ -342,8 +395,9 @@ class FormController extends Controller
     {
         $search    = $request->query('search');
         $company   = $request->query('company_id');
+        $warehouse   = $request->query('warehouse');
 
-        $products = SampleProduct::where('sample_products.company_id', $company)
+        $products = SampleProduct::where('sample_products.company_id', $company)->where('sample_products.warehouse', $warehouse)
                 ->leftJoin('products', 'products.stock_code', '=', 'sample_products.stock_code')
                 ->leftJoin('price_codes', function($join) use ($company) {
                     $join->on('price_codes.product_id', '=', 'products.id')
@@ -357,7 +411,7 @@ class FormController extends Controller
                     });
                 })
             ->select('sample_products.*', 'price_codes.selling_price', 'products.order_uom_conversion')
-            ->limit(10) 
+            ->limit(50) 
             ->get()
             ->map(function ($item) {
                 return [
@@ -501,7 +555,7 @@ class FormController extends Controller
             $companies_arr[$company->id] = $company->name;
         }
 
-        $departments = Department::all();
+        $departments = Department::where('name', '!=', 'LOGS')->get();
         $departments_arr = [];
         foreach($departments as $department) {
             $departments_arr[$department->id] = $department->name;
@@ -512,6 +566,8 @@ class FormController extends Controller
         foreach($brands as $brand) {
             $brands_arr[$brand->id] = $brand->brand;
         }
+
+        
 
         
 
@@ -615,6 +671,30 @@ class FormController extends Controller
         
     }
 
+    public function rfpXml($id) 
+    {
+        $rfp = RequestPayment::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlRfp($rfp);
+        
+    }
+
+    public function rcaXml($id) 
+    {
+        $rca = RequestCash::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlRca($rca);
+        
+    }
+
+    public function pcaXml($id) 
+    {
+        $pca = PettyCash::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlPca($pca);
+        
+    }
+
     public function store_psrf($id, PSRFStoreRequest $request)
     {
         $user = Auth::user();
@@ -637,6 +717,7 @@ class FormController extends Controller
             'recipient' => $request->recipient,
             'activity_name' => $request->activity_name,
             'objective' => $request->objective,
+            'warehouse' => $request->warehouse,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
             'total_amount' => $psrf_item['total_amount'] ?? 0,
@@ -646,7 +727,7 @@ class FormController extends Controller
 
         if(!empty($request->file_name)) {
             $request->validate([
-                'file_name' => 'required|mimes:pdf|max:5120',
+                'file_name' => 'required|mimes:pdf|max:20480',
             ]);
 
             $path = NULL;
@@ -689,7 +770,7 @@ class FormController extends Controller
 
             $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
             $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
-        }
+        } 
 
         $all_forms = new AllForm([
             'form_id' => $form->id,
@@ -1036,6 +1117,14 @@ class FormController extends Controller
                 'file_name' => $nameWithExtension,
             ]);
         }
+
+        if($rfp->company->name == 'BEVI') {
+            $approver = $rfp->department->bevi_approver;
+        } elseif($rfp->company->name == 'BEVA') {
+            $approver = $rfp->department->beva_approver;
+        } else {
+            $approver = $rfp->department->approver_ids;
+        }
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
@@ -1043,7 +1132,7 @@ class FormController extends Controller
             'model_id' => $rfp->id,
             'model_type' => 'App\Models\RequestPayment',
             'department_id' => [$form->department->id],
-            'approver' => $user->department->approver_ids,
+            'approver' => $approver,
             'status' => $request->status,
         ]);
 
@@ -1130,7 +1219,16 @@ class FormController extends Controller
             }
         }
 
-        $endorser = $user->department->approver_ids;
+        if($rca->company->name == 'BEVI') {
+            $endorser = $user->department->bevi_approver;
+            $admin = $user->department->admin_id;
+        } elseif($rca->company->name == 'BEVA') {
+            $endorser = $user->department->beva_approver;
+            $admin = $user->department->admin2_id;
+        } else {
+            $endorser = $user->department->approver_ids;
+            $admin = $user->department->admin_id;
+        }
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
@@ -1138,7 +1236,7 @@ class FormController extends Controller
             'model_id' => $rca->id,
             'model_type' => 'App\Models\RequestCash',
             'department_id' => [$form->department->id],
-            'admin_id' => $user->department->admin_id,
+            'admin_id' => $admin,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -1214,15 +1312,22 @@ class FormController extends Controller
                 $lca_items->save();
             }
         }
-        
+
+        if($lca->company->name == 'BEVI') {
+            $endorser = $user->department->bevi_approver;
+        } elseif($lca->company->name == 'BEVA') {
+            $endorser = $user->department->beva_approver;
+        } else {
+            $endorser = $user->department->approver_ids;
+        }
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $lca->id,
             'model_type' => 'App\Models\LiquidCash',
-            'endorser' => $user->head_approver_id,
-            'approver' => [$form->approver_id],
+            'endorser' => $endorser,
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -1233,7 +1338,14 @@ class FormController extends Controller
                 'control_number' => $lca_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -1389,7 +1501,7 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $pcl->id,
             'model_type' => 'App\Models\PettyLiquid',
-            'approver' => [$form->approver_id],
+            'approver' => $form->department->approver_ids,
             'status' => $request->status,
         ]);
 
@@ -1400,7 +1512,14 @@ class FormController extends Controller
                 'control_number' => $pcl_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;

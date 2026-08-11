@@ -63,6 +63,17 @@
                 <h4>Requested By: <b>{{ ($forms->model->requested_by ?? '' )}}</b></h4>
                 <h4>Customer: <b>{{ ($forms->model->customer ?? '' )}}</b></h4>
                 <h4>Activity Name: <b>{{ ($forms->model->activity_name ?? '' )}}</b></h4>
+                <h4>Warehouse: 
+                    <b>
+                        @if($forms->model->warehouse == 'DO-SDI')
+                            Davao - SDI
+                        @elseif($forms->model->warehouse == 'CE-SDI')
+                            Cebu - SDI
+                        @else
+                            Office Warehouse
+                        @endif
+                    </b>
+                </h4>
 
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
@@ -138,8 +149,8 @@
             </div>
            
             <div class="col-6 text-right">
-                @if($forms->status == 'approved' && $user->department->prefix == 'SCM')
-
+                @if($forms->status == 'approved')
+                    @can('bforms scm')
                     @if(!empty($sct_number))
                         <small class="form-text text-muted mb-3">
                             Issuance has been created: 
@@ -151,11 +162,12 @@
                         <small class="form-text text-muted mb-3">
                             This Form has been APPROVED. <br>Click the button below to download XML for Issuance.
                         </small>
-                        <a type="button" href="{{route( 'psrf.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-blue" style="margin-right: 5px;">
+                        <a type="button" href="{{route( 'psrf.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
                             <i class="fas fa-file-download"></i> Download XML for Issuance
                         </a>
                         
                     @endif
+                    @endcan
                 @endif
                 @if($forms->status == 'approved' && $forms->user_id == $user->id)
                     @php
@@ -231,7 +243,7 @@
                 </div>
                 @endif
 
-                @if($forms->status == 'endorsement' || $forms->status == 'approval')
+                @if($forms->status == 'endorsement' || $forms->status == 'approval' || $forms->status == 'confirming' || $forms->status == 'confirmed')
                     @php
                         $hoursPending = $forms->updated_at->diffInHours(now());
                     @endphp
@@ -256,10 +268,10 @@
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved')
+        @if($forms->status == 'approved' && $forms->user->department->name != 'MARKETING')
         <div class="row ">
             <div class="col-4">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
@@ -269,7 +281,7 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->noted->signature ?? $forms->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->noted->signature ?? $forms->endorsed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
@@ -279,7 +291,78 @@
                 <h4>Endorsed By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_approved ?? '' )}}</h6>
+                <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>
+
+                <div class="line"></div>
+                <h4>Approved By</h4>
+            </div>
+        </div>
+        @elseif($forms->status == 'approved' && $forms->user->department->name == 'MARKETING')
+        @php
+            $brands = \App\Models\User::whereIn('id', $forms->brands ?? [])->get();
+            $group_brands = \App\Models\User::whereIn('id', $forms->group_brands ?? [])->get();
+        @endphp
+        <div class="row mb-3">
+            <div class="col-4">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+                
+                <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
+                <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
+
+                <div class="line"></div>
+                <h4>Prepared By</h4>
+            </div>
+            <div class="col-4">
+                <img src="{{ asset($forms->brands->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_confirming ?? '' )}}</h6>
+
+                @foreach($brands as $id => $brand)
+                    <h3><b>{{ $brand->name }}</b></h3>
+                    @if(!$loop->last)
+                        <span class="mx-1 text-muted font-weight-bold">/</span>
+                    @endif
+                @endforeach
+
+                <div class="line"></div>
+                <h4>Brand Manager</h4>
+            </div>
+            <div class="col-4">
+                <img src="{{ asset($forms->group_brands->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_confirmed ?? '' )}}</h6>
+                
+                @foreach($group_brands as $id => $group_brand)
+                    <h3><b>{{ $group_brand->name }}</b></h3>
+                    @if(!$loop->last)
+                        <span class="mx-1 text-muted font-weight-bold">/</span>
+                    @endif
+                @endforeach
+
+                <div class="line"></div>
+                <h4>Group Brand Manager</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <img src="{{ asset($forms->noted->signature ?? $forms->endorsed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
+                <h3><b>{{ ($forms->noted->name ?? $forms->endorsed->name) }}</b></h3>
+
+                <div class="line"></div>
+                <h4>Endorsed By</h4>
+            </div>
+            <div class="col-6">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>

@@ -191,7 +191,7 @@
         let $row = $(this).closest('tr');
         updateRowQuantity($row);
         
-        if (val <= 0 || isNaN(val) || val > available) {
+        if (val > available) {
             $(this).addClass('is-invalid');
         } else {
             $(this).removeClass('is-invalid');
@@ -208,6 +208,7 @@
     function initSelect2(element) {
         let company = document.querySelector('select[name="company_id"]').value;
         let warehouse = document.querySelector('select[name="point_origin"]').value;
+        let specify = document.querySelector('select[name="point_origin_specified"]').value;
 
         element.select2({
             placeholder: "Select Product",
@@ -222,7 +223,8 @@
                         search: params.term,
                         // Grabbing values dynamically on every search
                         company_id: $('select[name="company_id"]').val(),
-                        warehouse: $('select[name="point_origin"]').val()
+                        warehouse: $('select[name="point_origin"]').val(),
+                        specify: $('select[name="point_origin_specified"]').val()
                     };
                 },
                 processResults: function (data) {

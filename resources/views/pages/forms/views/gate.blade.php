@@ -218,6 +218,17 @@
                     <small class="form-text text-muted mb-3">
                         This Form has been APPROVED!<br>For Security Checking, Please show the QR CODE below
                     </small>
+
+                    <div class="mb-0">
+                        <small class="text-muted d-block font-weight-bold">GATE PASS URL TO EASILY OPEN ON YOUR PHONE</small>
+                        <a href="{{ route('myforms.show', encrypt($forms->id)) }}" class="target-link text-success font-weight-bold" target="_blank">
+                            {{ route('myforms.show', encrypt($forms->id)) }}
+                        </a>
+                    </div>
+                    <button type="button" class="btn btn-success mb-3 copy-btn" data-clipboard-text="{{ route('myforms.show', encrypt($forms->id)) }}">
+                        <i class="fa fa-copy"></i> Copy Link
+                    </button>
+
                     <div class="mb-3">
                         <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('security', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
                     </div>
@@ -262,7 +273,7 @@
         @if($forms->status == 'approved' || $forms->status == 'partially_released' || $forms->status == 'checked' || $forms->status == 'received')
         <div class="row ">
             <div class="col-4">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
@@ -272,7 +283,7 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->noted->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->noted->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
@@ -282,7 +293,7 @@
                 <h4>Endorsed By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>

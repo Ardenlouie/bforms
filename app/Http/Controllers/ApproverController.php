@@ -277,9 +277,17 @@ class ApproverController extends Controller
             $finance = User::where('department_id', '2')->get();
             $hr = User::where('department_id', '3')->get();
 
-            if($all_forms->form->prefix == 'psst' || $all_forms->form->prefix == 'psrf'){
+            if($all_forms->form->prefix == 'psst' || $all_forms->form->prefix == 'psrf' ){
                 if ($scm->isNotEmpty()) {
                     Notification::send($scm, new XmlFormNotification($all_forms));
+                }
+            } elseif($all_forms->form->prefix == 'rfp') {
+                if ($finance->isNotEmpty()) {
+                    Notification::send($finance, new XmlFormNotification($all_forms));
+                }
+            } elseif($all_forms->form->prefix == 'pgp'){
+                if ($scm->isNotEmpty()) {
+                    Notification::send($scm, new ApproveFormNotification($all_forms));
                 }
             }
 

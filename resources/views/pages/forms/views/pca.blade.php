@@ -53,12 +53,10 @@
                 <h4>Name: <b>{{ ($forms->model->name ?? '' )}}</b></h4>
             </div>
             <div class="col-6 text-right">
+                <h4>Cost Center: <b>{{ ($forms->model->cost_center ?? '' )}}</b></h4>
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
-                <h4>Cost Center: <b>{{ ($forms->model->costcenter->name ?? '' )}}</b></h4>
-
-
             </div>
         </div>
 
@@ -99,6 +97,26 @@
                 
             </div>
             <div class="col-6 text-right">
+                @if($forms->status == 'approved')
+                    @can('bforms finance')
+                    @if(!empty($sct_number))
+                        <small class="form-text text-muted mb-3">
+                            APInvoice has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            
+                        </label>
+                    @else
+                        <small class="form-text text-muted mb-3">
+                            This Form has been APPROVED. <br>Click the button below to download XML for APInvoice posting.
+                        </small>
+                        <a type="button" href="{{route( 'pca.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
+                            <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
+                        </a>
+                        
+                    @endif
+                    @endcan
+                @endif
                 @if($forms->status == 'approved' && $forms->user_id == $user->id)
                 @php
                     $pca_pcl = DB::table('pcl_forms')->where('pca_form_id', $forms->model->id)->first();
@@ -191,7 +209,9 @@
         @if($forms->status == 'approved' || $forms->status == 'processing')
         <div class="row ">
             <div class="col-6">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -200,7 +220,8 @@
             </div>
        
             <div class="col-6">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>

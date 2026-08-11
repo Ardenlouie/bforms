@@ -203,6 +203,28 @@
         font-size: 11px;
     }
 
+    /* Container alignment */
+    .badge-container {
+        display: inline-flex;
+        align-items: center;
+        margin: 4px 0;
+    }
+
+    /* Redesigned Success Badge */
+    .badge-success {
+        background-color: #10b981; /* Soft modern green */
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        padding: 0.35em 0.75em;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
 </style>
 </head>
 <body>
@@ -288,7 +310,13 @@
 
     <div class="signature-wrapper">
         <div class="sig-column">
-            <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->user->signature))
+                <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->model->date_submitted }}</div>
             <div class="sig-name">{{ $forms->user->name }}</div>
             <div class="sig-line">Prepared By</div>
@@ -296,7 +324,13 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_endorsed) && $forms != 'declined' )
-            <img src="{{ public_path($forms->noted->signature ?? $forms->endorsed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->noted->signature))
+                <img src="{{ public_path($forms->noted->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->date_endorsed }}</div>
             <div class="sig-name">{{$forms->noted->name ?? $forms->endorsed->name }}</div>
             <div class="sig-line">Endorsed By</div>
@@ -305,7 +339,13 @@
 
         <div class="sig-column">
             @if( !empty($forms->date_approved) && $forms != 'declined' )
-            <img src="{{ public_path($forms->signed->signature ?? $forms->approved->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @if( !empty($forms->signed->signature))
+                <img src="{{ public_path($forms->signed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+                @else
+                <div class="badge-container">
+                    <span class="badge badge-success"><b>SIGNED</b></span>
+                </div>
+                @endif
             <div >{{ $forms->date_approved }}</div>
             <div class="sig-name">{{ ($forms->signed->name ?? $forms->approved->name )}}</div>
             <div class="sig-line">Approved By</div>

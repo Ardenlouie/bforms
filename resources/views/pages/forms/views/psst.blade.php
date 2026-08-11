@@ -126,8 +126,8 @@
                 
             </div>
             <div class="col-6 text-right">
-                @if($forms->status == 'approved' && $user->department->prefix == 'SCM')
-
+                @if($forms->status == 'approved')
+                    @can('bforms scm')
                     @if(!empty($sct_number))
                         <small class="form-text text-muted mb-3">
                             SCT(Supply Chain Transfer) has been created: 
@@ -139,11 +139,12 @@
                         <small class="form-text text-muted mb-3">
                             This Form has been APPROVED. <br>Click the button below to download XML for SCT.
                         </small>
-                        <a type="button" href="{{route( 'psst.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-blue" style="margin-right: 5px;">
+                        <a type="button" href="{{route( 'psst.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
                             <i class="fas fa-file-download"></i> Download XML for SCT
                         </a>
                         
                     @endif
+                    @endcan
                 @endif
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
@@ -213,7 +214,7 @@
         @if($forms->status == 'approved')
         <div class="row ">
             <div class="col-4">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
@@ -223,7 +224,7 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->noted->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->noted->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
@@ -233,7 +234,7 @@
                 <h4>Endorsed By</h4>
             </div>
             <div class="col-4">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>

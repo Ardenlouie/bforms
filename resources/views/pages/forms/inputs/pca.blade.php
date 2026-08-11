@@ -1,4 +1,4 @@
-<form action="{{ route('store.pca',encrypt($form->id)) }}" method="POST" id="add_pca">
+<form action="{{ route('store.pca',encrypt($form->id)) }}" method="POST" id="add_pca" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -10,26 +10,26 @@
                 </div>
             </div>
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
+        <!-- <input type="hidden" name="cost_center" value="{{ strtoupper($requestor->department->head->name ?? '') }}"> -->
 
         </div>  
         <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Name <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="name" form="add_pca"> 
+                    <input type="text" class="form-control" name="name"> 
                     <small class="text-danger">{{$errors->first('name')}}</small>
                 </div>
             </div>
-            <div class="col-lg-3"></div>
-            <div class="col-lg-4">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <select id="employee_cost_center" name="cost_center" class="form-control" style="width: 100%;" form="add_pca"></select>
+                    <select id="customer_cost_center_cash" name="cost_center" class="form-control" style="width: 100%;"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
         </div>
-        
         <div class="row">
             <div class="col-md-12">
                 <div class="table-responsive">
@@ -49,7 +49,7 @@
                             <tr>
                                 <td class="row-number">1</td>       
                                 <td><input type="text" name="items[0][desc]" placeholder="Enter Description" class="form-control text-center desc" /></td>             
-                                <td><input type="number" name="items[0][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0"/></td>
+                                <td><input type="number" name="items[0][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0" /></td>
                                 <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                             </tr>
                         </tbody>
@@ -58,6 +58,12 @@
                                 <th></th>
                                 <th colspan="1" class="text-right">TOTAL</th>
                                 <th id="totalAmount">₱{{ number_format(0.00 , 2) }}</th>
+                                <th>
+                                    <small class="form-text text-muted">
+                                        Max.: ₱2,000.00
+                                    </small>
+                                </th>
+
                             </tr>
                         </tfoot>
                     </table>
@@ -122,7 +128,6 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
     });
 
     document.addEventListener("click", function (e) {
@@ -130,7 +135,6 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
 
         }
     });
@@ -143,24 +147,6 @@
   
     });
 
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            cost_center: document.querySelector('select[name="cost_center"]').value || "-",
-            name: document.querySelector('input[name="name"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-
-            items.push({ desc, amount });
-        });
-
-        Livewire.dispatch('loadPcaSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
@@ -206,6 +192,38 @@
     $(function() {
         $('body').on('click', '.btn-confirm', function(e) {
             e.preventDefault();
+            let totalAmount = 0;
+
+            document.querySelectorAll("#dynamicTable tbody tr").forEach(row => {
+                let amount = parseFloat(row.querySelector(".amount")?.value || row.querySelector(".amount")?.textContent) || 0;
+                totalAmount += amount;
+            });
+
+            let totalAmountElement = document.querySelector("#totalAmount");
+
+            let hasError = false;
+            let errorMessage = "";
+
+            if (totalAmount > 2000) { 
+                hasError = true;
+                errorMessage = "Maximum total amount reached"; 
+                totalAmountElement.classList.add('is-invalid', 'text-danger'); 
+            } else {
+                totalAmountElement.classList.remove('is-invalid', 'text-danger');
+            }
+
+            totalAmountElement.textContent = totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            
+
+            if (hasError) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    text: errorMessage
+                });
+                return false;
+            }
 
             Swal.fire({
                 title: "Final Confirmation",
@@ -239,6 +257,8 @@
     $(function() {
         $('body').on('click', '.btn-preview', function(e) {
             e.preventDefault();
+
+            
 
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
@@ -278,12 +298,12 @@
 
         let company = document.querySelector('select[name="company_id"]').value;
 
-        $('#employee_cost_center').select2({
+        $('#customer_cost_center_cash').select2({
             placeholder: "Select Employee Cost Center",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
                 dataType: 'json',
                 delay: 250, // Wait 250ms before sending request (debounce)
                 data: function (params) {

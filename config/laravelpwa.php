@@ -59,18 +59,22 @@ return [
         ],
         'shortcuts' => [
             [
-                'name' => 'Shortcut Link 1',
-                'description' => 'Shortcut Link 1 Description',
-                'url' => '/shortcutlink1',
+                'name' => 'MY FORMS',
+                'description' => 'Created B-Forms',
+                'url' => '/myforms',
                 'icons' => [
                     "src" => "/images/icons/logo.png",
                     "purpose" => "any"
                 ]
             ],
             [
-                'name' => 'Shortcut Link 2',
-                'description' => 'Shortcut Link 2 Description',
-                'url' => '/shortcutlink2'
+                'name' => 'FOR APPROVALS',
+                'description' => 'Routed B-Forms for approvals',
+                'url' => '/approvers',
+                'icons' => [
+                    "src" => "/images/icons/logo.png",
+                    "purpose" => "any"
+                ]
             ]
         ],
         'custom' => []

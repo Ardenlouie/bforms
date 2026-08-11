@@ -59,7 +59,7 @@
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
-                <h4>Cost Center: <b>{{ ($forms->model->costcenter->name ?? '' )}}</b></h4>
+                <h4>Cost Center: <b>{{ ($forms->model->cost_center ?? '' )}}</b></h4>
                 <h4>Travel With: <b>{{ ($forms->model->travel ?? '' )}}</b></h4>
                 <h4>Location: <b>{{ ($forms->model->location ?? '' )}}</b></h4>
 
@@ -115,6 +115,21 @@
                 <p> 3. Liquidation or Settlement of Cash Advance must be complied immediately at least 2 days after the event/activity.</p>
             </div>
         </div>
+        <div class="row">
+            <div class="col-9 mb-3">
+                <h4>Attachment:</h4>
+                @if(!empty($forms->model->path))
+                    <iframe
+                        src="{{ asset('/'.$forms->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
+                @else
+                    NO ATTACHMENT
+                @endif
+            </div>
+        </div>
 
         <div class="row">
             <div class="col-6">
@@ -124,10 +139,30 @@
                 
             </div>
             <div class="col-6 text-right">
+                @if($forms->status == 'approved')
+                    @can('bforms finance')
+                    @if(!empty($sct_number))
+                        <small class="form-text text-muted mb-3">
+                            APInvoice has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            
+                        </label>
+                    @else
+                        <small class="form-text text-muted mb-3">
+                            This Form has been APPROVED. <br>Click the button below to download XML for APInvoice posting.
+                        </small>
+                        <a type="button" href="{{route( 'rca.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
+                            <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
+                        </a>
+                        
+                    @endif
+                    @endcan
+                @endif
                 @if($forms->status == 'approved' && $forms->user_id == $user->id)
-                @php
-                    $rca_lca = DB::table('lca_forms')->where('rca_form_id', $forms->model->id)->first();
-                @endphp
+                    @php
+                        $rca_lca = DB::table('lca_forms')->where('rca_form_id', $forms->model->id)->first();
+                    @endphp
                     @if(!empty($rca_lca))
                         <small class="form-text text-muted mb-3">
                             Liquidation of Cash Advance has been created: 
@@ -137,10 +172,9 @@
                         </label>
                     @else
                         <a type="button" href="{{route( 'form.liquid', encrypt($forms->id) )}}" class="btn bg-gradient-blue" style="margin-right: 5px;">
-                        <i class="fas fa-reply"></i> For Liquidation
-                    </a>
+                            <i class="fas fa-reply"></i> For Liquidation
+                        </a>
                     @endif
-                
                 @endif
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
@@ -226,8 +260,10 @@
     <div class="card-footer text-center">
         @if($forms->status == 'approved' || $forms->status == 'processing')
         <div class="row ">
-            <div class="col-3">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+            <div class="col-6">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -235,17 +271,20 @@
                 <h4>Prepared By</h4>
             </div>
 
-            <div class="col-3">
-                <img src="{{ asset($forms->admin->signature ?? 'images/nosign.png' )}}" height="100" width="150">
-                <h6>{{ ($forms->date_confirmed ?? '' )}}</h6>
+            <div class="col-6">
+                <img src="{{ asset($forms->admin->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_confirm ?? '' )}}</h6>
                 <h3><b>{{ ($forms->admin->name ?? '' )}}</b></h3>
 
                 <div class="line"></div>
                 <h4>Admin In-charge</h4>
             </div>
 
-            <div class="col-3">
-                <img src="{{ asset($forms->noted->signature ?? 'images/nosign.png') }}" height="100" width="150">
+            <div class="col-6">
+                <img src="{{ asset($forms->noted->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_endorsed ?? '' )}}</h6>
                 <h3><b>{{ ($forms->noted->name ?? '' )}}</b></h3>
@@ -254,8 +293,9 @@
                 <h4>Endorsed By</h4>
             </div>
        
-            <div class="col-3">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+            <div class="col-6">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>

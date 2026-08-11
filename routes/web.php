@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     SystemLogController, SystemSettingController, HomeController,
     NotificationController, PositionController, OrgStructureController,
     AiController, FormController, MyFormController, ApproverController,
-    DepartmentController, AllFormController, BrandController
+    DepartmentController, AllFormController, BrandController, ExpenseAccountController
 };
 
 /*
@@ -66,9 +66,13 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('/sample-product-ajax', [FormController::class, 'sample_product_api'])->name('sample_product.ajax');
         Route::get('/employee-cost-ajax', [FormController::class, 'employee_cost_center_api'])->name('employee_cost.ajax');
         Route::get('/customer-cost-ajax', [FormController::class, 'customer_cost_center_api'])->name('customer_cost.ajax');
+        Route::get('/customer-cost-cash-ajax', [FormController::class, 'customer_cost_center_cash'])->name('customer_cost_cash.ajax');
         Route::get('/warehouse-ajax', [FormController::class, 'warehouse_api'])->name('warehouse.ajax');
         Route::get('/psst-xml/{id}', [FormController::class, 'psstXml'])->name('psst.xml');
         Route::get('/psrf-xml/{id}', [FormController::class, 'psrfXml'])->name('psrf.xml');
+        Route::get('/rfp-xml/{id}', [FormController::class, 'rfpXml'])->name('rfp.xml');
+        Route::get('/rca-xml/{id}', [FormController::class, 'rcaXml'])->name('rca.xml');
+        Route::get('/pca-xml/{id}', [FormController::class, 'pcaXml'])->name('pca.xml');
 
 
         Route::post('form', [FormController::class, 'store'])->name('form.store');
@@ -169,6 +173,18 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
 
         Route::get('brand/{id}/edit', [BrandController::class, 'edit'])->name('brand.edit')->middleware('permission:company edit');
         Route::post('brand/{id}', [BrandController::class, 'update'])->name('brand.update')->middleware('permission:company edit');
+    });
+
+    // EXPENSE ACCOUNT
+    Route::group(['middleware' => 'permission:company access'], function() {
+        Route::get('expense_accounts', [ExpenseAccountController::class, 'index'])->name('expense_account.index');
+        Route::get('expense_account/create', [ExpenseAccountController::class, 'create'])->name('expense_account.create')->middleware('permission:company create');
+        Route::post('expense_account', [ExpenseAccountController::class, 'store'])->name('expense_account.store')->middleware('permission:company create');
+
+        Route::get('expense_account/{id}', [ExpenseAccountController::class, 'show'])->name('expense_account.show');
+
+        Route::get('expense_account/{id}/edit', [ExpenseAccountController::class, 'edit'])->name('expense_account.edit')->middleware('permission:company edit');
+        Route::post('expense_account/{id}', [ExpenseAccountController::class, 'update'])->name('expense_account.update')->middleware('permission:company edit');
     });
 
     // DEPARTMENTS ROUTES

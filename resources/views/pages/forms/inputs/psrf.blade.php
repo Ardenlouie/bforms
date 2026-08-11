@@ -10,6 +10,11 @@
                 </div>
             </div>
             <div class="col-lg-3"></div>
+            
+        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
+
+        </div>  
+        <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Requested By <small class="text-danger font-italic text-bold">(required)</small></label>
@@ -17,23 +22,12 @@
                     <small class="text-danger">{{$errors->first('requested_by')}}</small>
                 </div>
             </div>
-        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
-
-        </div>  
-        <div class="row">
+            <div class="col-lg-2"></div>
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Customer <small class="text-danger font-italic text-bold">(required)</small></label>
                     <select id="customer_cost_center" name="customer" class="form-control" style="width: 100%;" form="add_psrf"></select>
                     <small class="text-danger">{{$errors->first('customer')}}</small>
-                </div>
-            </div>
-            <div class="col-lg-2"></div>
-            <div class="col-lg-5">
-                <div class="form-group">
-                    <label class="mb-0">Recipient <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="recipient" form="add_psrf"> 
-                    <small class="text-danger">{{$errors->first('recipient')}}</small>
                 </div>
             </div>
         </div>
@@ -48,13 +42,34 @@
             <div class="col-lg-3"></div>
             <div class="col-lg-4">
                 <div class="form-group">
+                    <label class="mb-0">Warehouse <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select class="form-control" name="warehouse" id="warehouse" form="add_psrf">
+                        <option value="" disabled selected>-- Select Warehouse --</option>
+                        <option value="">Office Warehouse</option>
+                        <option value="CE-SDI">Cebu Warehouse</option>
+                        <option value="DO-SDI">Davao Warehouse</option>
+                    </select>
+                    <small class="text-danger">{{$errors->first('warehouse')}}</small>
+                </div>
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-lg-5">
+                <div class="form-group">
+                    <label class="mb-0">Recipient <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input type="text" class="form-control" name="recipient" form="add_psrf"> 
+                    <small class="text-danger">{{$errors->first('recipient')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
+            <div class="col-lg-4">
+                <div class="form-group">
                     <label class="mb-0">Program Date <small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="date" class="form-control" name="program_date" form="add_psrf" value="{{ date('Y-m-d') }}"> 
                     <small class="text-danger">{{$errors->first('program_date')}}</small>
                 </div>
             </div>
-        </div>
-        <div class="row">
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Objective <small class="text-danger font-italic text-bold">(required)</small></label>
@@ -232,7 +247,7 @@
         updateRowQuantity($row);
         calculateTotals();
         
-        if (val <= 0 || isNaN(val) || val > available) {
+        if (val > available) {
             $(this).addClass('is-invalid');
         } else {
             $(this).removeClass('is-invalid');
@@ -254,6 +269,7 @@
 
     function initSelect2(element) {
         let company = document.querySelector('select[name="company_id"]').value;
+        let warehouse = document.querySelector('select[name="warehouse"]').value;
 
         element.select2({
             placeholder: "Select Product",
@@ -266,7 +282,9 @@
                 data: function (params) {
                     return {
                         search: params.term,
-                        company_id: $('select[name="company_id"]').val()
+                        company_id: $('select[name="company_id"]').val(),
+                        warehouse: $('select[name="warehouse"]').val()
+
                     };
                 },
                 processResults: function (data) {
@@ -550,6 +568,7 @@
                 department: document.querySelector('input[name="department"]').value || "-",
                 recipient: document.querySelector('input[name="recipient"]').value || "-",
                 activity: document.querySelector('input[name="activity_name"]').value || "-",
+                warehouse: document.querySelector('select[name="warehouse"]').value || "-",
                 program: document.querySelector('input[name="program_date"]').value || "-",
                 objective: document.querySelector('input[name="objective"]').value || "-",
                 special: document.querySelector('input[name="special_instructions"]').value || "-",

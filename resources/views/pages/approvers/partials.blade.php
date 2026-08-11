@@ -98,7 +98,7 @@
                             @endif
                         @endforeach
                     @elseif($approval->status == 'confirmation')
-                        <span class="badge badge-navy">
+                        <span class="badge badge-warning">
                             <i class="fas fa-file-signature"></i> {{$approval->admin->name}}
                         </span>
                     @elseif($approval->status == 'confirming')

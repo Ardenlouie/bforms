@@ -117,13 +117,15 @@ new class extends Component
             $all_forms->user->notify(new CheckedFormNotification($all_forms));
 
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+            $madam_jazz = User::where('email', 'jazz.burila@kojiesan.com')->first();
 
             if ($approvers->isNotEmpty()) {
                 Notification::send($approvers, new CheckedFormNotification($all_forms));
             }
 
-            // $all_forms->approved->notify(new CheckedFormNotification($all_forms));
-
+            // if ($madam_jazz->isNotEmpty()) {
+            //     Notification::send($madam_jazz, new CheckedFormNotification($all_forms));
+            // }
 
         } else {
             $this->forms->update(['status' => 'partially_released']);

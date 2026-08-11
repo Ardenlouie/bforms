@@ -242,7 +242,7 @@
         @if($all_form->status == 'approved' || $all_form->status == 'checked' || $all_form->status == 'received')
         <div class="row mb-3">
             <div class="col-6">
-                <img src="{{ asset($all_form->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($all_form->user->signature ?? 'images/nosign1.png' )}}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
                 <h6>{{ ($all_form->model->date_submitted ?? '' )}}</h6>
@@ -254,7 +254,7 @@
             @if( !empty($all_form->date_endorsed) )
 
             <div class="col-6">
-                <img src="{{ asset($all_form->endorsed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($all_form->endorsed->signature ?? 'images/nosign1.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_endorsed ?? '' )}}</h6>
@@ -266,7 +266,7 @@
             @endif
             
             <div class="col-6">
-                <img src="{{ asset($all_form->signed->signature ?? $all_form->approved->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($all_form->signed->signature ?? $all_form->approved->signature ?? 'images/nosign1.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_approved ?? '' )}}</h6>
@@ -284,7 +284,7 @@
                 This Gate Pass is already checked by Security.
             </label>
         </div>
-        @elseif($all_form->model->release_date && \Carbon\Carbon::parse($all_form->model->release_date)->isToday())
+        @elseif($all_form->model->release_date && (\Carbon\Carbon::parse($all_form->model->release_date)->isPast() || \Carbon\Carbon::parse($all_form->model->release_date)->isToday()))
         <div class="col-12">
             <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
                 <i class="fas fa-clipboard-check"></i> CHECK</a>

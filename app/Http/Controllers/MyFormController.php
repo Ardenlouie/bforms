@@ -205,6 +205,7 @@ class MyFormController extends Controller
             'recipient' => $request->recipient,
             'activity_name' => $request->activity_name,
             'objective' => $request->objective,
+            'warehouse' => $request->warehouse,
             'special_instructions' => $request->special_instructions,
             'program_date' => $request->program_date,
             'brand_id' => $request->brand_id,
@@ -230,7 +231,7 @@ class MyFormController extends Controller
 
         if(!empty($request->file_name)) {
             $request->validate([
-                'file_name' => 'required|mimes:pdf|max:5120',
+                'file_name' => 'required|mimes:pdf|max:20480',
             ]);
 
             $path = NULL;
@@ -404,8 +405,13 @@ class MyFormController extends Controller
         $user = Auth::user();
         $all_forms = AllForm::findOrFail(decrypt($id));
         $date_code = date('Y');
+        $received_by = $request->received_by;
 
         $gate_item = Session::get('gate_item');
+
+        if($all_forms->form->prefix == 'gate'){
+            $received_by = [$request->received_by];
+        }
 
         if($request->category == 'Others'){
             $category = $gate_item['others'];
@@ -417,8 +423,8 @@ class MyFormController extends Controller
             'form_id' => $all_forms->form->id,
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
-            'received_by' => $request->received_by,
-            'receivers' => $request->received_by,
+            'received_by' => $received_by,
+            'receivers' => $received_by,
             'release_date' => $request->release_date,
             'note' => $request->note,
             'numberof' => $request->numberof,
@@ -513,6 +519,10 @@ class MyFormController extends Controller
             }
 
             // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        } elseif ($all_forms->status == 'draft'){
+            $all_forms->update([
+                'date_endorsed' => null,
+            ]);
         }
 
         $control_number = $all_forms->model->control_number;
@@ -530,8 +540,9 @@ class MyFormController extends Controller
 
     public function update_rfp($id, RFPUpdateRequest $request)
     {
-        $user = Auth::user();
         $all_forms = AllForm::findOrFail(decrypt($id));
+        $user = $all_forms->user;
+
         $date_code = date('Y');
 
         $rfp_item = Session::get('rfp_item');
@@ -568,7 +579,13 @@ class MyFormController extends Controller
             'status' => $request->status,
         ]);
         
-
+        if($all_forms->model->company->name == 'BEVI') {
+            $approver = $all_forms->model->department->bevi_approver;
+        } elseif($all_forms->model->company->name == 'BEVA') {
+            $approver = $all_forms->model->department->beva_approver;
+        } else {
+            $approver = $all_forms->model->department->approver_ids;
+        }
 
         if($all_forms->status == 'approval') {
             if($all_forms->model->control_number == NULL){
@@ -579,7 +596,16 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+                $all_forms->update([
+                    'approver' => $approver,
+                ]);
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -597,8 +623,8 @@ class MyFormController extends Controller
 
     public function update_rca($id, RCAUpdateRequest $request)
     {
-        $user = Auth::user();
         $all_forms = AllForm::findOrFail(decrypt($id));
+        $user = $all_forms->user;
         $date_code = date('Y');
 
         $rca_item = Session::get('rca_item');
@@ -724,8 +750,17 @@ class MyFormController extends Controller
             ]);
         }
 
+        if($all_forms->model->company->name == 'BEVI') {
+            $endorser = $all_forms->user->department->bevi_approver;
+        } elseif($all_forms->model->company->name == 'BEVA') {
+            $endorser = $all_forms->user->department->beva_approver;
+        } else {
+            $endorser = $all_forms->user->department->approver_ids;
+        }
+
         $all_forms->update([
             'status' => $request->status,
+            'endorser' => $endorser,
         ]);
 
 
@@ -738,7 +773,14 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -813,7 +855,14 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;
@@ -888,7 +937,14 @@ class MyFormController extends Controller
 
                 ]);
             }
-            $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
         }
 
         $control_number = $all_forms->model->control_number;

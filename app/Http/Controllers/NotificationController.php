@@ -62,14 +62,26 @@ class NotificationController extends Controller
 
         } elseif($all_forms->status == 'approval'){
 
-            // $all_forms->approved->notify(new FollowUpFormNotification($all_forms));
-
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
 
             if ($approvers->isNotEmpty()) {
                 Notification::send($approvers, new FollowUpFormNotification($all_forms));
             }
-        }
+        } elseif($all_forms->status == 'confirming'){
+
+            $brands = User::whereIn('id', $all_forms->bm_signs ?? [])->get();
+
+            if ($brands->isNotEmpty()) {
+                Notification::send($brands, new FollowUpFormNotification($all_forms));
+            }
+        } elseif($all_forms->status == 'confirmed'){
+
+            $group_brands = User::whereIn('id', $all_forms->gbm_signs ?? [])->get();
+
+            if ($group_brands->isNotEmpty()) {
+                Notification::send($group_brands, new FollowUpFormNotification($all_forms));
+            }
+        } 
 
         activity('follow-up')
             ->performedOn($all_forms)

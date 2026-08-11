@@ -153,6 +153,9 @@
                     <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
                         <i class="fa fa-file-signature"></i> Approvers
                     </a>
+                    <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-danger btn-xs mb-0 ml-0">
+                        <i class="fa fa-file-signature"></i> Cancel
+                    </a>
                 </td>
             </tr>
         @endforeach

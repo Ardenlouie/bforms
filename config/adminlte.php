@@ -462,6 +462,13 @@ return [
                     'active'    => ['brands', 'brand*']
                 ],
                 [
+                    'text'      => 'Expense Accounts',
+                    'url'       => 'expense_accounts',
+                    'icon'      => 'fas fa-fw fa-file-invoice',
+                    'can'       => 'superadmin access',
+                    'active'    => ['expense_accounts', 'expense_account*']
+                ],
+                [
                     'text'      => 'positions',
                     'url'       => 'positions',
                     'icon'      => 'fas fa-fw fa-user-tag',

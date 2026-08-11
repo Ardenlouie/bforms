@@ -18,7 +18,7 @@
                     <div class="col-lg-6">
                         <h4>Name: <b>{{ ($all_form->model->name ?? '' )}}</b></h4>
                         <h4>Date Receive: <b>{{ date('F d, Y', strtotime($all_form->date_approved ?? '' ))}}</b></h4>
-                        <h4>Cost Center: <b>{{ ($all_form->model->costcenter->name ?? '' )}}</b></h4>
+                        <h4>Cost Center: <b>{{ ($all_form->model->cost_center ?? '' )}}</b></h4>
                     </div>
                     <div class="col-lg-6 text-right">
                         <div class="table-responsive">
@@ -148,7 +148,6 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
     });
 
     document.addEventListener("click", function (e) {
@@ -156,8 +155,6 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
-
         }
     });
 
@@ -168,27 +165,6 @@
         }
   
     });
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            all_form_id: document.querySelector('input[name="all_form_id"]').value || "-",
-            company_id: document.querySelector('input[name="company_id"]').value || "-",
-            pca_form_id: document.querySelector('input[name="pca_form_id"]').value || "-",
-            file_name: document.querySelector('input[name="file_name"]').value || "-",
-            pca_amount: document.querySelector('input[name="pca_amount"]').value || 0,
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-
-            items.push({ desc, amount, date, area });
-        });
-
-        Livewire.dispatch('loadLcaSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
@@ -259,7 +235,7 @@
                     });
                     
                     Swal.showLoading();
-                    $('#status').val('endorsement');
+                    $('#status').val('approval');
                     $('#add_pcl').submit();
 
                 }

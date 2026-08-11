@@ -41,7 +41,7 @@
         </div>
     </div>
     <div class="card-body">
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-12 text-center text-uppercase mb-3">
                 
                 <h3><b>{{ $forms->form->name }}</b></h3>
@@ -51,29 +51,22 @@
                 <h4>Payable to: <b>{{ ($forms->model->payable ?? '' )}}</b></h4>
                 <h4>Purpose: <b>{{ ($forms->model->purpose ?? '' )}}</b></h4>
                 <h4>Instructions: <b>{{ ($forms->model->instructions ?? '' )}}</b></h4>
+                <h4>Requested By: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
+
             </div>
             <div class="col-6 text-right">
                 <h4>Department: <b>{{ ($forms->model->department->name ?? '' )}}</b></h4>
-                <h4>Cost Center: <b>{{ ($forms->model->costcenter->name ?? '' )}}</b></h4>
-            </div>
-        </div>
-        <div class="row mb-3">
-
-            <div class="col-6">
-                <h4>Requested By: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
-                <h2>Amount: <b>
+                <h4>Cost Center: <b>{{ ($forms->model->cost_center ?? '' )}}</b></h4>
+                @if(!empty($forms->model->date_submitted))
+                <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
+                @endif
+                <h1>Amount: <b>
                     @if($forms->model->currency == 'PHP')
                         ₱{{  number_format($forms->model->amount ?? 0.00 , 2) }}
                     @elseif($forms->model->currency == 'USD')
                         ${{ number_format($forms->model->amount ?? 0.00 , 2)  }}
                     @endif
-                </b></h2>
-
-            </div>
-            <div class="col-6 text-right">
-                @if(!empty($forms->model->date_submitted))
-                <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
-                @endif
+                </b></h1>
             </div>
         </div>
         <div class="row">
@@ -100,6 +93,26 @@
                 
             </div>
             <div class="col-6 text-right">
+                @if($forms->status == 'approved')
+                    @can('bforms finance')
+                    @if(!empty($sct_number))
+                        <small class="form-text text-muted mb-3">
+                            APInvoice has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            
+                        </label>
+                    @else
+                        <small class="form-text text-muted mb-3">
+                            This Form has been APPROVED. <br>Click the button below to download XML for APInvoice posting.
+                        </small>
+                        <a type="button" href="{{route( 'rfp.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
+                            <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
+                        </a>
+                        
+                    @endif
+                    @endcan
+                @endif
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
                     <div class="form-group">
@@ -167,7 +180,9 @@
         @if($forms->status == 'approved')
         <div class="row ">
             <div class="col-6">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -176,7 +191,8 @@
             </div>
        
             <div class="col-6">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>

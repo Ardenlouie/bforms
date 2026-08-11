@@ -23,7 +23,21 @@ class RFPUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'company_id' => [
+                'required',
+            ], 
+            'cost_center' => [
+                'required',
+            ], 
+            'amount' => [
+                'required',
+            ], 
+            'payable' => [
+                'required',
+            ], 
+            'purpose' => [
+                'required',
+            ], 
         ];
     }
 

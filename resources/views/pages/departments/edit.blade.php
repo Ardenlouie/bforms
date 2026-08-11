@@ -58,6 +58,7 @@
                             <small class="text-danger">{{$errors->first('head_id')}}</small>
                         </div>
                     </div>
+            
 
                     <div class="col-lg-4">
                         <div class="form-group">
@@ -65,10 +66,15 @@
                             {{ html()->select('admin_id', $users, $admin_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('admin_id')]) }}
                             <small class="text-danger">{{$errors->first('admin_id')}}</small>
                         </div>
+                        <div class="form-group">
+                            {{ html()->label(__('Admin (Other)'), 'admin2_id')->class(['mb-0']) }}
+                            {{ html()->select('admin2_id', $users, $admin2_selected_id)->class(['form-control', 'form-control-sm', 'is-invalid' => $errors->has('admin2_id')]) }}
+                            <small class="text-danger">{{$errors->first('admin2_id')}}</small>
+                        </div>
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            <label>Select Approvers</label>
+                            <label>Select Approvers (Administrative Request)</label>
                             @foreach($users as $enc_id => $name)
                                 <div class="custom-control custom-checkbox">
                                     <input class="custom-control-input" 
@@ -79,6 +85,46 @@
                                         {{ in_array($enc_id, $approvers_selected_ids) ? 'selected checked' : '' }}>
                                     
                                     <label for="approver_{{ $loop->index }}" class="custom-control-label font-weight-normal">
+                                        {{ $name }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>BEVI Approvers (Cash Management Request)</label>
+                            @foreach($users as $enc_id => $name)
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" 
+                                        type="checkbox" 
+                                        name="bevi_approver[]" 
+                                        id="bevi_{{ $loop->index }}" 
+                                        value="{{ $enc_id }}"
+                                        {{ in_array($enc_id, $bevi_selected_ids) ? 'selected checked' : '' }}>
+                                    
+                                    <label for="bevi_{{ $loop->index }}" class="custom-control-label font-weight-normal">
+                                        {{ $name }}
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            <label>BEVA Approvers (Cash Management Request)</label>
+                            @foreach($users as $enc_id => $name)
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" 
+                                        type="checkbox" 
+                                        name="beva_approver[]" 
+                                        id="beva_{{ $loop->index }}" 
+                                        value="{{ $enc_id }}"
+                                        {{ in_array($enc_id, $beva_selected_ids) ? 'selected checked' : '' }}>
+                                    
+                                    <label for="beva_{{ $loop->index }}" class="custom-control-label font-weight-normal">
                                         {{ $name }}
                                     </label>
                                 </div>

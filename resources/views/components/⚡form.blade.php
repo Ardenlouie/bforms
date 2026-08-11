@@ -76,6 +76,9 @@ new class extends Component
                         <input type="text" placeholder="Search" class="form-control form-control-md text-center" wire:model.live ="search">
                     </div>
                 </div>
+                <div class="col-lg-3">
+                    
+                </div>
                 <div class="col-lg-12 mb-3">
                     <ul class="nav nav-tabs justify-content-center">
                         <li class="nav-item">
@@ -127,6 +130,11 @@ new class extends Component
                 </div>
             </div>
             @endif
+            <a href="{{ asset('manuals/B-FORMS USER MANUAL.pdf') }}" 
+                download="BFORMS_Manual.pdf" 
+                class="btn btn-success float-right">
+                <i class="fa fa-file-export"></i> Download System Manual
+            </a>
 
         </div>
     </div>
