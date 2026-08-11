@@ -64,12 +64,12 @@ new class extends Component
                         <td>Admin In-charge</td>
                         <td>{{ $forms->admin->name ?? ''}}</td>
                         <td>
-                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
-                            {{ $forms->date_confirmed }}
+                            @if(!empty($forms->date_confirm) && $forms->status != 'declined')
+                            {{ $forms->date_confirm }}
                             @endif
                         </td>
                         <td>
-                            @if(!empty($forms->date_confirmed) && $forms->status != 'declined')
+                            @if(!empty($forms->date_confirm) && $forms->status != 'declined')
                             <span class="badge badge-success"><b>Signed</b></span>
                             @endif
                         </td>

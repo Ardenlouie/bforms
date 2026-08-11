@@ -49,7 +49,7 @@ class ReceivedFormNotification extends Notification
         // $prefix = strtolower($this->all_forms->form->prefix);
 
         $introLines = [
-            "The ".$this->all_forms->form->name." with number \"<strong>{$this->all_forms->model->control_number}</strong>\" has been RECEIVED by Receiver!"
+            "The ".$this->all_forms->form->name."Items with number \"<strong>{$this->all_forms->model->control_number}</strong>\" has been RECEIVED by Receiver!"
         ];
         $outroLines = [
             "You can view or print your B-FORM at your earliest convenience by clicking the button above."
@@ -89,7 +89,7 @@ class ReceivedFormNotification extends Notification
     {
         return [
             'title' => 'B-FORM RECEIVED',
-            'message' => 'The '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] has been received by receiver!',
+            'message' => 'The '.$this->all_forms->form->name.' ['.$this->all_forms->model->control_number.'] Items has been received by receiver!',
             'action_url' => url('/myform/show/' . encrypt($this->all_forms->id)),
         ];
     }

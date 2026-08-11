@@ -21,7 +21,7 @@
                         <h4>Purpose: <b>{{ ($all_form->model->purpose ?? '' )}}</b></h4>
                         <h4>Date: <b>{{ date('F d, Y', strtotime($all_form->model->rca_date ?? '' ))}}</b></h4>
                         <h4>Date Receive: <b>{{ date('F d, Y', strtotime($all_form->date_approved ?? '' ))}}</b></h4>
-                        <h4>Cost Center: <b>{{ ($all_form->model->costcenter->name ?? '' )}}</b></h4>
+                        <h4>Cost Center: <b>{{ ($all_form->model->cost_center ?? '' )}}</b></h4>
                     </div>
                     <div class="col-lg-6 text-right">
                         <div class="table-responsive">
@@ -64,7 +64,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Date</th>
+                                <th>Date Used</th>
                                 <th>Expense Description</th>
                                 <th>Area/Place</th>
                                 <th>Amount</th>
@@ -78,7 +78,14 @@
                             <tr>
                                 <td class="row-number">1</td>       
                                 <td><input type="date" name="items[0][date]" placeholder="Enter Date" class="form-control text-center date"/></td>
-                                <td><input type="text" name="items[0][desc]" placeholder="Enter Description" class="form-control text-center desc" /></td>             
+                                <td>
+                                    <select name="items[0][desc]" class="form-control text-center desc">
+                                        <option value="">-- Select Expense Account --</option>
+                                        @foreach($expense_accounts as $id => $name)
+                                            <option value="{{ $name }}">{{ $name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>        
                                 <td><input type="text" name="items[0][area]" placeholder="Enter Area" class="form-control text-center area" /></td>
                                 <td><input type="number" name="items[0][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0"/></td>
                                 <td><button type="button" class="btn btn-danger removeRow">x</button></td>
@@ -156,7 +163,14 @@
         newRow.innerHTML = `
             <td class="row-number"></td>
             <td><input type="date" name="items[${i}][date]" placeholder="Enter Date" class="form-control text-center date"/></td>
-            <td><input type="text" name="items[${i}][desc]" placeholder="Enter Description" class="form-control text-center desc" /></td>
+            <td>
+                <select name="items[${i}][desc]" class="form-control text-center desc">
+                    <option value="">-- Select Expense Account --</option>
+                    @foreach($expense_accounts as $id => $name)
+                        <option value="{{ $name }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </td> 
             <td><input type="text" name="items[${i}][area]" placeholder="Enter Area" class="form-control text-center area" /></td>
             <td><input type="number" name="items[${i}][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0"/></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
@@ -164,7 +178,6 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
     });
 
     document.addEventListener("click", function (e) {
@@ -172,8 +185,6 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
-
         }
     });
 
@@ -184,29 +195,6 @@
         }
   
     });
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            all_form_id: document.querySelector('input[name="all_form_id"]').value || "-",
-            company_id: document.querySelector('input[name="company_id"]').value || "-",
-            rca_form_id: document.querySelector('input[name="rca_form_id"]').value || "-",
-            file_name: document.querySelector('input[name="file_name"]').value || "-",
-            rca_amount: document.querySelector('input[name="rca_amount"]').value || 0,
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let date = row.querySelector(".date").value || "-";
-            let desc = row.querySelector(".desc").value || "-";
-            let area = row.querySelector(".area").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-
-            items.push({ desc, amount, date, area });
-        });
-
-        Livewire.dispatch('loadLcaSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {

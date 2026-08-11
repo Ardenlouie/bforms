@@ -51,7 +51,7 @@
             </div>
             <div class="col-6">
                 <h4>Name: <b>{{ ($forms->model->pca_form->name ?? '' )}}</b></h4>
-                <h4>Cost Center: <b>{{ ($forms->model->pca_form->costcenter->name ?? '' )}}</b></h4>
+                <h4>Cost Center: <b>{{ ($forms->model->pca_form->cost_center ?? '' )}}</b></h4>
             </div>
             <div class="col-6 text-right">
                 @if(!empty($forms->model->date_submitted))
@@ -192,7 +192,9 @@
         @if($forms->status == 'approved' || $forms->status == 'processing')
         <div class="row ">
             <div class="col-6">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
                 <h3><b>{{ ($forms->user->name ?? '' )}}</b></h3>
 
@@ -202,7 +204,8 @@
 
        
             <div class="col-6">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>
                 <h3><b>{{ ($forms->signed->name ?? '' )}}</b></h3>

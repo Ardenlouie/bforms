@@ -14,12 +14,13 @@
                 <div class="form-group">
                     <label class="mb-0">Category <small class="text-danger font-italic text-bold">(required)</small></label>
                         <select class="form-control" name="category" id="category" form="update_gate" value="{{ $all_form->model->category }}">
+                            <option value="">-- Select Category --</option>
                             <option value="IT Equipment">IT Equipment</option>
                             <option value="Marketing Materials">Marketing Materials</option>
                             <option value="Documents">Documents</option>
                             <option value="Others">Others (Please Specify)</option>
                         </select>
-                    <small class="text-danger">{{$errors->first('point_origin')}}</small>
+                    <small class="text-danger">{{$errors->first('category')}}</small>
                 </div>
 
                 <div class="form-group" id="specify_category_wrapper" style="display: none;">

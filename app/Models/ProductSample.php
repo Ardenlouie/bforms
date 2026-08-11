@@ -34,6 +34,7 @@ class ProductSample extends Model
         'file_name',
         'path',
         'total_amount',
+        'warehouse',
     ];
 
     public function form() {

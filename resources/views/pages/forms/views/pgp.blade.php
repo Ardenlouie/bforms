@@ -264,7 +264,7 @@
         @if($forms->status == 'approved' || $forms->status == 'partially_released' || $forms->status == 'checked' || $forms->status == 'received')
         <div class="row ">
             <div class="col-6">
-                <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="100" width="150">
+                <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
                 <h6>{{ ($forms->model->date_submitted ?? '' )}}</h6>
@@ -274,7 +274,7 @@
                 <h4>Prepared By</h4>
             </div>
             <div class="col-6">
-                <img src="{{ asset($forms->signed->signature ?? 'images/nosign.png') }}" height="100" width="150">
+                <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($forms->date_approved ?? '' )}}</h6>

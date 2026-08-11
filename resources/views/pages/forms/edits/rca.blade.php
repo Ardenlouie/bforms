@@ -9,28 +9,20 @@
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
             </div>
-        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
-        <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
-        <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
-
-        </div>  
-        <div class="row">
+            <div class="col-lg-3"></div>
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Name <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="name" form="update_rca" value="{{ $all_form->model->name }}"> 
-                    <small class="text-danger">{{$errors->first('name')}}</small>
-                </div>
-            </div>
-            <div class="col-lg-3"></div>
-            <div class="col-lg-4">
-                <div class="form-group">
                     <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <select id="employee_cost_center" name="cost_center" class="form-control" value="{{ $all_form->model->cost_center }}" style="width: 100%;" form="update_rca"></select>
+                    <select id="customer_cost_center_cash" name="cost_center" class="form-control" style="width: 100%;" form="update_rca" value="{{ $all_form->model->cost_center }}"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
-        </div>
+        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
+        <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
+        <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
+        <input type="hidden" name="name" value="{{ $all_form->model->name }}"> 
+        </div>  
+
         <div class="row">
             <div class="col-lg-6">
                 <div class="form-group">
@@ -174,7 +166,6 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
     });
 
     document.addEventListener("click", function (e) {
@@ -182,8 +173,6 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
-
         }
     });
 
@@ -194,32 +183,6 @@
         }
   
     });
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            cost_center: document.querySelector('select[name="cost_center"]').value || "-",
-            name: document.querySelector('input[name="name"]').value || "-",
-            purpose: document.querySelector('input[name="purpose"]').value || "-",
-            rca_date: document.querySelector('input[name="rca_date"]').value || "-",
-            travel: document.querySelector('input[name="travel"]').value || "-",
-            itenerary: document.querySelector('input[name="itenerary"]').value || "-",
-            location: document.querySelector('input[name="location"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-            let days = parseFloat(row.querySelector(".days").value) || 0;
-            let remarks = row.querySelector(".remarks").value || "-";
-
-            items.push({ desc, amount, days, remarks });
-        });
-
-        Livewire.dispatch('loadRcaSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
@@ -345,12 +308,12 @@
 
         let company = document.querySelector('select[name="company_id"]').value;
 
-        $('#employee_cost_center').select2({
+        $('#customer_cost_center_cash').select2({
             placeholder: "Select Employee Cost Center",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
                 dataType: 'json',
                 delay: 250, // Wait 250ms before sending request (debounce)
                 data: function (params) {

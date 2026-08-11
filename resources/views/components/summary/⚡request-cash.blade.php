@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1, $cost_center, $department, $total_amount = 0;
+    public $control_number, $company_id, $forms, $user, $form_id=1, $cost_center, $department, $endorser=[], $admin, $total_amount = 0;
     public $data = [], $items = [];
 
     protected $listeners = ['loadRcaSummary' => 'loadData'];
@@ -29,8 +29,20 @@ new class extends Component
         $this->form_id = $data['form_id'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->cost_center = User::where('id', $data['cost_center'])->first();
         $this->department = Department::where('id', $this->user->department_id)->first();
+
+        if($this->company_id == 1) {
+            $endorser = $this->department->bevi_approver;
+            $this->admin = $this->department->admin->name;
+        } elseif($this->company_id == 2) {
+            $endorser = $this->department->beva_approver;
+            $this->admin = $this->department->admin2->name;
+        } else {
+            $endorser = $this->department->bevi_approver;
+            $this->admin = $this->department->admin->name;
+        }
+
+        $this->endorser = User::whereIn('id', $endorser ?? [])->get();
 
         $this->total_amount = collect($items)->sum('amount');
         
@@ -159,10 +171,19 @@ new class extends Component
                     <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-3">
-                    <h4>Admin In-charge: <br><b>{{ ($department->admin->name ?? '' )}}</b></h4>
+                    <h4>Admin In-charge: <br><b>{{ ($admin ?? '' )}}</b></h4>
                 </div>
                 <div class="col-3">
-                    <h4>Endorser: <br><b>{{ ($user->department->head->name ?? '' )}}</b></h4>
+                    <h4>Endorser: <br>
+                        <b>
+                        @foreach($endorser as $id => $endorser_name)
+                            {{ $endorser_name->name }}
+                            @if(!$loop->last)
+                                <span class="mx-1 text-muted font-weight-bold">/</span>
+                            @endif
+                        @endforeach
+                        </b>
+                    </h4>
                 </div>
                 <div class="col-3">
                     <h4>Approver: <br><b>Finance Department Approvers</b></h4>

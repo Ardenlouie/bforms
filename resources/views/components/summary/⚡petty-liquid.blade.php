@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Session;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1, $cost_center, 
+    public $control_number, $company_id, $forms, $user, $form_id=1, 
         $department, $pca_form, $total_amount = 0, $pca_amount = 0, $all_form, $balance = 0;
     public $data = [], $items = [];
 
@@ -37,7 +37,6 @@ new class extends Component
         $this->company_id = $this->pca_form->company_id;
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->cost_center = User::where('id', $this->pca_form->cost_center)->first();
         $this->department = Department::where('id', $this->pca_form->department_id)->first();
 
         $this->total_amount = collect($items)->sum('amount');
@@ -116,7 +115,7 @@ new class extends Component
             <div class="row text-left">
                 <div class="col-6">
                     <h5>Name: <b>{{ ($pca_form->name ?? '' )}}</b></h5>
-                    <h5 class="mb-3">Cost Center: <b>{{ $cost_center->name ?? '' }}</b></h5>
+                    <h5 class="mb-3">Cost Center: <b>{{ $pca_form->cost_center ?? '' }}</b></h5>
                     <h5>Petty Cash Advance Ref No.: <b>{{ ($pca_form->control_number ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
@@ -169,7 +168,7 @@ new class extends Component
                     <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-6">
-                    <h4>Approver: <br><b>{{ ($forms->approver->name ?? '' )}}</b></h4>
+                    <h4>Approver: <br><b>{{ ($forms->department->name ?? '' )}} Approvers</b></h4>
                 </div>
             </div>
         </div>

@@ -26,6 +26,18 @@ class RFPStoreRequest extends FormRequest
             'company_id' => [
                 'required',
             ], 
+            'cost_center' => [
+                'required',
+            ], 
+            'amount' => [
+                'required',
+            ], 
+            'payable' => [
+                'required',
+            ], 
+            'purpose' => [
+                'required',
+            ], 
           
         ];
     }

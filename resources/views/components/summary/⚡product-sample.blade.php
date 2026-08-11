@@ -209,6 +209,7 @@ new class extends Component
                 <div class="col-4">
                     <h5>Customer: <b>{{ ($data['customer'] ?? '' )}}</b></h5>
                     <h5>Activity Name: <b>{{ ($data['activity'] ?? '' )}}</b></h5>
+                    <h5>Warehouse: <b>{{ ($data['warehouse'] ?? '' )}}</b></h5>
                     <h5>Special Instructions: <b>{{ ($data['special'] ?? '' )}}</b></h5>
                 </div>
             </div>

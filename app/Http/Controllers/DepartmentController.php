@@ -77,7 +77,10 @@ class DepartmentController extends Controller
         $users_arr = [];
         $user_selected_id = '';
         $admin_selected_id = '';
+        $admin2_selected_id = '';
         $approvers_selected_ids = [];
+        $bevi_selected_ids = [];
+        $beva_selected_ids = [];
         foreach($users as $user) {
             $encrypted_id = encrypt($user->id);
             if($department->head_id == $user->id) {
@@ -88,8 +91,20 @@ class DepartmentController extends Controller
                 $admin_selected_id = $encrypted_id;
             }
 
+            if($department->admin2_id == $user->id) {
+                $admin2_selected_id = $encrypted_id;
+            }
+
             if(in_array($user->id, $department->approver_ids ?? [])) {
                 $approvers_selected_ids[] = $encrypted_id;
+            }
+
+            if(in_array($user->id, $department->bevi_approver ?? [])) {
+                $bevi_selected_ids[] = $encrypted_id;
+            }
+
+            if(in_array($user->id, $department->beva_approver ?? [])) {
+                $beva_selected_ids[] = $encrypted_id;
             }
 
             $users_arr[$encrypted_id] = $user->name;
@@ -102,7 +117,10 @@ class DepartmentController extends Controller
             'users' => $users_arr,
             'user_selected_id' => $user_selected_id,
             'admin_selected_id' => $admin_selected_id,
+            'admin2_selected_id' => $admin2_selected_id,
             'approvers_selected_ids' => $approvers_selected_ids,
+            'bevi_selected_ids' => $bevi_selected_ids,
+            'beva_selected_ids' => $beva_selected_ids,
 
         ]);
     }
@@ -112,6 +130,8 @@ class DepartmentController extends Controller
 
         $validated = $request->validate([
             'approver_ids' => 'required|array',
+            'bevi_approver' => 'required|array',
+            'beva_approver' => 'required|array',
         ]);
 
         $changes_arr['old'] = $department->getOriginal();
@@ -120,12 +140,23 @@ class DepartmentController extends Controller
             return decrypt($id);
         }, $request->approver_ids);
 
+        $beviIds = array_map(function($id) {
+            return decrypt($id);
+        }, $request->bevi_approver);
+
+        $bevaIds = array_map(function($id) {
+            return decrypt($id);
+        }, $request->beva_approver);
+
         $department->update([
             'prefix' => $request->prefix,
             'name' => $request->name,
             'head_id' => decrypt($request->head_id),
             'admin_id' => decrypt($request->admin_id),
-            'approver_ids' => $decryptedIds
+            'admin2_id' => decrypt($request->admin2_id),
+            'approver_ids' => $decryptedIds,
+            'bevi_approver' => $beviIds,
+            'beva_approver' => $bevaIds,
         ]);
         $department->save();
 

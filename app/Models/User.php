@@ -93,7 +93,7 @@ class User extends Authenticatable
 
     public function adminlte_signature()
     {
-        return !empty($this->signature) ? asset($this->signature) : asset('images/nosign.png');
+        return !empty($this->signature) ? asset($this->signature) : asset('images/nosign1.png');
     }
 
     public function company() {

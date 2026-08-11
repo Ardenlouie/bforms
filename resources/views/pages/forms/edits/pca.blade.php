@@ -1,4 +1,4 @@
-<form action="{{ route('update.pca',encrypt($all_form->id)) }}" method="POST" id="update_pca">
+<form action="{{ route('update.pca',encrypt($all_form->id)) }}" method="POST" id="update_pca" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -12,6 +12,7 @@
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
         <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
         <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
+        <!-- <input type="hidden" name="cost_center" value="{{ $all_form->model->cost_center }}"> -->
 
         </div>  
         <div class="row">
@@ -22,11 +23,11 @@
                     <small class="text-danger">{{$errors->first('name')}}</small>
                 </div>
             </div>
-            <div class="col-lg-3"></div>
-            <div class="col-lg-4">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <select id="employee_cost_center" name="cost_center" class="form-control" value="{{ $all_form->model->cost_center }}" style="width: 100%;" form="update_pca"></select>
+                    <select id="customer_cost_center_cash" name="cost_center" class="form-control" style="width: 100%;" form="update_pca"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
@@ -285,12 +286,12 @@
 
         let company = document.querySelector('select[name="company_id"]').value;
 
-        $('#employee_cost_center').select2({
+        $('#customer_cost_center_cash').select2({
             placeholder: "Select Employee Cost Center",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
                 dataType: 'json',
                 delay: 250, // Wait 250ms before sending request (debounce)
                 data: function (params) {

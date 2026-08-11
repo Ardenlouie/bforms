@@ -1,4 +1,4 @@
-<form action="{{ route('update.rfp',encrypt($all_form->id)) }}" method="POST" id="update_rfp">
+<form action="{{ route('update.rfp',encrypt($all_form->id)) }}" method="POST" id="update_rfp" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -9,12 +9,32 @@
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
             </div>
+            
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
         <input type="hidden" name="control_number"  value="{{ $all_form->model->control_number }}">
         <input type="hidden" name="date_submitted"  value="{{ date('Y-m-d') }}">
+        <!-- <input type="hidden" name="cost_center" id="cost_center_input" value="{{ strtoupper($all_form->model->cost_center ?? '') }}"> -->
+        <!-- <input type="hidden" name="department_id"  value="{{ $all_form->department->id }}"> -->
 
         </div>  
         <div class="row">
+            <div class="col-lg-5">
+                <div class="form-group">
+                    <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <select id="customer_cost_center_cash" name="cost_center" class="form-control" style="width: 100%;" form="update_rfp" value="{{ $all_form->model->cost_center }}"></select>
+                    <small class="text-danger">{{$errors->first('cost_center')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3"></div>
+            <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Department <small class="text-danger font-italic text-bold">(required)</small></label>
+                    {{ html()->select('department_id', $departments ,$all_form->model->department_id)
+                    ->id('department_select')
+                    ->class(['form-control', 'form-control text-uppercase', 'is-invalid' => $errors->has('department_id')]) }}
+                    <small class="text-danger">{{$errors->first('department_id')}}</small>
+                </div>
+            </div>
             <div class="col-lg-6">
                 <div class="form-group">
                     <label class="mb-0">Payable to <small class="text-danger font-italic text-bold">(required)</small></label>
@@ -22,16 +42,7 @@
                     <small class="text-danger">{{$errors->first('payable')}}</small>
                 </div>
             </div>
-            <div class="col-lg-2"></div>
-            <div class="col-lg-4">
-                <div class="form-group">
-                    <label class="mb-0">Department <small class="text-danger font-italic text-bold">(required)</small></label>
-                    {{ html()->select('department_id', $departments ,$all_form->model->department_id)->class(['form-control', 'form-control text-uppercase', 'is-invalid' => $errors->has('department_id')]) }}
-                    <small class="text-danger">{{$errors->first('department_id')}}</small>
-                </div>
-            </div>
-        </div>
-        <div class="row">
+            <div class="col-lg-1"></div>
             <div class="col-lg-5">
                 <div class="form-group">
                     <label class="mb-0">Amount <small class="text-danger font-italic text-bold">(required)</small></label>
@@ -63,14 +74,7 @@
                     @endif
                 </div>
             </div>
-            <div class="col-lg-3"></div>
-            <div class="col-lg-4">
-                <div class="form-group">
-                    <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <select id="employee_cost_center" name="cost_center" class="form-control" style="width: 100%;" form="update_rfp" value="{{$all_form->model->cost_center}}"></select>
-                    <small class="text-danger">{{$errors->first('cost_center')}}</small>
-                </div>
-            </div>
+            
         </div>
         <div class="row">
             <div class="col-lg-12">
@@ -109,7 +113,7 @@
                 <div class="form-group">
                     <b>Attachment Preview</b>
                     <iframe
-                        src="{{ asset('/'.$all_form->model->path) }}"
+                        src="{{ ($all_form->model->file_name == null && '') ? (asset('/'.$all_form->model->path)) : '' }}"
                         id="pdfPreview"
                         width="100%"
                         height="500"
@@ -135,6 +139,29 @@
 
 
 @push('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Map department IDs to their respective Head names using Blade
+        // Assumes $departmentList contains Department models with their 'head' relationship loaded
+        const departmentHeads = @json(
+            \App\Models\Department::with('head')->get()->pluck('head.name', 'id')
+        );
+
+        const departmentSelect = document.getElementById('department_select');
+        const costCenterInput = document.getElementById('cost_center_input');
+
+        // 2. Listen for dropdown changes
+        departmentSelect.addEventListener('change', function () {
+            const selectedDeptId = this.value;
+            
+            // Get the head name from our lookup map, or fallback to empty string
+            const headName = departmentHeads[selectedDeptId] || '';
+            
+            // Set the uppercase value into cost_center input
+            costCenterInput.value = headName.toUpperCase();
+        });
+    });
+</script>
 <script>
 $(function() {
     $('.currency-select').on('click', function(e) {
@@ -246,12 +273,12 @@ $(function() {
 
         let company = document.querySelector('select[name="company_id"]').value;
 
-        $('#employee_cost_center').select2({
+        $('#customer_cost_center_cash').select2({
             placeholder: "Select Employee Cost Center",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
                 dataType: 'json',
                 delay: 250, // Wait 250ms before sending request (debounce)
                 data: function (params) {

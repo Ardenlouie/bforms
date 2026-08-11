@@ -20,8 +20,8 @@
                 <tbody>
                     @foreach($activities as $activity)
                         <tr>
-                            <td>{{$activity->log_name}}</td>
-                            <td>{{$activity->description}}</td>
+                            <td>{{$activity->log_name ?? ''}}</td>
+                            <td>{{$activity->description ?? ''}}</td>
                             <td class="p-1 text-xs">
                                 @if($activity->log_name == 'updated' && !empty($updates[$activity->id]))
                                     <ul class="list-group">

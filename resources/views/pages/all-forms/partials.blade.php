@@ -98,7 +98,7 @@
                             @endif
                         @endforeach
                     @elseif($all_form->status == 'confirmation')
-                        <span class="badge badge-navy">
+                        <span class="badge badge-warning">
                             <i class="fas fa-file-signature"></i> {{$all_form->admin->name}}
                         </span>
                     @elseif($all_form->status == 'confirming')
@@ -143,6 +143,9 @@
                     </a>
                     <a href="{{ route('myforms.show', encrypt($all_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                         <i class="fa fa-file-contract"></i> Show
+                    </a>
+                    <a href="#" title="signatures" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn btn-signatures btn-success btn-xs mb-0 ml-0">
+                        <i class="fa fa-file-signature"></i> Approvers
                     </a>
                     <a href="#" title="delete" data-id="{{encrypt($all_form->id)}}" class="btn-delete btn bg-danger btn-xs mb-0 ml-0 ">
                         <i class="fa fa-trash-alt"></i> Delete

@@ -14,6 +14,8 @@ class Department extends Model
 
     protected $casts = [
         'approver_ids' => 'array', 
+        'bevi_approver' => 'array', 
+        'beva_approver' => 'array', 
     ];
 
     public function getConnectionName()
@@ -26,7 +28,10 @@ class Department extends Model
         'name',
         'head_id',
         'admin_id',
+        'admin2_id',
         'approver_ids',
+        'bevi_approver',
+        'beva_approver',
     ];
 
     public function head() {
@@ -36,9 +41,23 @@ class Department extends Model
     public function admin() {
         return $this->belongsTo('App\Models\User');
     }
+
+    public function admin2() {
+        return $this->belongsTo('App\Models\User');
+    }
     
     public function hasApprover($userId)
     {
         return in_array($userId, $this->approver_ids ?? []);
+    }
+
+    public function hasBevi($userId)
+    {
+        return in_array($userId, $this->bevi_approver ?? []);
+    }
+
+    public function hasBeva($userId)
+    {
+        return in_array($userId, $this->beva_approver ?? []);
     }
 }

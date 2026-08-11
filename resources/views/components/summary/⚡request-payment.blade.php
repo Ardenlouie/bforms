@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 
 new class extends Component
 {
-    public $control_number, $company_id, $forms, $user, $form_id=1, $cost_center, $department, $currency = 'PHP';
+    public $control_number, $company_id, $forms, $user, $form_id=1, $department, $currency = 'PHP';
     public $data = [];
 
     protected $listeners = ['loadRfpSummary' => 'loadData'];
@@ -29,7 +29,7 @@ new class extends Component
         $this->currency = $data['currency'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->cost_center = User::where('id', $data['cost_center'])->first();
+
         $this->department = Department::where('id', $data['department_id'])->first();
 
         
@@ -132,7 +132,7 @@ new class extends Component
                     <h4>Requestor: <br><b>{{ ($user->name ?? '' )}}</b></h4>
                 </div>
                 <div class="col-6">
-                    <h4>Approver: <br><b>{{ ($user->department->name ?? '' )}} Department Approvers</b></h4>
+                    <h4>Approver: <br><b>{{ ($department->name ?? '' )}} Approvers</b></h4>
                 </div>
             </div>
         </div>

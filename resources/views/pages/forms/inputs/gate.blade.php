@@ -14,9 +14,11 @@
                 <div class="form-group">
                     <label class="mb-0">Category <small class="text-danger font-italic text-bold">(required)</small></label>
                         <select class="form-control" name="category" id="category" form="add_gate">
+                            <option value="">-- Select Category --</option>
                             <option value="IT Equipment">IT Equipment</option>
                             <option value="Marketing Materials">Marketing Materials</option>
                             <option value="Documents">Documents</option>
+                            <!-- <option value="Stocked Samples">Product Samples</option> -->
                             <option value="Others">Others (Please Specify)</option>
                         </select>
                     <small class="text-danger">{{$errors->first('category')}}</small>
@@ -95,6 +97,40 @@
                             </td>
                             <td><input type="number" name="items[0][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
                             <td><input type="text" name="items[0][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
+                            <td><button type="button" class="btn btn-danger removeRow">x</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="table table-bordered text-center" id="samplesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th style="min-width: 200px;">Item Code</th>
+                            <th style="min-width: 300px;">Item Description</th>
+                            <th style="min-width: 100px;">UOM</th>
+                            <th>Qty</th>
+                            <th>Remarks</th>
+                            <th><button type="button" name="add" id="addBtn1" class="btn btn-success"><i class="fa fa-plus"></i></button></th>
+                        </tr>
+                    </thead>
+                    @php
+                        $num = 1;
+                    @endphp
+                    <tbody >
+                        <tr>
+                            <td class="row-number">1</td>
+                            <td><select name="items[0][sku-select]" style="width: 100%;" class="form-control text-center sku-select"></select></td>
+                            <td><input type="text" name="items[0][desc]" class="form-control text-center desc" disabled/></td>             
+                            <td>
+                                <select name="items[0][uom]" class="form-control text-center uom">
+                                    <option value="PCS">PCS</option>
+                                    <option value="CS">CS</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="items[0][qty]" class="form-control text-center qty" value="1" min="1"/>
+                            </td>
+                            <td><input type="text" name="items[0][remarks]" placeholder="Remarks" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                         </tr>
                     </tbody>
@@ -202,7 +238,9 @@
 @push('js')
 <script>
     let i = 0;
-
+    $('.sku-select').each(function() {
+            initSelect2($(this));
+        });
     document.getElementById("addBtn").addEventListener("click", function () {
         i++;
         let table = document.querySelector("#dynamicTable tbody");
@@ -223,7 +261,35 @@
         `;
         table.appendChild(newRow);
         updateRowNumbers();
-        emitPSRF();
+    });
+
+    document.getElementById("addBtn1").addEventListener("click", function () {
+        i++;
+        let table = document.querySelector("#dynamicTable tbody");
+        let newRow = document.createElement("tr");
+        
+        newRow.innerHTML = `
+            <td class="row-number"></td>
+            <td><select name="items[${i}][sku-select]" class="form-control sku-select" style="width: 100%;"></select></td>
+            <td><input type="text" name="items[${i}][desc]" class="form-control text-center desc" disabled/></td>
+            <td>
+                <select name="items[${i}][uom]" class="form-control text-center uom">
+                    <option value="PCS">PCS</option>
+                    <option value="CS">CS</option>
+                </select>
+            </td>
+            <td>
+                <input type="number" name="items[${i}][qty]" class="form-control text-center qty" value="1" min="1" />
+
+            </td>
+            <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
+            <td><button type="button" class="btn btn-danger removeRow">x</button></td>
+        `;
+
+        table.appendChild(newRow);
+        let $newSelect = $(newRow).find('.sku-select');
+        initSelect2($newSelect);
+        updateRowNumbers();
     });
 
     $(document).on('input', '.qty', function() {
@@ -240,36 +306,50 @@
         if (e.target && e.target.classList.contains("removeRow")) {
             e.target.closest("tr").remove();
             updateRowNumbers();
-            emitPSRF();
 
         }
     });
 
-
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            company_id: document.querySelector('select[name="company_id"]').value || "-",
-            purpose: document.querySelector('input[name="purpose"]').value || "-",
-            receive_by: document.querySelector('input[name="receive_by"]').value || "-",
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let uom = row.querySelector(".uom").value || "-";
-            let qty = parseFloat(row.querySelector(".qty").value) || 0;
-            let remarks = row.querySelector(".remarks").value || "-";
-
-            items.push({ desc, uom, qty, remarks });
-        });
-
-        Livewire.dispatch('loadGateSummary',{ data, items });
-    }
-
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {
             row.querySelector(".row-number").textContent = index + 1;
+        });
+    }
+
+    function initSelect2(element) {
+        element.select2({
+            placeholder: "Select Product",
+            allowClear: true,
+            theme: "classic",
+            ajax: {
+                url: "{{ route('products.ajax') }}", 
+                dataType: 'json',
+                delay: 250, 
+                data: function (params) {
+                    return {
+                        search: params.term,
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                        results: data.results
+                    };
+                },
+                cache: true
+            }
+        }).on('select2:select', function (e) {
+            let data = e.params.data; 
+            let $row = $(this).closest('tr');
+
+
+            $row.data('product-info', data);
+            $row.find('.desc').val(data.description);
+            $row.find('.price').val(data.price);
+            $row.find('.totalQty').val(data.quantity_pcs);
+
+            updateRowQuantity($row);
+            calculateTotals();
+
         });
     }
 
@@ -332,6 +412,7 @@
         $('body').on('click', '.btn-preview', function(e) {
             let hasError = false;
             let errorMessage = "";
+            const categorySelect = document.getElementById('category');
         
             $('.qty').each(function() {
             let val = parseFloat($(this).val());
@@ -372,6 +453,7 @@
             };
 
             let items = [];
+    
             document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
                 let desc = row.querySelector(".desc").value || "-";
                 let uom = row.querySelector(".uom").value || "-";
@@ -380,7 +462,8 @@
 
                 items.push({ desc, uom, qty, remarks });
             });
-   
+         
+       
             Livewire.dispatch('loadGateSummary',{ data, items });
             $('#modal-preview').modal('show');
         });
@@ -485,4 +568,23 @@ $(document).ready(function() {
     });
 });
 </script>
+<script>
+// document.addEventListener('DOMContentLoaded', function () {
+//     const categorySelect = document.getElementById('category');
+//     const defaultTable = document.getElementById('dynamicTable');
+//     const samplesTable = document.getElementById('samplesTable');
+
+//     categorySelect.addEventListener('change', function () {
+//         if (this.value === 'Stocked Samples') {
+//             // Hide the default table and display the Samples table
+//             defaultTable.style.display = 'none';
+//             samplesTable.style.display = 'table'; // or 'block' depending on styling
+//         } else {
+//             // Restore default table for any other category option
+//             defaultTable.style.display = 'table';
+//             samplesTable.style.display = 'none';
+//         }
+//     });
+// });
+// </script>
 @endpush

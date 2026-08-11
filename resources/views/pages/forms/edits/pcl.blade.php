@@ -18,7 +18,7 @@
                 <div class="row mb-3">
                     <div class="col-lg-6">
                         <h4>Name: <b>{{ ($all_form->model->pca_form->name ?? '' )}}</b></h4>                  
-                        <h4>Cost Center: <b>{{ ($all_form->model->pca_form->costcenter->name ?? '' )}}</b></h4>
+                        <h4>Cost Center: <b>{{ ($all_form->model->pca_form->cost_center ?? '' )}}</b></h4>
                     </div>
                     <div class="col-lg-6 text-right">
                         <div class="table-responsive">
@@ -155,7 +155,6 @@
         table.appendChild(newRow);
         updateRowNumbers();
         calculateTotals();
-        emitPSRF();
     });
 
     document.addEventListener("click", function (e) {
@@ -163,8 +162,6 @@
             e.target.closest("tr").remove();
             updateRowNumbers();
             calculateTotals();
-            emitPSRF();
-
         }
     });
 
@@ -176,26 +173,6 @@
   
     });
 
-    function emitPSRF() {
-        let data = {
-            form_id: document.querySelector('input[name="form_id"]').value || "-",
-            control_number: document.querySelector('input[name="control_number"]').value,
-            company_id: document.querySelector('input[name="company_id"]').value || "-",
-            pca_form_id: document.querySelector('input[name="pca_form_id"]').value || "-",
-            file_name: document.querySelector('input[name="file_name"]').value || "-",
-            pca_amount: document.querySelector('input[name="pca_amount"]').value || 0,
-        };
-
-        let items = [];
-        document.querySelectorAll('#dynamicTable tbody tr').forEach(row => {
-            let desc = row.querySelector(".desc").value || "-";
-            let amount = parseFloat(row.querySelector(".amount").value) || 0;
-
-            items.push({ desc, amount });
-        });
-
-        Livewire.dispatch('loadPclSummary',{ data, items });
-    }
 
     function updateRowNumbers() {
         document.querySelectorAll("#dynamicTable tbody tr").forEach((row, index) => {

@@ -1,4 +1,4 @@
-<form action="{{ route('store.rca',encrypt($form->id)) }}" method="POST" id="add_rca">
+<form action="{{ route('store.rca',encrypt($form->id)) }}" method="POST" id="add_rca" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -9,26 +9,18 @@
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
             </div>
-        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
-
-        </div>  
-        <div class="row">
+            <div class="col-lg-3"></div>
             <div class="col-lg-5">
                 <div class="form-group">
-                    <label class="mb-0">Name <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="name" form="add_rca"> 
-                    <small class="text-danger">{{$errors->first('name')}}</small>
-                </div>
-            </div>
-            <div class="col-lg-3"></div>
-            <div class="col-lg-4">
-                <div class="form-group">
                     <label class="mb-0">Cost Center <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <select id="employee_cost_center" name="cost_center" class="form-control" style="width: 100%;" form="add_rca"></select>
+                    <select id="customer_cost_center_cash" name="cost_center" class="form-control" style="width: 100%;"></select>
                     <small class="text-danger">{{$errors->first('cost_center')}}</small>
                 </div>
             </div>
-        </div>
+        <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
+        <input type="hidden" name="name"  value="{{ $requestor->name }}">
+
+        </div>  
         <div class="row">
             <div class="col-lg-6">
                 <div class="form-group">
@@ -313,12 +305,12 @@
 
         let company = document.querySelector('select[name="company_id"]').value;
 
-        $('#employee_cost_center').select2({
+        $('#customer_cost_center_cash').select2({
             placeholder: "Select Employee Cost Center",
             allowClear: true,
             theme: "classic",
             ajax: {
-                url: "{{ route('employee_cost.ajax') }}", // Create this route in web.php
+                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
                 dataType: 'json',
                 delay: 250, // Wait 250ms before sending request (debounce)
                 data: function (params) {

@@ -29,7 +29,6 @@ new class extends Component
         $this->form_id = $data['form_id'];
 
         $this->forms = Form::findOrFail(decrypt($data['form_id']));
-        $this->cost_center = User::where('id', $data['cost_center'])->first();
 
         $this->total_amount = collect($items)->sum('amount');
         
