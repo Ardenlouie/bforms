@@ -60,6 +60,8 @@
                         <span class="badge bg-navy"><b>For Processing</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
+                    @elseif($my_form->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge bg-purple"><b>Checked</b></span>
                     @elseif($my_form->status == 'received')
@@ -131,6 +133,8 @@
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
+                    @elseif($my_form->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @else
                         <span class="badge bg-dark"><b>Pending</b></span>
                     @endif
@@ -145,7 +149,7 @@
                     <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received')
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'cancelled')
                         <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>
@@ -153,12 +157,16 @@
                     <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
                         <i class="fa fa-file-signature"></i> Approvers
                     </a>
-                    <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-danger btn-xs mb-0 ml-0">
-                        <i class="fa fa-file-signature"></i> Cancel
+                    @if($my_form->status != 'approved' && $my_form->status != 'checked' && $my_form->status != 'received' && $my_form->status != 'cancelled')
+                    <a href="#" title="cancel" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-cancel btn bg-danger btn-xs mb-0 ml-0">
+                        <i class="fa fa-ban"></i> Cancel
                     </a>
+                    @endif
+
                 </td>
             </tr>
         @endforeach
     </tbody>
 </table>
-{{$my_forms->links()}}
+{{ $my_forms->appends(request()->query())->links() }}
+

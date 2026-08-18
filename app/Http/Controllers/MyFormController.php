@@ -188,6 +188,28 @@ class MyFormController extends Controller
 
         ]);
     }
+
+    public function cancel($id, AllFormEditRequest $request) 
+    {
+        $all_forms = AllForm::findOrFail(decrypt($id)); 
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+        $user = Auth::user();
+
+        $all_forms->update([
+            'status' => 'cancelled',
+            'remarks' => $request->remarks,
+            'declined_id' => $user->id,
+        ]);
+
+        activity('cancelled')
+            ->performedOn($all_forms)
+            ->log('Requestor has cancelled ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => 'Form ['.$control_number.'] was cancelled!'
+        ]);
+    }
     
 
     public function update_psrf($id, PSRFUpdateRequest $request)
@@ -255,7 +277,7 @@ class MyFormController extends Controller
             $brands = Brand::whereIn('brand', $brandNames)->get();
 
             $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
-            $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
+            // $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
         }
 
         $all_forms->update([
@@ -283,7 +305,7 @@ class MyFormController extends Controller
                 'brands' => $bm_ids ?? null,
                 'group_brands' => $gbm_ids ?? null,
                 'bm_signs' => $bm_ids ?? null,
-                'gbm_signs' => $gbm_ids ?? null,
+                // 'gbm_signs' => $gbm_ids ?? null,
             ]);
 
             $all_forms->model->update([
@@ -480,9 +502,22 @@ class MyFormController extends Controller
             ]);
         }
 
+        if($all_forms->model->category != 'Product Sample'){
+            if($all_forms->model->category == 'IT Equipment'){
+                $endorser = $it->approver_ids;
+            } elseif ($all_forms->model->category == 'Marketing Materials') {
+                $endorser = $marketing->approver_ids;
+            } elseif ($all_forms->model->category == 'Marketing Materials' && $all_forms->user->department->prefix == 'PBB') {
+                $endorser = $user->department->approver_ids;
+            } else {
+                $endorser = $user->department->approver_ids;
+            }
+        }
+
         
         $all_forms->update([ 
             'status' => $request->status,
+            'endorser' => $endorser,
         ]);
 
         if($all_forms->status == 'endorsement') {

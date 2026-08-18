@@ -53,10 +53,10 @@ new class extends Component
         do {
             $control_number = 'PCA-0'.$this->company_id.'-'.$date_code.'-001';
 
-            $rca = PettyCash::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $this->company_id)->first();
+            $pca = PettyCash::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $this->company_id)->first();
             
-            if(!empty($rca->control_number)) {
-                $latest_control_number = $rca->control_number;
+            if(!empty($pca->control_number)) {
+                $latest_control_number = $pca->control_number;
                 list(,$prev_company_id, $prev_year, $last_number) = explode('-', $latest_control_number);
 
                 $number = ('0'.$this->company_id == $prev_company_id && $prev_year == $date_code) ? ((int)$last_number + 1) : 1;

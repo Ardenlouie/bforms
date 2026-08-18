@@ -63,6 +63,8 @@
                         <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($all_form->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
+                    @elseif($all_form->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @elseif($all_form->status == 'partially_released')
                         <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
@@ -129,6 +131,8 @@
                         <span class="badge badge-secondary">DRAFT</span>
                     @elseif($all_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
+                    @elseif($all_form->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @else
                         <span class="badge bg-dark"><b>Pending</b></span>
                     @endif
@@ -155,4 +159,4 @@
         @endforeach
     </tbody>
 </table>
-{{$all_forms->links()}}
+{{ $all_forms->appends(request()->query())->links() }}

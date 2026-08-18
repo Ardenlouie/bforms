@@ -67,7 +67,14 @@
                         <tbody >
                             <tr>
                                 <td class="row-number">1</td>       
-                                <td><input type="text" name="items[0][desc]" placeholder="Enter Description" class="form-control text-center desc" /></td>             
+                                <td>
+                                    <select name="items[0][desc]" class="form-control text-center desc">
+                                        <option value="">-- Select Expense Account --</option>
+                                        @foreach($expense_accounts as $id => $name)
+                                            <option value="{{ $name }}">{{ $name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>           
                                 <td><input type="number" name="items[0][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0"/></td>
                                 <td><button type="button" class="btn btn-danger removeRow">x</button></td>
                             </tr>
@@ -141,7 +148,14 @@
         let newRow = document.createElement("tr");
         newRow.innerHTML = `
             <td class="row-number"></td>
-            <td><input type="text" name="items[${i}][desc]" placeholder="Enter Description" class="form-control text-center desc" /></td>
+            <td>
+                <select name="items[${i}][desc]" class="form-control text-center desc">
+                    <option value="">-- Select Expense Account --</option>
+                    @foreach($expense_accounts as $id => $name)
+                        <option value="{{ $name }}">{{ $name }}</option>
+                    @endforeach
+                </select>
+            </td> 
             <td><input type="number" name="items[${i}][amount]" placeholder="Enter Amount" class="form-control text-center amount" value="0"/></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
         `;

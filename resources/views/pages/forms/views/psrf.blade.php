@@ -21,6 +21,8 @@
                 <span class="badge bg-purple"><b>Received & Checked</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
+            @elseif($forms->status == 'cancelled')
+                <span class="badge badge-danger"><b>Cancelled</b></span>
             @else
                 <span class="badge bg-dark"><b>Pending</b></span>
             @endif
@@ -241,13 +243,22 @@
                     </a>
                     @endif
                 </div>
+                @elseif($forms->status == 'cancelled')
+                <div class="form-group">
+                    <small class="form-text text-muted mb-3">
+                        This Form has been CANCELLED.
+                    </small>
+                    <label class="form-text text-bold text-xl">
+                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                    </label>
+                </div>
                 @endif
 
                 @if($forms->status == 'endorsement' || $forms->status == 'approval' || $forms->status == 'confirming' || $forms->status == 'confirmed')
                     @php
                         $hoursPending = $forms->updated_at->diffInHours(now());
                     @endphp
-                    @if($hoursPending >= 24  && $forms->user_id == $user->id) 
+                    @if($hoursPending >= 24  && $forms->user_id == $user->id || $forms->admin_id == $user->id) 
                     <div class="form-group">    
                         <small class="form-text text-muted mb-3">
                             This Form has been PENDING for approval, 1 day from submission. Press the button below to follow up your request.
@@ -307,7 +318,7 @@
             $group_brands = \App\Models\User::whereIn('id', $forms->group_brands ?? [])->get();
         @endphp
         <div class="row mb-3">
-            <div class="col-4">
+            <div class="col-6">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
                 
@@ -317,7 +328,7 @@
                 <div class="line"></div>
                 <h4>Prepared By</h4>
             </div>
-            <div class="col-4">
+            <div class="col-6">
                 <img src="{{ asset($forms->brands->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
@@ -332,22 +343,6 @@
 
                 <div class="line"></div>
                 <h4>Brand Manager</h4>
-            </div>
-            <div class="col-4">
-                <img src="{{ asset($forms->group_brands->signature ?? 'images/nosign1.png') }}" height="50" width="100">
-                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
-
-                <h6>{{ ($forms->date_confirmed ?? '' )}}</h6>
-                
-                @foreach($group_brands as $id => $group_brand)
-                    <h3><b>{{ $group_brand->name }}</b></h3>
-                    @if(!$loop->last)
-                        <span class="mx-1 text-muted font-weight-bold">/</span>
-                    @endif
-                @endforeach
-
-                <div class="line"></div>
-                <h4>Group Brand Manager</h4>
             </div>
         </div>
         <div class="row">

@@ -79,6 +79,11 @@
                     <livewire:forms.view />
                 </div>
             </div>
+            <div class="modal fade" id="modal-cancel">
+                <div class="modal-dialog modal-dialog-centered">
+                    <livewire:forms.cancel />
+                </div>
+            </div>
         </div>
     </div>
 @stop
@@ -165,6 +170,19 @@
             };
             Livewire.dispatch('viewForm', {data});
             $('#modal-view').modal('show');
+        });
+    });
+</script>
+<script>
+    $(function() {
+        $('body').on('click', '.btn-cancel', function(e) {
+            e.preventDefault();
+            let data = {
+                id: $(this).data('id'),
+                form: $(this).data('form'),
+            };
+            Livewire.dispatch('cancelForm', {data});
+            $('#modal-cancel').modal('show');
         });
     });
 </script>

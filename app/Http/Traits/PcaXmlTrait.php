@@ -122,31 +122,30 @@ trait PcaXmlTrait
                     'JournalNotation'                     => '',
                     'InvoiceDate'                     => $pca->date_submitted,
                     'DueDate'                     => $pca->date_submitted,
-                    'TaxCode'                     => 'G',
+                    'Bank'                     => '02',
+                    'TaxCode'                     => 'Z',
                     'TaxValue'                     => $tax_value,
                 ]
             ]
         ];
 
-        foreach ($pca_details as $detail) {
-            $entry_amount = $detail->amount;
 
-            $data['Items']['Item']['LedgerDistribution'][] = [
-                'LedgerCode'         => '130010',
-                'LedgerTaxCode'         => 'G',
-                'LedgerWithholdingTaxCode'       => 'G',
-                'AnalysisLineEntry' => [
-                    'AnalysisCode1' => '',
-                    'AnalysisCode2' => '',
-                    'AnalysisCode3' => '',
-                    'AnalysisCode4' => $analysis4,
-                    'AnalysisCode5' => '',
-                    'EntryAmount'   => number_format($entry_amount, 2),
-                ],
-            ];
+        $data['Items']['Item']['LedgerDistribution'][] = [
+            'LedgerCode'         => '130010',
+            'LedgerTaxCode'         => 'Z',
+            'LedgerWithholdingTaxCode'       => 'Z',
+            'AnalysisLineEntry' => [
+                'AnalysisCode1' => '',
+                'AnalysisCode2' => '',
+                'AnalysisCode3' => '',
+                'AnalysisCode4' => $analysis4,
+                'AnalysisCode5' => '',
+                'EntryAmount'   => number_format($pca->total_amount, 2),
+            ],
+        ];
            
             
-        }
+        
 
         
         // dd($data);

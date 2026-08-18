@@ -98,15 +98,15 @@ new class extends Component
 
         if (empty($all_forms->bm_signs)) {
             $all_forms->update([
-                'status' => 'confirmed',
+                'status' => 'endorsement',
                 'date_confirming' => $date_confirming,
             ]);
             // $all_forms->endorsed->notify(new SubmitFormNotification($all_forms));
 
-            $group_brands = User::whereIn('id', $all_forms->group_brands ?? [])->get();
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
 
-            if ($group_brands->isNotEmpty()) {
-                Notification::send($group_brands, new SubmitFormNotification($all_forms));
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
             }
         } 
 
@@ -209,7 +209,7 @@ new class extends Component
                 <div class="col-4">
                     <h5>Customer: <b>{{ ($data['customer'] ?? '' )}}</b></h5>
                     <h5>Activity Name: <b>{{ ($data['activity'] ?? '' )}}</b></h5>
-                    <h5>Warehouse: <b>{{ ($data['warehouse'] ?? '' )}}</b></h5>
+                    <h5>Warehouse: <b>{{ ($data['warehouse'] ?? 'Office Warehouse' )}}</b></h5>
                     <h5>Special Instructions: <b>{{ ($data['special'] ?? '' )}}</b></h5>
                 </div>
             </div>

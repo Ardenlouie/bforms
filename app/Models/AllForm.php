@@ -41,6 +41,7 @@ class AllForm extends Model
         'approver',
         'noted_id',
         'signed_id',
+        'declined_id',
         'date_confirm',
         'date_confirming',
         'date_confirmed',
@@ -76,6 +77,10 @@ class AllForm extends Model
     }
 
     public function noted() {
+        return $this->belongsTo('App\Models\User');
+    }
+
+    public function declined() {
         return $this->belongsTo('App\Models\User');
     }
 

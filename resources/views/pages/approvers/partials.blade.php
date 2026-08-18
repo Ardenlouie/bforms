@@ -63,6 +63,8 @@
                         <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
+                    @elseif($approval->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @elseif($approval->status == 'partially_released')
                         <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
@@ -129,6 +131,8 @@
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
+                    @elseif($approval->status == 'cancelled')
+                        <span class="badge badge-danger"><b>Cancelled</b></span>
                     @else
                         <span class="badge bg-dark"><b>Pending</b></span>
                     @endif
@@ -175,4 +179,5 @@
         @endforeach
     </tbody>
 </table>
-{{$approvals->links()}}
+{{ $approvals->appends(request()->query())->links() }}
+

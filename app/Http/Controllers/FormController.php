@@ -57,6 +57,8 @@ use App\Http\Traits\PsrfXmlTrait;
 use App\Http\Traits\RfpXmlTrait;
 use App\Http\Traits\RcaXmlTrait;
 use App\Http\Traits\PcaXmlTrait;
+use App\Http\Traits\LcaXmlTrait;
+use App\Http\Traits\PclXmlTrait;
 
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
@@ -73,6 +75,8 @@ class FormController extends Controller
     use RcaXmlTrait;
     use RfpXmlTrait;
     use PcaXmlTrait;
+    use LcaXmlTrait;
+    use PclXmlTrait;
 
     public function index(Request $request)
     {
@@ -695,6 +699,22 @@ class FormController extends Controller
         
     }
 
+    public function lcaXml($id) 
+    {
+        $lca = LiquidCash::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlLca($lca);
+        
+    }
+
+    public function pclXml($id) 
+    {
+        $pcl = PettyLiquid::findOrFail(decrypt($id)); 
+
+        return $this->downloadXmlPcl($pcl);
+        
+    }
+
     public function store_psrf($id, PSRFStoreRequest $request)
     {
         $user = Auth::user();
@@ -769,19 +789,28 @@ class FormController extends Controller
             $brands = Brand::whereIn('brand', $brandNames)->get();
 
             $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
-            $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
+            // $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
         } 
+
+        if($psrf->company->name == 'BEVI') {
+            $admin = $user->department->admin_id;
+        } elseif($psrf->company->name == 'BEVA') {
+            $admin = $user->department->admin2_id;
+        } else {
+            $admin = $user->department->admin_id;
+        }
 
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
+            'admin_id' => $admin,
             'department_id' => $department_ids,
             'model_id' => $psrf->id,
             'model_type' => 'App\Models\ProductSample',
             'brands' => $bm_ids ?? null,
             'group_brands' => $gbm_ids ?? null,
             'bm_signs' => $bm_ids ?? null,
-            'gbm_signs' => $gbm_ids ?? null,
+            // 'gbm_signs' => $gbm_ids ?? null,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -1020,6 +1049,8 @@ class FormController extends Controller
                 $endorser = $it->approver_ids;
             } elseif ($gate->category == 'Marketing Materials') {
                 $endorser = $marketing->approver_ids;
+            } elseif ($gate->category == 'Marketing Materials' && $user->department->prefix == 'PBB') {
+                $endorser = $user->department->approver_ids;
             } else {
                 $endorser = $user->department->approver_ids;
             }

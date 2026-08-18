@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 new class extends Component
 {
-    public $forms, $user, $form_id, $brands, $group_brands;
+    public $forms, $user, $form_id, $brands, $group_brands, $endorsers, $approvers;
     public $data = [];
 
     protected $listeners = ['viewSignatures' => 'loadData'];
@@ -26,6 +26,8 @@ new class extends Component
 
         $this->brands = User::whereIn('id', $this->forms->brands ?? [])->get();
         $this->group_brands = User::whereIn('id', $this->forms->group_brands ?? [])->get();
+        $this->endorsers = User::whereIn('id', $this->forms->endorser ?? [])->get();
+        $this->approvers = User::whereIn('id', $this->forms->approver ?? [])->get();
 
     }
 
@@ -59,7 +61,7 @@ new class extends Component
                             @endif
                         </td>
                     </tr>
-                    @if(!empty($forms->admin_id))
+                    @if(!empty($forms->admin_id) && $forms->form->prefix != 'psrf')
                     <tr>
                         <td>Admin In-charge</td>
                         <td>{{ $forms->admin->name ?? ''}}</td>
@@ -124,7 +126,19 @@ new class extends Component
                     @if(!empty($forms->endorser))
                     <tr>
                         <td>Endorsed By</td>
-                        <td>{{ $forms->noted->name ?? $forms->endorsed->name }}</td>
+                        <td>
+                            @if(empty($forms->noted->name))
+                            @foreach($endorsers as $id => $endorser)
+                                {{ $endorser->name }}
+                                @if(!$loop->last)
+                                    <span class="mx-1 text-muted font-weight-bold">/</span>
+                                @endif
+                            @endforeach
+                            @else
+                                {{ $forms->noted->name }}
+                            @endif
+                            
+                        </td>
                         <td>
                             @if(!empty($forms->date_endorsed) && $forms->status != 'declined')
                             {{ $forms->date_endorsed }}
@@ -140,12 +154,21 @@ new class extends Component
                     <tr>
                         <td>Approved By</td>
                         <td>
-                            {{ ($forms->signed->name ?? $forms->approved->name ) }}
+                            @if(empty($forms->signed->name))
+                            @foreach($approvers as $id => $approver)
+                                {{ $approver->name }}
+                                @if(!$loop->last)
+                                    <span class="mx-1 text-muted font-weight-bold">/</span>
+                                @endif
+                            @endforeach
+                            @else
+                                {{ $forms->signed->name }}
+                            @endif
                         </td>
                         <td>
                             @if(!empty($forms->date_approved) && $forms->status != 'declined')
                                 {{ $forms->date_approved }}
-                            @endif
+                            @endif  
                         </td>
                         <td>
                             @if(!empty($forms->date_approved) && $forms->status != 'declined')

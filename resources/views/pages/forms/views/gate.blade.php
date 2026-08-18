@@ -19,6 +19,8 @@
                 <span class="badge bg-lime"><b>Received</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
+            @elseif($forms->status == 'cancelled')
+                <span class="badge badge-danger"><b>Cancelled</b></span>
             @elseif($forms->status == 'partially_released')
                     <span class="badge bg-orange"><b>Partially Released</b></span>
             @else
@@ -185,13 +187,22 @@
                         This Form has been DECLINED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{$forms->remarks}}
+                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
                     </label>
                     @if($forms->user_id == $user->id)
                     <a type="button" href="{{route( 'myforms.edit', encrypt($forms->id) )}}" class="btn bg-gradient-warning btn-lg">
                         <i class="fas fa-edit"></i> EDIT & RE-SUBMIT
                     </a>
                     @endif
+                </div>
+                @elseif($forms->status == 'cancelled')
+                <div class="form-group">
+                    <small class="form-text text-muted mb-3">
+                        This Form has been CANCELLED.
+                    </small>
+                    <label class="form-text text-bold text-xl">
+                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                    </label>
                 </div>
                 @endif
 

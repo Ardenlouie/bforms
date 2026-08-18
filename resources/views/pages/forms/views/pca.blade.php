@@ -19,6 +19,8 @@
                 <span class="badge bg-purple"><b>Received & Checked</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
+            @elseif($forms->status == 'cancelled')
+                <span class="badge badge-danger"><b>Cancelled</b></span>
             @else
                 <span class="badge bg-dark"><b>Pending</b></span>
             @endif
@@ -183,6 +185,15 @@
                         <i class="fas fa-edit"></i> EDIT & RE-SUBMIT
                     </a>
                     @endif
+                </div>
+                @elseif($forms->status == 'cancelled')
+                <div class="form-group">
+                    <small class="form-text text-muted mb-3">
+                        This Form has been CANCELLED.
+                    </small>
+                    <label class="form-text text-bold text-xl">
+                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                    </label>
                 </div>
                 @endif
 
