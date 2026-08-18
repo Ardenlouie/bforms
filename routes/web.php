@@ -73,6 +73,8 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('/rfp-xml/{id}', [FormController::class, 'rfpXml'])->name('rfp.xml');
         Route::get('/rca-xml/{id}', [FormController::class, 'rcaXml'])->name('rca.xml');
         Route::get('/pca-xml/{id}', [FormController::class, 'pcaXml'])->name('pca.xml');
+        Route::get('/lca-xml/{id}', [FormController::class, 'lcaXml'])->name('lca.xml');
+        Route::get('/pcl-xml/{id}', [FormController::class, 'pclXml'])->name('pcl.xml');
 
 
         Route::post('form', [FormController::class, 'store'])->name('form.store');
@@ -95,6 +97,7 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('myforms', [MyFormController::class, 'index'])->name('myforms.index');
         Route::get('myform/show/{id}', [MyFormController::class, 'show'])->name('myforms.show');
         Route::get('myform/edit/{id}', [MyFormController::class, 'edit'])->name('myforms.edit');
+        Route::post('myform/cancel/{id}', [MyFormController::class, 'cancel'])->name('myforms.cancel');
 
         Route::post('update/psrf/{id}', [MyFormController::class, 'update_psrf'])->name('update.psrf');
         Route::post('update/psst/{id}', [MyFormController::class, 'update_psst'])->name('update.psst');

@@ -19,6 +19,8 @@
                 <span class="badge bg-purple"><b>Received & Checked</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
+            @elseif($forms->status == 'cancelled')
+                <span class="badge badge-danger"><b>Cancelled</b></span>
             @else
                 <span class="badge bg-dark"><b>Pending</b></span>
             @endif
@@ -122,7 +124,26 @@
                 
             </div>
             <div class="col-6 text-right">
-                
+                @if($forms->status == 'approved')
+                    @can('bforms finance')
+                    @if(!empty($sct_number))
+                        <small class="form-text text-muted mb-3">
+                            APInvoice has been created: 
+                        </small>
+                        <label class="form-text text-bold text-xl">
+                            
+                        </label>
+                    @else
+                        <small class="form-text text-muted mb-3">
+                            This Form has been APPROVED. <br>Click the button below to download XML for APInvoice posting.
+                        </small>
+                        <a type="button" href="{{route( 'lca.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
+                            <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
+                        </a>
+                        
+                    @endif
+                    @endcan
+                @endif
                 
                 <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
                     @csrf          
@@ -165,13 +186,22 @@
                         This Form has been DECLINED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{$forms->remarks}}
+                        {{ $forms->remarks }} -  ({{ $forms->declined->name ?? ''}})
                     </label>
                     @if($forms->user_id == $user->id)
                     <a type="button" href="{{route( 'myforms.edit', encrypt($forms->id) )}}" class="btn bg-gradient-warning btn-lg">
                         <i class="fas fa-edit"></i> EDIT & RE-SUBMIT
                     </a>
                     @endif
+                </div>
+                @elseif($forms->status == 'cancelled')
+                <div class="form-group">
+                    <small class="form-text text-muted mb-3">
+                        This Form has been CANCELLED.
+                    </small>
+                    <label class="form-text text-bold text-xl">
+                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                    </label>
                 </div>
                 @endif
 

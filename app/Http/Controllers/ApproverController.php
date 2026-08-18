@@ -11,6 +11,7 @@ use App\Models\AllForm;
 use App\Models\Company;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Position;
 
 use App\Http\Requests\AllFormUpdateRequest;
 use App\Http\Requests\AllFormCheckRequest;
@@ -165,6 +166,7 @@ class ApproverController extends Controller
 
             $all_forms->update([
                 'remarks' => $request->remarks,
+                'declined_id' => $user->id,
             ]);
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));
@@ -206,6 +208,7 @@ class ApproverController extends Controller
 
             $all_forms->update([
                 'remarks' => $request->remarks,
+                'declined_id' => $user->id,
             ]);
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));
@@ -230,6 +233,7 @@ class ApproverController extends Controller
 
             $all_forms->update([
                 'remarks' => $request->remarks,
+                'declined_id' => $user->id,
             ]);
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));
@@ -257,6 +261,7 @@ class ApproverController extends Controller
             $all_forms->update([
                 'remarks' => $request->remarks,
                 'date_confirmed' => null,
+                'declined_id' => $user->id,
             ]);
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));
@@ -275,15 +280,17 @@ class ApproverController extends Controller
 
             $scm = User::where('department_id', '9')->get();
             $finance = User::where('department_id', '2')->get();
+            $ap_specialist = Position::where('position', 'AP Specialist')->first();
+            $ap_user = User::where('position_id', $ap_specialist->id)->get();
             $hr = User::where('department_id', '3')->get();
 
             if($all_forms->form->prefix == 'psst' || $all_forms->form->prefix == 'psrf' ){
                 if ($scm->isNotEmpty()) {
                     Notification::send($scm, new XmlFormNotification($all_forms));
                 }
-            } elseif($all_forms->form->prefix == 'rfp') {
-                if ($finance->isNotEmpty()) {
-                    Notification::send($finance, new XmlFormNotification($all_forms));
+            } elseif($all_forms->form->prefix == 'rfp' || $all_forms->form->prefix == 'rca' || $all_forms->form->prefix == 'pca' || $all_forms->form->prefix == 'lca' || $all_forms->form->prefix == 'pcl') {
+                if ($ap_user->isNotEmpty()) {
+                    Notification::send($ap_user, new XmlFormNotification($all_forms));
                 }
             } elseif($all_forms->form->prefix == 'pgp'){
                 if ($scm->isNotEmpty()) {
@@ -296,6 +303,7 @@ class ApproverController extends Controller
             $all_forms->update([
                 'remarks' => $request->remarks,
                 'date_endorsed' => null,
+                'declined_id' => $user->id,
             ]);
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));

@@ -65,10 +65,10 @@ new class extends Component
         do {
             $control_number = 'PCL-0'.$this->company_id.'-'.$date_code.'-001';
 
-            $rca = PettyLiquid::withTrashed()->orderBy('control_number', 'DESC')->first();
+            $pcl = PettyLiquid::withTrashed()->orderBy('control_number', 'DESC')->where('company_id', $this->company_id)->first();
             
-            if(!empty($rca->control_number)) {
-                $latest_control_number = $rca->control_number;
+            if(!empty($pcl->control_number)) {
+                $latest_control_number = $pcl->control_number;
                 list(,$prev_company_id, $prev_year, $last_number) = explode('-', $latest_control_number);
 
                 $number = ('0'.$this->company_id == $prev_company_id && $prev_year == $date_code) ? ((int)$last_number + 1) : 1;
@@ -78,7 +78,7 @@ new class extends Component
                 $control_number = "PCL-0$this->company_id-$date_code-$formatted_number";
             }
 
-        } while(PettyLiquid::withTrashed()->where('control_number', $control_number)->exists());
+        } while(PettyLiquid::withTrashed()->where('control_number', $control_number)->where('company_id', $this->company_id)->exists());
 
         return $control_number;
     }
