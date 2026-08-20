@@ -59,6 +59,8 @@
                             <option value="approved">Approved</option>
                             <option value="checked">Checked</option>
                             <option value="received">Received</option>
+                            <option value="liquidated">Liquidated</option>
+                            <option value="cancelled">Cancelled</option>
                             <option value="declined">Declined</option>
                         </select>
                     </div>

@@ -54,6 +54,8 @@
                         <span class="badge badge-success"><b>Approved</b></span>
                     @elseif($my_form->status == 'processing')
                         <span class="badge bg-navy"><b>For Processing</b></span>
+                    @elseif($my_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Liquidated</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
@@ -100,6 +102,8 @@
                         <span class="badge badge-success"><b>Completed</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge badge-success"><b>Completed</b></span>
+                    @elseif($my_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
@@ -131,4 +135,4 @@
         @endforeach
     </tbody>
 </table>
-{{$my_forms->links()}}
+{{ $my_forms->appends(request()->query())->links() }}

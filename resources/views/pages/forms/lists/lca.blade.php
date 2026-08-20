@@ -131,4 +131,5 @@
         @endforeach
     </tbody>
 </table>
-{{$my_forms->links()}}
+{{ $my_forms->appends(request()->query())->links() }}
+

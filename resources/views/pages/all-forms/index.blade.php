@@ -59,6 +59,8 @@
                             <option value="approved">Approved</option>
                             <option value="checked">Checked</option>
                             <option value="received">Received</option>
+                            <option value="liquidated">Liquidated</option>
+                            <option value="cancelled">Cancelled</option>
                             <option value="declined">Declined</option>
                         </select>
                     </div>
@@ -77,6 +79,11 @@
             <div class="modal fade" id="modal-view">
                 <div class="modal-dialog modal-xl">
                     <livewire:forms.view />
+                </div>
+            </div>
+            <div class="modal fade" id="modal-cancel">
+                <div class="modal-dialog modal-dialog-centered">
+                    <livewire:forms.cancel />
                 </div>
             </div>
         </div>
@@ -174,6 +181,19 @@
             var id = $(this).data('id');
             Livewire.dispatch('setDeleteModel', {type: 'AllForm', model_id: id});
             $('#modal-delete').modal('show');
+        });
+    });
+</script>
+<script>
+    $(function() {
+        $('body').on('click', '.btn-cancel', function(e) {
+            e.preventDefault();
+            let data = {
+                id: $(this).data('id'),
+                form: $(this).data('form'),
+            };
+            Livewire.dispatch('cancelForm', {data});
+            $('#modal-cancel').modal('show');
         });
     });
 </script>

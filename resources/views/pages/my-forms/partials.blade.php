@@ -66,6 +66,8 @@
                         <span class="badge bg-purple"><b>Checked</b></span>
                     @elseif($my_form->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
+                    @elseif($my_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Liquidated</b></span>
                     @elseif($my_form->status == 'partially_released')
                         <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
@@ -131,6 +133,8 @@
                         <span class="badge bg-purple"><b>For Receiving</b></span>
                     @elseif($my_form->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                    @elseif($my_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
@@ -149,7 +153,7 @@
                     <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'cancelled')
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'cancelled' || $my_form->status == 'liquidated')
                         <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>
@@ -157,7 +161,7 @@
                     <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
                         <i class="fa fa-file-signature"></i> Approvers
                     </a>
-                    @if($my_form->status != 'approved' && $my_form->status != 'checked' && $my_form->status != 'received' && $my_form->status != 'cancelled')
+                    @if($my_form->status != 'approved' && $my_form->status != 'checked' && $my_form->status != 'received' && $my_form->status != 'cancelled' && $my_form->status != 'liquidated')
                     <a href="#" title="cancel" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-cancel btn bg-danger btn-xs mb-0 ml-0">
                         <i class="fa fa-ban"></i> Cancel
                     </a>

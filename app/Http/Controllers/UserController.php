@@ -122,9 +122,15 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail(decrypt($id));
+        $creates = AllForm::where('user_id', $user->id)->count();
+        $endorses = AllForm::where('noted_id', $user->id)->count();
+        $approves = AllForm::where('signed_id', $user->id)->count();
 
         return view('pages.users.show')->with([
-            'user' => $user
+            'user' => $user,
+            'creates' => $creates,
+            'endorses' => $endorses,
+            'approves' => $approves,
         ]);
     }
 

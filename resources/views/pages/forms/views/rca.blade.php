@@ -16,7 +16,9 @@
             @elseif($forms->status == 'processing')
                 <span class="badge bg-navy"><b>For Processing</b></span>
             @elseif($forms->status == 'checked')
-                <span class="badge bg-purple"><b>Received & Checked</b></span>
+                <span class="badge bg-purple"><b>Checked</b></span>
+            @elseif($forms->status == 'liquidated')
+                <span class="badge bg-navy"><b>Liquidated</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'cancelled')
@@ -141,7 +143,7 @@
                 
             </div>
             <div class="col-6 text-right">
-                @if($forms->status == 'approved')
+                @if($forms->status == 'approved' || $forms->status == 'liquidated')
                     @can('bforms finance')
                     @if(!empty($sct_number))
                         <small class="form-text text-muted mb-3">
@@ -161,7 +163,7 @@
                     @endif
                     @endcan
                 @endif
-                @if($forms->status == 'approved' && $forms->user_id == $user->id)
+                @if($forms->status == 'approved' || $forms->status == 'liquidated' && $forms->user_id == $user->id)
                     @php
                         $rca_lca = DB::table('lca_forms')->where('rca_form_id', $forms->model->id)->first();
                     @endphp
@@ -219,7 +221,7 @@
                         This Form has been DECLINED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{$forms->remarks}}
+                        {{$forms->remarks}} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                     @if($forms->user_id == $user->id)
                     <a type="button" href="{{route( 'myforms.edit', encrypt($forms->id) )}}" class="btn bg-gradient-warning btn-lg">
@@ -233,7 +235,7 @@
                         This Form has been CANCELLED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                        {{ $forms->remarks }} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                 </div>
                 @endif

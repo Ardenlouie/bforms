@@ -1364,11 +1364,18 @@ class FormController extends Controller
 
         $all_forms->save();
 
+        $rca_allforms =  AllForm::where('model_type', 'App\Models\RequestCash')->where('model_id', $lca->rca_form_id)->first();
+
         if($all_forms->status == 'endorsement') {
             $lca->update([
                 'control_number' => $lca_item['control_number'],
                 'date_submitted' => $date_submitted,
             ]);
+
+            $rca_allforms->update([
+                'status' => 'liquidated',
+            ]);
+
 
             $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
 
@@ -1538,10 +1545,16 @@ class FormController extends Controller
 
         $all_forms->save();
 
+        $pca_allforms =  AllForm::where('model_type', 'App\Models\PettyCash')->where('model_id', $pcl->pca_form_id)->first();
+
         if($all_forms->status == 'approval') {
             $pcl->update([
                 'control_number' => $pcl_item['control_number'],
                 'date_submitted' => $date_submitted,
+            ]);
+
+            $pca_allforms->update([
+                'status' => 'liquidated',
             ]);
 
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();

@@ -61,6 +61,8 @@
                         <span class="badge bg-purple"><b>Checked</b></span>
                     @elseif($approval->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
+                    @elseif($approval->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Liquidated</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
                     @elseif($approval->status == 'cancelled')
@@ -126,9 +128,11 @@
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($approval->status == 'checked')
-                        <span class="badge bg-purple"><b>Checked</b></span>
+                        <span class="badge bg-purple"><b>For Receiving</b></span>
                     @elseif($approval->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                    @elseif($approval->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($approval->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($approval->status == 'cancelled')
@@ -165,7 +169,7 @@
                     <a href="#" title="view" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn btn-view btn-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked' || $approval->status == 'received')
+                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked' || $approval->status == 'received' || $approval->status == 'liquidated')
                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>

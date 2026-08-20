@@ -73,12 +73,36 @@
                             <b class="text-uppercase">{{__('adminlte::utilities.created_at')}}:</b>
                             <span class="float-right">{{$user->created_at ?? '-'}}</span>
                         </li>
-                        <li class="list-group-item py-1 border-bottom-0">
+                        <li class="list-group-item py-1">
                             <b class="text-uppercase">{{__('adminlte::utilities.updated_at')}}:</b>
                             <span class="float-right">{{$user->updated_at ?? '-'}}</span>
                         </li>
                     </ul>
                 </div>
+                <div class="card-footer py-1">
+                    <div class="row">
+                        <div class="col-6 align-middle">
+                            <strong class="text-lg">B-FORMS Details</strong>
+                        </div>
+                    </div>
+
+                    <ul class="list-group list-group-unbordered ">
+                        <li class="list-group-item py-1">
+                            <b class="text-uppercase">Forms Created:</b>
+                            <span class="float-right">{{$creates ?? '-'}}</span>
+                        </li>
+                        <li class="list-group-item py-1">
+                            <b class="text-uppercase">Forms Endorsed:</b>
+                            <span class="float-right">{{$endorses ?? '-'}}</span>
+                        </li>
+                        <li class="list-group-item py-1">
+                            <b class="text-uppercase">Forms Approved:</b>
+                            <span class="float-right">{{$approves ?? '-'}}</span>
+                        </li>
+                    </ul>
+
+                </div>
+
             </div>
 
             @can('user change password')
