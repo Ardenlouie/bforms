@@ -59,7 +59,12 @@
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
-                <h4>Petty Cash Advance Ref No.: <b>{{ ($forms->model->pca_form->control_number ?? '' )}}</b></h4>
+                @if(!empty($forms->model->pca_form_id))
+                @php
+                    $pca_id =  \App\Models\AllForm::where('model_type', 'App\Models\PettyCash')->where('model_id', $forms->model->pca_form_id)->first();
+                @endphp
+                <h4>Petty Cash Advance Ref No.: <a target="_blank" href="{{ route('myforms.show', encrypt($pca_id->id)) }}"><b>{{ ($forms->model->pca_form->control_number ?? '' )}}</b></a></h4>
+                @endif
                 <h4>Petty Cash Advance Amount:
                         <b>₱{{  number_format($forms->model->pca_form->total_amount ?? 0.00 , 2) }}</b>
                     </h4>
@@ -180,7 +185,7 @@
                         This Form has been DECLINED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{$forms->remarks}}
+                        {{$forms->remarks}} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                     @if($forms->user_id == $user->id)
                     <a type="button" href="{{route( 'myforms.edit', encrypt($forms->id) )}}" class="btn bg-gradient-warning btn-lg">
@@ -194,7 +199,7 @@
                         This Form has been CANCELLED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                        {{ $forms->remarks }} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                 </div>
                 @endif

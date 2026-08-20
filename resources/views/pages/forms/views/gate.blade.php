@@ -187,7 +187,7 @@
                         This Form has been DECLINED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                        {{ $forms->remarks }} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                     @if($forms->user_id == $user->id)
                     <a type="button" href="{{route( 'myforms.edit', encrypt($forms->id) )}}" class="btn bg-gradient-warning btn-lg">
@@ -201,7 +201,7 @@
                         This Form has been CANCELLED.
                     </small>
                     <label class="form-text text-bold text-xl">
-                        {{ $forms->remarks }} -  {{ $forms->declined->name ?? ''}}
+                        {{ $forms->remarks }} - <b class="text-success">{{ $forms->declined->name ?? ''}}</b>
                     </label>
                 </div>
                 @endif

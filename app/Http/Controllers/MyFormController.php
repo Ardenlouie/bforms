@@ -502,6 +502,11 @@ class MyFormController extends Controller
             ]);
         }
 
+        $marketing = Department::where('name', 'MARKETING')->first();
+        $it = Department::where('name', 'IT')->first();
+
+        $endorser = [];
+
         if($all_forms->model->category != 'Product Sample'){
             if($all_forms->model->category == 'IT Equipment'){
                 $endorser = $it->approver_ids;

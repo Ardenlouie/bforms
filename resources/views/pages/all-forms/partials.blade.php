@@ -61,6 +61,8 @@
                         <span class="badge bg-purple"><b>Checked</b></span>
                     @elseif($all_form->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
+                    @elseif($all_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Liquidated</b></span>
                     @elseif($all_form->status == 'declined')
                         <span class="badge badge-danger">Declined</span>
                     @elseif($all_form->status == 'cancelled')
@@ -124,9 +126,11 @@
                     @elseif($all_form->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($all_form->status == 'checked')
-                        <span class="badge bg-purple"><b>Checked</b></span>
+                        <span class="badge bg-purple"><b>For Receiving</b></span>
                     @elseif($all_form->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                    @elseif($all_form->status == 'liquidated')
+                        <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($all_form->status == 'draft')
                         <span class="badge badge-secondary">DRAFT</span>
                     @elseif($all_form->status == 'declined')
@@ -153,6 +157,9 @@
                     </a>
                     <a href="#" title="delete" data-id="{{encrypt($all_form->id)}}" class="btn-delete btn bg-danger btn-xs mb-0 ml-0 ">
                         <i class="fa fa-trash-alt"></i> Delete
+                    </a>
+                    <a href="#" title="cancel" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-cancel btn bg-danger btn-xs mb-0 ml-0">
+                        <i class="fa fa-ban"></i> Cancel
                     </a>
                 </td>
             </tr>

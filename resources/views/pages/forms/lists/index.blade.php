@@ -15,7 +15,6 @@
                 </div>
             </div>
             <div class="col-lg-4">
-
             </div>
             <div class="col-md-4">
                 <div class="input-group">
@@ -29,11 +28,13 @@
                         <option value="approval">Final Approval</option>
                         <option value="approved">Approved</option>
                         <option value="checked">Checked</option>
+                        <option value="received">Received</option>
+                        <option value="liquidated">Liquidated</option>
                         <option value="declined">Declined</option>
                     </select>
                 </div>
             </div>
-            @if($prefix == 'gate')
+            @if($prefix == 'gate' || $prefix == 'pgp')
             <div class="col-lg-4">
                 <div class="input-group">
                     <div class="input-group-prepend">
@@ -45,6 +46,8 @@
                     </select>
                 </div>
             </div>
+            @else
+                <input type="hidden" id="form_id" value="{{ encrypt($form->id) }}">
             @endif
         </div>
         <div class="row">

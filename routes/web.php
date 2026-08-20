@@ -52,6 +52,11 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
     Route::get('security', [HomeController::class, 'scanning'])->name('scanning')->middleware('permission:bforms security');
     Route::get('security/{id}', [FormController::class, 'security'])->name('security')->middleware('permission:bforms security');
 
+    // DASHBOARD ROUTES
+    Route::group(['middleware' => 'permission:bforms access'], function() {
+        Route::get('dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    });
+
     // FORM ROUTES
     Route::group(['middleware' => 'permission:bforms access'], function() {
         Route::get('forms', [FormController::class, 'index'])->name('form.index');
