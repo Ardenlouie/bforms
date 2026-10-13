@@ -25,6 +25,8 @@ class LiquidCashItem extends Model
         'item_description',
         'amount',
         'area',
+        'tax_code',
+        'wt_code',
     ];
 
     public function lca_form() {

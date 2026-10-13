@@ -282,6 +282,105 @@
 </script>
 
 <script>
+    $(function() {
+        $('body').on('click', '.btn-processor', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want process this request?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, process it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Confirmed!",
+                    text: "Request is for processing",
+                    icon: "success"
+                    });
+
+                    Swal.showLoading();
+                    $('#status').val('processing');
+                    $('#approve').submit();
+
+                }
+                });
+        });
+    });
+</script>
+
+<script>
+    $(function() {
+        $('body').on('click', '.btn-ready', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want confirm and notify the requestor that this request is ready for pick-up?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, confirm it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Confirmed!",
+                    text: "Request is ready for pick-up.",
+                    icon: "success"
+                    });
+
+                    Swal.showLoading();
+                    $('#status').val('ready');
+                    $('#approve').submit();
+
+                }
+                });
+        });
+    });
+</script>
+
+<script>
+    $(function() {
+        $('body').on('click', '.btn-update', function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Final Confirmation",
+                text: "Are you sure you want to update this request?",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonColor: "#0ba236",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, update it!",
+                cancelButtonText: "No",
+                }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Confirmed!",
+                    text: "Form has been updated",
+                    icon: "success"
+                    });
+
+                    Swal.showLoading();
+                    $('#status').val('ready');
+                    $('#update').submit();
+
+                }
+                });
+        });
+    });
+</script>
+
+<script>
 $(function() {
     $('body').on('click', '.btn-decline', function(e) {
         e.preventDefault();

@@ -17,6 +17,8 @@
                 <span class="badge bg-navy"><b>For Processing</b></span>
             @elseif($forms->status == 'checked')
                 <span class="badge bg-purple"><b>Checked</b></span>
+            @elseif($forms->status == 'ready')
+                <span class="badge bg-indigo"><b>For DFM Extraction</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'cancelled')
@@ -85,6 +87,8 @@
                             <th>Expense Description</th>
                             <th>Area/Place</th>
                             <th>Amount</th>
+                            <th>Tax Code</th>
+                            <th>W/T Code</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -95,6 +99,9 @@
                                 <td>{{ $item['item_description'] }}</td>
                                 <td>{{ $item['area'] }}</td>
                                 <td>{{ number_format($item['amount'], 2) }}</td>
+                                <td>{{ $item['tax_code'] }}</td>
+                                <td>{{ $item['wt_code'] }}</td>
+
                             </tr>
                         @endforeach
                     </tbody>
@@ -130,7 +137,7 @@
                 
             </div>
             <div class="col-6 text-right">
-                @if($forms->status == 'approved')
+                @if($forms->status == 'approved' || $forms->status == 'ready')
                     @can('bforms finance')
                     @if(!empty($sct_number))
                         <small class="form-text text-muted mb-3">
@@ -145,6 +152,9 @@
                         </small>
                         <a type="button" href="{{route( 'lca.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
                             <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
+                        </a>
+                        <a type="button" href="{{route( 'myforms.quantity', encrypt($forms->id) )}}" class="btn bg-gradient-green" style="margin-right: 5px;">
+                            <i class="fas fa-share"></i> Input Tax Code
                         </a>
                         
                     @endif
@@ -242,7 +252,7 @@
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved' || $forms->status == 'processing')
+        @if($forms->status == 'approved' || $forms->status == 'processing' || $forms->status == 'ready')
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign.png' )}}" height="50" width="100">

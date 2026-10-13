@@ -93,6 +93,7 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::post('store/lca/{id}', [FormController::class, 'store_lca'])->name('store.lca');
         Route::post('store/pca/{id}', [FormController::class, 'store_pca'])->name('store.pca');
         Route::post('store/pcl/{id}', [FormController::class, 'store_pcl'])->name('store.pcl');
+        Route::post('store/warf/{id}', [FormController::class, 'store_warf'])->name('store.warf');
 
 
     });
@@ -102,16 +103,21 @@ Route::group(['middleware' => ['auth', 'optimizeImages']], function() {
         Route::get('myforms', [MyFormController::class, 'index'])->name('myforms.index');
         Route::get('myform/show/{id}', [MyFormController::class, 'show'])->name('myforms.show');
         Route::get('myform/edit/{id}', [MyFormController::class, 'edit'])->name('myforms.edit');
+        Route::get('myform/quantity/{id}', [MyFormController::class, 'quantity'])->name('myforms.quantity');
+
         Route::post('myform/cancel/{id}', [MyFormController::class, 'cancel'])->name('myforms.cancel');
 
         Route::post('update/psrf/{id}', [MyFormController::class, 'update_psrf'])->name('update.psrf');
+        Route::post('scm/psrf/{id}', [MyFormController::class, 'scm_psrf'])->name('scm.psrf');
         Route::post('update/psst/{id}', [MyFormController::class, 'update_psst'])->name('update.psst');
         Route::post('update/gate/{id}', [MyFormController::class, 'update_gate'])->name('update.gate');
         Route::post('update/rfp/{id}', [MyFormController::class, 'update_rfp'])->name('update.rfp');
         Route::post('update/rca/{id}', [MyFormController::class, 'update_rca'])->name('update.rca');
         Route::post('update/lca/{id}', [MyFormController::class, 'update_lca'])->name('update.lca');
+        Route::post('tax/lca/{id}', [MyFormController::class, 'tax_lca'])->name('tax.lca');
         Route::post('update/pca/{id}', [MyFormController::class, 'update_pca'])->name('update.pca');
         Route::post('update/pcl/{id}', [MyFormController::class, 'update_pcl'])->name('update.pcl');
+        Route::post('update/warf/{id}', [MyFormController::class, 'update_warf'])->name('update.warf');
 
     });
 

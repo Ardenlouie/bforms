@@ -52,6 +52,8 @@
             <div class="col-6">
                 <h4>Objective: <b>{{ ($forms->model->objective ?? '' )}}</b></h4>
                 <h4>Delivery Instructions: <b>{{ ($forms->model->delivery_instructions ?? '' )}}</b></h4>
+                <h4>Submitted by: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
+
             </div>
             <div class="col-6 text-right">
                 <h4>Delivery Date: <b>{{ date('F d, Y', strtotime($forms->model->delivery_date ?? '')) }}</b></h4>
@@ -71,6 +73,7 @@
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
+
             </div>
         </div>
         <div class="table-responsive mb-3">
@@ -205,7 +208,7 @@
                     @php
                         $hoursPending = $forms->updated_at->diffInHours(now());
                     @endphp
-                    @if($hoursPending >= 24  && $forms->user_id == $user->id) 
+                    @if($hoursPending >= 24  && $forms->user_id == $user->id || $forms->admin_id == $user->id) 
                     <div class="form-group">    
                         <small class="form-text text-muted mb-3">
                             This Form has been PENDING for approval, 1 day from submission. Press the button below to follow up your request.

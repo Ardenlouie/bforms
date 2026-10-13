@@ -81,6 +81,13 @@ class NotificationController extends Controller
             if ($group_brands->isNotEmpty()) {
                 Notification::send($group_brands, new FollowUpFormNotification($all_forms));
             }
+        } elseif($all_forms->status == 'approved'){
+
+            $processors = User::whereIn('id', $all_forms->processor ?? [])->get();
+
+            if ($processors->isNotEmpty()) {
+                Notification::send($processors, new FollowUpFormNotification($all_forms));
+            }
         } 
 
         activity('follow-up')

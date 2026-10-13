@@ -17,8 +17,10 @@
                 <span class="badge badge-primary"><b>For Final Approval</b></span>
             @elseif($forms->status == 'approved')
                 <span class="badge badge-success"><b>Approved</b></span>
-            @elseif($forms->status == 'checked')
-                <span class="badge bg-purple"><b>Received & Checked</b></span>
+            @elseif($forms->status == 'ready')
+                <span class="badge bg-indigo"><b>Ready for Pick-up</b></span>
+            @elseif($forms->status == 'received')
+                <span class="badge bg-lime"><b>Received</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'cancelled')
@@ -56,9 +58,11 @@
             </div>
             <div class="col-6">
                 <h4>Recipient: <b>{{ ($forms->model->recipient ?? '' )}}</b></h4>
-                <h4>Program Date: <b>{{ ($forms->model->program_date ?? '' )}}</b></h4>
+                <h4>Program Date: <b>{{ date('F d, Y', strtotime($forms->model->program_date ?? '')) }}</b></h4>
                 <h4>Objective: <b>{{ ($forms->model->objective ?? '' )}}</b></h4>
                 <h4>Special Instructions: <b>{{ ($forms->model->special_instructions ?? '' )}}</b></h4>
+                <h4>Submitted by: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
+
             </div>
             <div class="col-6 text-right">
                 @if(!empty($forms->model->date_submitted))
@@ -78,6 +82,7 @@
                 </h4>
 
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
+
                 @endif
             </div>
         </div>
@@ -167,11 +172,14 @@
                         <a type="button" href="{{route( 'psrf.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
                             <i class="fas fa-file-download"></i> Download XML for Issuance
                         </a>
+                        <a type="button" href="{{route( 'myforms.quantity', encrypt($forms->id) )}}" class="btn bg-gradient-green" style="margin-right: 5px;">
+                            <i class="fas fa-share"></i> Issue Quantity
+                        </a>
                         
                     @endif
                     @endcan
                 @endif
-                @if($forms->status == 'approved' && $forms->user_id == $user->id)
+                @if($forms->status == 'ready' && $forms->user_id == $user->id)
                     @php
                         $psrf_gate_pass = DB::table('gate_pass')->where('psrf_form_id', $forms->model->id)->first();
                     @endphp
@@ -254,10 +262,10 @@
                 </div>
                 @endif
 
+                @php
+                    $hoursPending = $forms->updated_at->diffInHours(now());
+                @endphp
                 @if($forms->status == 'endorsement' || $forms->status == 'approval' || $forms->status == 'confirming' || $forms->status == 'confirmed')
-                    @php
-                        $hoursPending = $forms->updated_at->diffInHours(now());
-                    @endphp
                     @if($hoursPending >= 24  && $forms->user_id == $user->id || $forms->admin_id == $user->id) 
                     <div class="form-group">    
                         <small class="form-text text-muted mb-3">
@@ -265,6 +273,17 @@
                         </small>
                         <a href="#" data-url="{{ route('follow-up', encrypt($forms->id)) }}" class="btn btn-follow btn-lg btn-outline-danger ml-2 animate__animated animate__pulse animate__infinite" title="Send follow-up notification">
                             <i class="fas fa-bell"></i> Follow-up Approver
+                        </a>
+                    </div>
+                    @endif
+                @elseif($forms->status == 'approved')
+                    @if($hoursPending >= 24  && $forms->user_id == $user->id || $forms->admin_id == $user->id) 
+                    <div class="form-group">    
+                        <small class="form-text text-muted mb-3">
+                            This Form has been PENDING for processing, 1 day from approval. Press the button below to follow up your request.
+                        </small>
+                        <a href="#" data-url="{{ route('follow-up', encrypt($forms->id)) }}" class="btn btn-follow btn-lg btn-outline-danger ml-2 animate__animated animate__pulse animate__infinite" title="Send follow-up notification">
+                            <i class="fas fa-bell"></i> Follow-up Processor
                         </a>
                     </div>
                     @endif

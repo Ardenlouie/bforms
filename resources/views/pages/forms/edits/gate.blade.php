@@ -74,9 +74,9 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-12 table-responsive">
                 <label class="mb-0">Items <small class="text-danger font-italic text-bold">(required)</small></label>
-                <table class="table table-responsive table-bordered text-center" id="dynamicTable">
+                <table class="table table-bordered text-center" id="dynamicTable">
                     <thead>
                         <tr>
                             <th>No.</th>
@@ -95,7 +95,14 @@
                         <tr>
                             <td class="row-number">{{ $index + 1 }}</td>
                             <td ><input type="text" name="items[{{ $index }}][desc]" value="{{ $item['item_description'] }}" class="form-control text-center desc" /></td>             
-                            <td ><input type="text" name="items[{{ $index }}][uom]" value="{{ $item['uom'] }}" class="form-control text-center uom" /></td>
+                            <td>
+                                <select name="items[{{ $index }}][uom]" class="form-control text-center uom">
+                                    <option value="PCS" {{ ($item['uom'] ?? $item->uom ?? '') == 'PCS' ? 'selected' : '' }}>PCS</option>
+                                    <option value="CS"  {{ ($item['uom'] ?? $item->uom ?? '') == 'CS'  ? 'selected' : '' }}>CS</option>
+                                    <option value="IN"  {{ ($item['uom'] ?? $item->uom ?? '') == 'IN'  ? 'selected' : '' }}>IN</option>
+                                    <option value="UNIT" {{ ($item['uom'] ?? $item->uom ?? '') == 'UNIT' ? 'selected' : '' }}>UNIT</option>
+                                </select>
+                            </td>
                             <td><input type="number" name="items[{{ $index }}][qty]" value="{{ $item['quantity'] }}" class="form-control text-center qty"/></td>
                             <td><input type="text" name="items[{{ $index }}][remarks]" value="{{ $item['remarks'] }}" class="form-control text-center remarks" /></td>
                             <td><button type="button" class="btn btn-danger removeRow">x</button></td>
@@ -161,7 +168,7 @@
     </div>
     <div class="card-footer text-right">
         <input type="hidden" id="status" name="status" form="update_gate" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
 
@@ -218,7 +225,14 @@
         newRow.innerHTML = `
             <td class="row-number"></td>
             <td><input type="text" name="items[${i}][desc]" placeholder="Enter Item Description" class="form-control text-center desc" /></td>
-            <td><input type="text" name="items[${i}][uom]" placeholder="Enter UOM" class="form-control text-center uom" /></td>
+            <td>
+                <select name="items[${i}][uom]" placeholder="Enter UOM" class="form-control text-center uom">
+                    <option value="PCS">PCS</option>
+                    <option value="CS">CS</option>
+                    <option value="IN">IN</option>
+                    <option value="UNIT">UNIT</option>
+                </select>
+            </td>
             <td><input type="number" name="items[${i}][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
             <td><input type="text" name="items[${i}][remarks]" placeholder="Enter Remarks" class="form-control text-center remarks" /></td>
             <td><button type="button" class="btn btn-danger removeRow">x</button></td>

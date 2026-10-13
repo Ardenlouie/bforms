@@ -6,6 +6,11 @@
                 <i class="fa fa-plus"></i>
                 {{__('Add Form')}}
             </a>
+            @elseif($form->prefix == 'irfs')
+            <a href="{{ route('form.createForm', encrypt($form->id)) }}" class="btn bg-blue btn-xl">
+                <i class="fa fa-plus"></i>
+                {{__('Add Invoice')}}
+            </a>
             @endif
         </div>
         <div class="row mb-3">
@@ -71,6 +76,17 @@
         </div>
     </div>
 </div>
+@push('css')
+<style>
+    /* Custom background color when active */
+    .nav-pills .nav-link.active,
+    .nav-tabs .nav-link.active {
+        background-color: #ff0000 !important; /* Replace with your color hex */
+        color: #ffffff !important;            /* Text color when active */
+    }
+</style>
+@endpush
+
 @push('js')
 <script>
     let debounceTimer;
@@ -153,4 +169,5 @@
         });
     });
 </script>
+
 @endpush

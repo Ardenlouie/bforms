@@ -23,6 +23,7 @@ use App\Notifications\DeclineFormNotification;
 use App\Notifications\XmlFormNotification;
 use App\Notifications\CheckedFormNotification;
 use App\Notifications\ReceivedFormNotification;
+use App\Notifications\ReadyFormNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -51,24 +52,44 @@ class ApproverController extends Controller
 
         $status = $request->query('status');
                     
-        $approvals = AllForm::orderBy('created_at', 'DESC')
+        $approvals = AllForm::orderByRaw("FIELD(status, 'confirming', 'endorsement', 'approval') DESC")
+            ->orderBy('created_at', 'DESC')
             ->where(function ($query) use ($user_id) {
                 $query->whereJsonContains('approver', $user_id)
                     ->orWhereJsonContains('endorser', $user_id)
+                    ->orWhereJsonContains('processor', $user_id)
                     ->orWhereJsonContains('brands', $user_id)
                     ->orWhereJsonContains('group_brands', $user_id)
-                    ->orWhere('admin_id', $user_id)
-                    ->orWhere('processor', $user_id);
+                    ->orWhere('admin_id', $user_id);
             })
             ->where('status', '!=', 'draft')
             ->whereHasMorph(
                 'model',
                 ['App\Models\ProductSample', 'App\Models\RequestPayment', 'App\Models\ProductTransfer',
                 'App\Models\GatePass', 'App\Models\RequestCash', 'App\Models\LiquidCash', 
-                'App\Models\PettyCash', 'App\Models\PettyLiquid'], 
+                'App\Models\PettyCash', 'App\Models\PettyLiquid' , 'App\Models\WarehouseAccess'], 
                 function ($query, $type) use($search) {
                     $query->where('control_number', 'like', '%'.$search.'%')
                         ->orWhere('form_id', 'like', '%'.$search.'%');
+
+                    $modelsWithPurpose = [
+                        'App\Models\GatePass',
+                        'App\Models\RequestCash',
+                        'App\Models\WarehouseAccess',
+                    ];
+
+                    $modelsWithObjective = [
+                        'App\Models\ProductTransfer',
+                        'App\Models\ProductSample',
+                    ];
+
+                    if (in_array($type, $modelsWithPurpose)) {
+                        $query->orWhere('purpose', 'like', '%'.$search.'%');
+                    }
+
+                    if (in_array($type, $modelsWithObjective)) {
+                        $query->orWhere('objective', 'like', '%'.$search.'%');
+                    }
                 }
             )
             ->when($status, function($q) use ($status) {
@@ -277,24 +298,27 @@ class ApproverController extends Controller
             ]);
             $all_forms->user->notify(new ApproveFormNotification($all_forms));
 
+            $customer_service = Position::where('position', 'Customer Service')->first();
+            $cs_user = User::where('position_id', $customer_service->id)->get();
 
-            $scm = User::where('department_id', '9')->get();
             $finance = User::where('department_id', '2')->get();
+
             $ap_specialist = Position::where('position', 'AP Specialist')->first();
             $ap_user = User::where('position_id', $ap_specialist->id)->get();
+
             $hr = User::where('department_id', '3')->get();
 
             if($all_forms->form->prefix == 'psst' || $all_forms->form->prefix == 'psrf' ){
-                if ($scm->isNotEmpty()) {
-                    Notification::send($scm, new XmlFormNotification($all_forms));
+                if ($cs_user->isNotEmpty()) {
+                    Notification::send($cs_user, new XmlFormNotification($all_forms));
                 }
             } elseif($all_forms->form->prefix == 'rfp' || $all_forms->form->prefix == 'rca' || $all_forms->form->prefix == 'pca' || $all_forms->form->prefix == 'lca' || $all_forms->form->prefix == 'pcl') {
                 if ($ap_user->isNotEmpty()) {
                     Notification::send($ap_user, new XmlFormNotification($all_forms));
                 }
             } elseif($all_forms->form->prefix == 'pgp'){
-                if ($scm->isNotEmpty()) {
-                    Notification::send($scm, new ApproveFormNotification($all_forms));
+                if ($cs_user->isNotEmpty()) {
+                    Notification::send($cs_user, new ApproveFormNotification($all_forms));
                 }
             }
 
@@ -308,15 +332,22 @@ class ApproverController extends Controller
 
             $all_forms->user->notify(new DeclineFormNotification($all_forms));
             
-        } elseif ($all_forms->approver == $user->id && $request->status == 'processing') {
+        } elseif (in_array($user->id, $all_forms->processor ?? []) && $request->status == 'processing') {
 
             $all_forms->update([
-                'processor' => $request->processor,
+                'processed_id' => $user->id,
+            ]);
+            
+        } elseif ($all_forms->processor == $user->id && $request->status == 'ready') {
+            $date_processed = date('Y-m-d');
+
+            $all_forms->update([
+                'date_processed' => $date_processed,
             ]);
 
-            $all_forms->processed->notify(new SubmitFormNotification($all_forms));
+            $all_forms->user->notify(new ReadyFormNotification($all_forms));
             
-        } 
+        }
 
         $control_number = $all_forms->model->control_number;
         $form_name = $all_forms->form->name;
@@ -380,12 +411,29 @@ class ApproverController extends Controller
             'status' => $request->status,
             'date_received' => date('Y-m-d'),
         ]);
-   
-        $all_forms->user->notify(new ReceivedFormNotification($all_forms));
+    
+        if($all_forms->form->prefix == 'pgp' || $all_forms->form->prefix == 'gate'){
+            $all_forms->user->notify(new ReceivedFormNotification($all_forms));
 
-        activity('received')
-            ->performedOn($all_forms)
-            ->log('Receiver has receive items on Gate Pass ['.$control_number.']');
+            activity('received')
+                ->performedOn($all_forms)
+                ->log('Receiver has receive items on '.$form_name.' ['.$control_number.']');
+
+        } elseif($all_forms->form->prefix == 'rca') {
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new ReceivedFormNotification($all_forms));
+            }
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new ReceivedFormNotification($all_forms));
+            }
+
+            activity('received')
+                ->performedOn($all_forms)
+                ->log('Receiver has receive amount requested on '.$form_name.' ['.$control_number.']');
+        }
 
         return redirect()->route('receive', encrypt($all_forms->id))->with([
             'message_success' => 'Items on ['.$control_number.'] was received!'

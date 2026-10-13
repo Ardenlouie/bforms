@@ -42,8 +42,18 @@
                     <small class="text-danger">{{$errors->first('received_by')}}</small>
                 </div>
             </div>
-            <div class="col-lg-3"></div>
             <div class="col-lg-4">
+                <div class="form-group">
+                    <label class="mb-0">Office Location <small class="text-danger font-italic text-bold">(required)</small></label>
+                        <select class="form-control" name="office" id="office" form="add_gate">
+                            <option value="">-- Select Office --</option>
+                            <option value="Aranga Office">Aranga Office</option>
+                            <option value="Batangas Office">Batangas Office</option>
+                        </select>
+                    <small class="text-danger">{{$errors->first('office')}}</small>
+                </div>
+            </div>
+            <div class="col-lg-3">
                 <div class="form-group">
                     <label class="mb-0">Release Date<small class="text-danger font-italic text-bold">(required)</small></label>
                     <input type="date" class="form-control" name="release_date" form="add_gate" value="{{ date('Y-m-d') }}"> 
@@ -93,6 +103,7 @@
                                     <option value="PCS">PCS</option>
                                     <option value="CS">CS</option>
                                     <option value="IN">IN</option>
+                                    <option value="UNIT">UNIT</option>
                                 </select>
                             </td>
                             <td><input type="number" name="items[0][qty]" placeholder="Enter Qty" class="form-control text-center qty" value="1" min="1" /></td>
@@ -125,6 +136,8 @@
                                 <select name="items[0][uom]" class="form-control text-center uom">
                                     <option value="PCS">PCS</option>
                                     <option value="CS">CS</option>
+                                    <option value="IN">IN</option>
+                                    <option value="UNIT">UNIT</option>
                                 </select>
                             </td>
                             <td>
@@ -190,7 +203,7 @@
     </div>
     <div class="card-footer text-right">
         <input type="hidden" id="status" name="status" form="add_gate" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
 
@@ -276,6 +289,8 @@
                 <select name="items[${i}][uom]" class="form-control text-center uom">
                     <option value="PCS">PCS</option>
                     <option value="CS">CS</option>
+                    <option value="IN">IN</option>
+                    <option value="UNIT">UNIT</option>
                 </select>
             </td>
             <td>
@@ -448,6 +463,7 @@
                 release_date: document.querySelector('input[name="release_date"]').value || "-",
                 received_by: document.querySelector('input[name="received_by"]').value || "-",
                 category: document.querySelector('select[name="category"]').value || "-",
+                office: document.querySelector('select[name="office"]').value || "-",
                 others: document.querySelector('input[name="category_specified"]').value,
                 note: document.querySelector('input[name="note"]').value || "-",
             };
@@ -587,4 +603,18 @@ $(document).ready(function() {
 //     });
 // });
 // </script>
+
+<script>
+    $(document).ready(function() {
+        $('input[name="received_by"]').on('keydown', function(e) {
+            // Block keypresses for '/' and '\'
+            if (e.key === '/' || e.key === '\\' || e.code === 'NumpadDivide') {
+                e.preventDefault();
+            }
+        }).on('input', function() {
+            // Strip out slashes if pasted
+            $(this).val($(this).val().replace(/[\/\\]/g, ''));
+        });
+    });
+</script>
 @endpush

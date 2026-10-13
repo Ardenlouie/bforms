@@ -40,10 +40,29 @@ class AllFormController extends Controller
                 'model',
                 ['App\Models\ProductSample', 'App\Models\RequestPayment', 'App\Models\ProductTransfer',
                 'App\Models\GatePass', 'App\Models\RequestCash', 'App\Models\LiquidCash', 
-                'App\Models\PettyCash', 'App\Models\PettyLiquid'], 
+                'App\Models\PettyCash', 'App\Models\PettyLiquid' , 'App\Models\WarehouseAccess'], 
                 function ($query, $type) use($search) {
                     $query->where('control_number', 'like', '%'.$search.'%')
                         ->orWhere('form_id', 'like', '%'.$search.'%');
+
+                    $modelsWithPurpose = [
+                        'App\Models\GatePass',
+                        'App\Models\RequestCash',
+                        'App\Models\WarehouseAccess',
+                    ];
+
+                    $modelsWithObjective = [
+                        'App\Models\ProductTransfer',
+                        'App\Models\ProductSample',
+                    ];
+
+                    if (in_array($type, $modelsWithPurpose)) {
+                        $query->orWhere('purpose', 'like', '%'.$search.'%');
+                    }
+
+                    if (in_array($type, $modelsWithObjective)) {
+                        $query->orWhere('objective', 'like', '%'.$search.'%');
+                    }
                 }
             )
             ->when($status, function($q) use ($status) {

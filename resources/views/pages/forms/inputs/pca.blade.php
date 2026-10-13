@@ -100,7 +100,7 @@
     </div>
     <div class="card-footer text-right">
         <input type="hidden" id="status" name="status" form="add_pca" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
 

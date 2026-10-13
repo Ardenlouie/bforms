@@ -3,7 +3,7 @@
         <tr class="text-center">
             <th>Reference No.</th>
             <th>Form Name</th>
-            <th>Created By</th>
+            <th>Purpose/Objective</th>
             <th>Date Submitted</th>
             <th>Status</th>
             <th>Next Approver</th>
@@ -36,10 +36,10 @@
                     {{$my_form->form->name}}
                 </td>
                 <td class="align-middle text-center">
-                    {{$my_form->user->name}}
+                    {{$my_form->model->purpose ?? $my_form->model->objective ?? ''}}
                 </td>
                 <td class="align-middle text-center">
-                    {{$my_form->model->date_submitted}}
+                    {{ date('M-d-Y', strtotime($my_form->model->date_submitted ?? '')) }}
                 </td>
                 <td class="align-middle text-center">
                     @if($my_form->status == 'draft')
@@ -57,13 +57,15 @@
                     @elseif($my_form->status == 'approved')
                         <span class="badge badge-success"><b>Approved</b></span>
                     @elseif($my_form->status == 'processing')
-                        <span class="badge bg-navy"><b>For Processing</b></span>
+                        <span class="badge bg-orange"><b>For Processing</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
                         <span class="badge badge-danger"><b>Cancelled</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge bg-purple"><b>Checked</b></span>
+                    @elseif($my_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>Ready</b></span>
                     @elseif($my_form->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($my_form->status == 'liquidated')
@@ -126,11 +128,13 @@
                             @endif
                         @endforeach
                     @elseif($my_form->status == 'processing')
-                        {{$my_form->processed->name}}
+                        <span class="badge bg-orange"><b> {{ $my_form->processed->name }}</b></span>
                     @elseif($my_form->status == 'approved')
                         <span class="badge badge-success"><b>Completed</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge bg-purple"><b>For Receiving</b></span>
+                    @elseif($my_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>For Releasing</b></span>
                     @elseif($my_form->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($my_form->status == 'liquidated')
@@ -153,7 +157,7 @@
                     <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'cancelled' || $my_form->status == 'liquidated')
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'cancelled' || $my_form->status == 'liquidated' || $my_form->status == 'ready')
                         <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>

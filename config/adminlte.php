@@ -397,13 +397,19 @@ return [
                     'icon'      => 'fas fa-fw fa-file',
                     'can'       => 'bforms finance',
                 ],
+                [
+                    'text'      => 'Supplier Invoice',
+                    'url'       => 'forms/list/eyJpdiI6IktDZjVZMUpzTlNIbmNpN1h4bVV2L2c9PSIsInZhbHVlIjoid1ptTCt5RmZUbEJnOFdrN05YRHg3dz09IiwibWFjIjoiZTUzMjU0ODQzZDJhZmNlZGEyNjRmMjk2ZTMyZDQzNjQ1NmQyMzUxMTM4MWNlYzU1NzZmM2IyZmM4YmI3NDNlNiIsInRhZyI6IiJ9',
+                    'icon'      => 'fas fa-fw fa-file',
+                    'can'       => 'bforms finance',
+                ],
             ],
         ],
         [
             'text'      => 'Dashboard',
             'url'       => 'dashboard',
             'icon'      => 'fas fa-fw fa-tachometer-alt',
-            'can'       => 'superadmin access',
+            'can'       => 'bforms access',
             'active'    => ['dashboard', 'dashboard*']
         ],
         [

@@ -124,7 +124,7 @@ trait RcaXmlTrait
                     'DueDate'                     => $rca->rca_date,
                     'Bank'                     => '02',
                     'TaxCode'                     => 'Z',
-                    'TaxValue'                     => $tax_value,
+                    'TaxValue'                     => '0',
                 ]
             ]
         ];
@@ -134,13 +134,14 @@ trait RcaXmlTrait
             'LedgerCode'         => '130010',
             'LedgerTaxCode'         => 'Z',
             'LedgerWithholdingTaxCode'       => 'Z',
+            'LedgerValue'         => number_format($rca->total_amount, 2, '.', ''),
             'AnalysisLineEntry' => [
                 'AnalysisCode1' => '',
                 'AnalysisCode2' => '',
                 'AnalysisCode3' => '',
                 'AnalysisCode4' => $analysis4,
                 'AnalysisCode5' => '',
-                'EntryAmount'   => number_format($rca->total_amount, 2),
+                'EntryAmount'   => number_format($rca->total_amount, 2, '.', ''),
             ],
         ];
            

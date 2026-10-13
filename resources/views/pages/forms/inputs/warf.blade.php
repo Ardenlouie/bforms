@@ -1,4 +1,4 @@
-<form action="{{ route('store.rfp',encrypt($form->id)) }}" method="POST" id="add_rfp" enctype="multipart/form-data">
+<form action="{{ route('store.warf',encrypt($form->id)) }}" method="POST" id="add_warf" enctype="multipart/form-data">
     <div class="card-body">
         @csrf          
         <div class="row">
@@ -9,13 +9,10 @@
                     <small class="text-danger">{{$errors->first('company_id')}}</small>
                 </div>
             </div>
-            <div class="col-lg-4"></div>
-            
-            
+
         <input type="hidden" name="form_id"  value="{{ encrypt($form->id) }}">
-        <!-- <input type="hidden" name="department_id"  value="{{ $requestor->department->id }}"> -->
-        <!-- <input type="hidden" name="cost_center" id="cost_center_input" value="{{ strtoupper($requestor->department->head->name ?? '') }}"> -->
-        
+        <input type="hidden" name="department_id"  value="{{ $requestor->department->id }}">
+
         </div>  
         <div class="row">
             <div class="col-lg-4">
@@ -44,7 +41,7 @@
             <div class="col-lg-12">
                 <div class="form-group">
                     <label class="mb-0">Purpose of Access <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="text" class="form-control" name="purpose" form="add_rfp"> 
+                    <input type="text" class="form-control" name="purpose"> 
                     <small class="text-danger">{{$errors->first('purpose')}}</small>
                 </div>
             </div>
@@ -52,15 +49,29 @@
             <div class="col-lg-6">
                 <div class="form-group">
                     {{ html()->label(__('Upload Attachment'), 'file_name')->class(['mb-0']) }} <small class=" font-italic text-bold">(optional)</small>
-                    <input
-                        form="add_rfp"
-                        type="file"
-                        id="file_name"
-                        name="file_name"
-                        accept="application/pdf"
-                        class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
-                    > 
-                    <small class="text-danger">{{$errors->first('file_name')}}</small>
+                    <div class="input-group">
+                        <input
+                            type="file"
+                            id="file_name"
+                            name="file_name"
+                            accept="application/pdf"
+                            class="form-control {{ $errors->has('file_name') ? 'is-invalid' : '' }}"
+                        >
+                        <div class="input-group-append">
+                            <button 
+                                type="button" 
+                                class="btn btn-outline-danger" 
+                                id="clear_file_btn" 
+                                title="Remove file"
+                                style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    @if ($errors->has('file_name'))
+                        <span class="text-danger small">{{ $errors->first('file_name') }}</span>
+                    @endif
                 </div>
                 
             </div>
@@ -81,60 +92,19 @@
     </div>
     <div class="card-footer text-right">
         <input type="hidden" id="status" name="status" form="add_warf" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
 
         <div class="modal fade" id="modal-preview">
             <div class="modal-dialog modal-xl">
-                <livewire:summary.request-payment  />
+                <livewire:summary.warehouse-access  />
             </div>
         </div>
     </div>
 </form>
 @push('js')
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // 1. Map department IDs to their respective Head names using Blade
-        // Assumes $departmentList contains Department models with their 'head' relationship loaded
-        const departmentHeads = @json(
-            \App\Models\Department::with('head')->get()->pluck('head.name', 'id')
-        );
 
-        const departmentSelect = document.getElementById('department_select');
-        const costCenterInput = document.getElementById('cost_center_input');
-
-        // 2. Listen for dropdown changes
-        departmentSelect.addEventListener('change', function () {
-            const selectedDeptId = this.value;
-            
-            // Get the head name from our lookup map, or fallback to empty string
-            const headName = departmentHeads[selectedDeptId] || '';
-            
-            // Set the uppercase value into cost_center input
-            costCenterInput.value = headName.toUpperCase();
-        });
-    });
-</script> -->
-<script>
-$(function() {
-    $('.currency-select').on('click', function(e) {
-        e.preventDefault();
-        
-        let symbol = $(this).data('symbol');
-        let code = $(this).data('code');
-        
-        // Update the button display
-        $('#currency_toggle').text(symbol + ' (' + code + ')');
-        
-        // Update the hidden input value for the backend
-        $('#currency_code').val(code);
-        
-        // Optional: Focus back on the amount input for better UX
-        $('#amount_input').focus();
-    });
-});
-</script>
 <script>
     $(function() {
         $('body').on('click', '.btn-draft', function(e) {
@@ -160,7 +130,7 @@ $(function() {
 
             Swal.fire({
                 title: "Final Confirmation",
-                text: "Are you sure you want to submit this Request for Payment Form?",
+                text: "Are you sure you want to submit this Warehouse Access Form?",
                 icon: "question",
                 showCancelButton: true,
                 confirmButtonColor: "#0ba236",
@@ -177,8 +147,8 @@ $(function() {
                     });
 
                     Swal.showLoading();
-                    $('#status').val('approval');
-                    $('#add_rfp').submit();
+                    $('#status').val('endorsement');
+                    $('#add_warf').submit();
 
                 }
             });
@@ -194,17 +164,15 @@ $(function() {
             let data = {
                 form_id: document.querySelector('input[name="form_id"]').value || "-",
                 company_id: document.querySelector('select[name="company_id"]').value || "-",
-                department_id: document.querySelector('select[name="department_id"]').value || "-",
-                payable: document.querySelector('input[name="payable"]').value || "-",
-                file_name: document.querySelector('input[name="file_name"]').value || "-",
-                amount: document.querySelector('input[name="amount"]').value || 0.00,
-                cost_center: document.querySelector('select[name="cost_center"]').value || "-",
+                department_id: document.querySelector('input[name="department_id"]').value || "-",
                 purpose: document.querySelector('input[name="purpose"]').value || "-",
-                instructions: document.querySelector('input[name="instructions"]').value || "-",
-                currency: document.querySelector('input[name="currency"]').value || "-",
+                file_name: document.querySelector('input[name="file_name"]').value || "-",
+                time_in: document.querySelector('input[name="time_in"]').value || "-",
+                time_out: document.querySelector('input[name="time_out"]').value || "-",
+                date_access: document.querySelector('input[name="date_access"]').value || "-",
             };
    
-            Livewire.dispatch('loadRfpSummary',{ data });
+            Livewire.dispatch('loadWarfSummary',{ data });
             $('#modal-preview').modal('show');
         });
     });
@@ -222,34 +190,37 @@ $(function() {
         }
     });
 </script>
-
 <script>
     $(document).ready(function() {
+        const $fileInput = $('#file_name');
+        const $clearBtn = $('#clear_file_btn');
+        const $previewContainer = $('#pdfPreview');
+        const $pdfIframe = $('#pdf_preview');
 
-        let company = document.querySelector('select[name="company_id"]').value;
+        $fileInput.on('change', function() {
+            const file = this.files[0];
 
-        $('#customer_cost_center_cash').select2({
-            placeholder: "Select Employee Cost Center",
-            allowClear: true,
-            theme: "classic",
-            ajax: {
-                url: "{{ route('customer_cost_cash.ajax') }}", // Create this route in web.php
-                dataType: 'json',
-                delay: 250, // Wait 250ms before sending request (debounce)
-                data: function (params) {
-                    return {
-                        search: params.term,
-                        company_id: $('select[name="company_id"]').val()
-                    };
-                },
-                processResults: function (data) {
-                    return {
-                        results: data.results
-                    };
-                },
-                cache: true
+            if (file && file.type === 'application/pdf') {
+                const fileURL = URL.createObjectURL(file);
+                $pdfIframe.attr('src', fileURL);
+                $previewContainer.show();
+                $clearBtn.show();
+            } else {
+                clearAll();
             }
         });
-});
+
+        $clearBtn.on('click', function() {
+            clearAll();
+        });
+
+        function clearAll() {
+            $fileInput.val('');
+            $pdfIframe.attr('src', '');
+            $previewContainer.hide();
+            $clearBtn.hide();
+        }
+    });
 </script>
+
 @endpush

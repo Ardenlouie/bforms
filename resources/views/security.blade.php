@@ -254,7 +254,7 @@
             @if( !empty($all_form->date_endorsed) )
 
             <div class="col-6">
-                <img src="{{ asset($all_form->endorsed->signature ?? 'images/nosign1.png') }}" height="100" width="150">
+                <img src="{{ asset($all_form->noted->signature ?? 'images/nosign1.png') }}" height="100" width="150">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
 
                 <h6>{{ ($all_form->date_endorsed ?? '' )}}</h6>
