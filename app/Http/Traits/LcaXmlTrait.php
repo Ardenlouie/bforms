@@ -100,12 +100,16 @@ trait LcaXmlTrait
         $lca_company = $lca->company_id;
 
         $customer_cost_center = CustomerCostCenter::where('gl_code', '130010')->where('company_id', $lca_company)->where('customer', $lca_code)->first();
-
+    
         $lca_details = $lca->lca_form_item;
+
+        $tax_values = 0;
+
+        $taxCode = $lca->lca_form_item->pluck('tax_code')->contains('G') ? 'G' : 'Z';
+
         $lca_number = $lca->control_number;
         $activity_name = $lca->activity_name;
 
-        $tax_value = ($lca->total_amount * 0.12);
         
         $analysis1 = $customer_cost_center->customer;
         $analysis2 = $customer_cost_center->customer;
@@ -113,19 +117,27 @@ trait LcaXmlTrait
         $analysis4 = $customer_cost_center->customer;
         $analysis5 = 'ACC';
 
+
+        foreach ($lca_details as $tax) {
+            if ($tax->tax_code == 'G') {
+                $tax_values += (($tax->amount / 1.12) * 0.12);
+            }
+        }
+
+
         $data = [
             'Items' => [
                 'Item' => [
                     'Supplier'              => $customer_cost_center->customer,
-                    'TransactionCode'                     => 'I',
-                    'Invoice'                     => $lca_number,
+                    'TransactionCode'                     => 'A',
+                    'Invoice'                     => $lca->rca_form->control_number,
                     'TransactionValue'                     => $lca->total_amount,
                     'JournalNotation'                     => $lca->purpose,
                     'InvoiceDate'                     => $lca->date_submitted,
                     'DueDate'                     => $lca->lca_date,
                     'Bank'                     => '02',
-                    'TaxCode'                     => 'Z',
-                    'TaxValue'                     => $tax_value,
+                    'TaxCode'                     => $taxCode,
+                    'TaxValue'                     => $tax_values,
                 ]
             ]
         ];
@@ -134,24 +146,29 @@ trait LcaXmlTrait
             $entry_amount = $detail->amount;
             $expense_account = ExpenseAccount::where('name', $detail->item_description)->first();
 
+            if ($detail->tax_code == 'G') {
+                $ledger_value = ($entry_amount / 1.12);
+            } else {
+                $ledger_value = $entry_amount;
+            }
+    
             $data['Items']['Item']['LedgerDistribution'][] = [
                 'LedgerCode'         => $expense_account->ledger_code,
-                'LedgerTaxCode'         => 'Z',
-                'LedgerWithholdingTaxCode'       => 'Z',
+                'LedgerTaxCode'         => $detail->tax_code,
+                'LedgerWithholdingTaxCode'   => $detail->wt_code,
+                'LedgerValue'         => number_format($ledger_value, 2, '.', ''),
                 'AnalysisLineEntry' => [
                     'AnalysisCode1' => '',
                     'AnalysisCode2' => '',
                     'AnalysisCode3' => '',
                     'AnalysisCode4' => $analysis4,
                     'AnalysisCode5' => '',
-                    'EntryAmount'   => number_format($entry_amount, 2),
+                    'EntryAmount'   => number_format($ledger_value, 2, '.', ''),
                 ],
             ];
            
             
         }
-
-        
 
         // dd($data);
 

@@ -10,7 +10,7 @@
 @endsection
 
 @section('content_body')
-@if($forms->status == 'checked' || $forms->status == 'received')
+@if($forms->status == 'checked' || $forms->status == 'received' || $forms->status == 'ready')
 <div class="card">
     <div class="card-header bg-gradient-navy">
         <h3 class="card-title float-none text-center text-bold">FOR RECEIVING</h3>
@@ -31,6 +31,8 @@
                 <span class="badge bg-purple"><b>Checked</b></span>
             @elseif($forms->status == 'received')
                 <span class="badge bg-lime"><b>Received</b></span>
+            @elseif($forms->status == 'ready')
+                <span class="badge bg-indigo"><b>Ready For Pick-up</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'partially_released')
@@ -58,6 +60,7 @@
             </div>
         </div>
     </div>
+    @if($forms->form->prefix == 'gate' || $forms->form->prefix == 'pgp')
     <div class="card-body">
         <div class="row mb-3">
             <div class="col-12 text-center text-uppercase mb-3">
@@ -147,6 +150,64 @@
         @endif
         
     </div>
+    @elseif($forms->form->prefix == 'rca')
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-12 text-center text-uppercase mb-3">
+                
+                <h3><b>AKNOWLEDGEMENT RECEIPT</b></h3>
+                
+            </div>
+            <div class="col-6">
+                <h4>Name: <b>{{ ($forms->model->name ?? '' )}}</b></h4>
+                <h4>Department: <b>{{ ($forms->model->department->name ?? '' )}}</b></h4>
+                <h4>Purpose: <b>{{ ($forms->model->purpose ?? '' )}}</b></h4>
+                <h4>Itenerary: <b>{{ ($forms->model->itenerary ?? '' )}}</b></h4>
+                <h4>Date: <b>{{ date('F d, Y', strtotime($forms->model->rca_date ?? '' ))}}</b></h4>
+            </div>
+            <div class="col-6 text-right">
+
+                <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
+                <h4>Cost Center: <b>{{ ($forms->model->cost_center ?? '' )}}</b></h4>
+                <h4>Travel With: <b>{{ ($forms->model->travel ?? '' )}}</b></h4>
+                <h4>Location: <b>{{ ($forms->model->location ?? '' )}}</b></h4>
+                <h2>Total Budget of CA: <b>₱{{  number_format($forms->model->total_amount ?? 0.00 , 2) }}</b></h2>
+
+
+            </div>
+        </div>
+
+        <div class="table-responsive mb-3">
+            <table class="table table-striped text-center" id="summaryTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item Description</th>
+                        <th>Budget Amount</th>
+                        <th>No. of Days</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($forms->model->rca_form_item()->get() as $index => $item)
+                        <tr >
+                            <td class="align-middle">{{ $index + 1 }}</td>
+                            <td class="align-middle">
+                                {{ $item['item_description'] ?? '' }}
+                            </td>
+                            <td class="align-middle">{{ number_format($item['amount'] ?? 0, 0) }}</td>
+                            <td class="align-middle">{{ $item['days'] ?? '' }}</td>
+                            <td class="align-middle">{{ $item['remarks'] ?? '' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+
+            </table>
+        </div>
+        
+        
+    </div>
+    @endif
     <div class="card-footer text-center">
         <div class="row ">
             <!-- <div class="col-6">
@@ -168,8 +229,14 @@
                     </button>
                     <h6>{{ date('Y-m-d') }}</h6>
                 @endif
+
+                @if($forms->form->prefix == 'gate' || $forms->form->prefix == 'pgp')
                     <h3><b>{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</b></h3>
-                <div class="line"></div>
+                @elseif($forms->form->prefix == 'rca')
+                    <h3><b>{{ $forms->model->name }}</b></h3>
+                @endif
+                
+                    <div class="line"></div>
                 <h4>Received By</h4>
             </div>
             

@@ -1,0 +1,173 @@
+<div class="card-tools">
+    <ul class="nav nav-pills ml-auto">
+        <li class="nav-item">
+            <a class="nav-link active" href="#bevi-table" data-toggle="tab">BEVI</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#beva-table" data-toggle="tab">BEVA</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#bigi-table" data-toggle="tab">BIG I</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#dashboard" data-toggle="tab">Dashboard</a>
+        </li>
+    </ul>
+</div>
+<div class="tab-content p-0">
+    <div class="chart tab-pane active" id="bevi-table">
+        <table class="table table-striped table-hover mb-0 rounded">
+            <thead class="text-center bg-gradient-navy">
+                <tr class="text-center">
+                    <th>Reference No.</th>
+                    <th>Date Received</th>
+                    <th>Name of Supplier</th>
+                    <th>Invoice No.</th>
+                    <th>Invoice Amount</th>
+                    <th>Payment Terms</th>
+                    <th>Due On</th>
+                    <th>Acitons</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($my_forms as $my_form)
+                    <tr>
+                        <td class="align-middle text-center">
+
+                            @if($my_form->model->company->id == 1)
+                            <img src="{{asset('/images/bevinobg.png')}}" alt="product photo" class="product-img" height="50" width="100">
+                            @elseif($my_form->model->company->id == 2)
+                            <img src="{{asset('/images/bevanobg.png')}}" alt="product photo" class="product-img" height="50" width="80">
+                            @elseif($my_form->model->company->id == 3)
+                            <img src="{{asset('/images/biginobg.png')}}" alt="product photo" class="product-img" height="50" width="100">
+                            @elseif($my_form->model->company->id == 4)
+                            <img src="{{asset('/images/bevminobg.png')}}" alt="product photo" class="product-img" height="50" width="100">
+                            @elseif($my_form->model->company->id == 5)
+                            <img src="{{asset('/images/osp.png')}}" alt="product photo" class="product-img" height="50" width="100">
+                            @elseif($my_form->model->company->id == 6)
+                            <img src="{{asset('/images/pbb.png')}}" alt="product photo" class="product-img" height="50" width="100">
+                            @endif
+                            <br>
+                            <b>{{$my_form->model->control_number}}</b>
+
+                        </td>
+                        <td class="align-middle text-center">
+                            {{$my_form->form->name}}
+                        </td>
+                        <td class="align-middle text-center">
+                            {{$my_form->user->name}}
+                        </td>
+                        <td class="align-middle text-center">
+                            {{$my_form->model->date_submitted}}
+                        </td>
+                        <td class="align-middle text-center">
+                            @if($my_form->status == 'draft')
+                                <span class="badge badge-secondary"><b>DRAFT</b></span>
+                            @elseif($my_form->status == 'confirmation')
+                                <span class="badge badge-warning"><b>Confirmation</b></span>
+                            @elseif($my_form->status == 'endorsement')
+                                <span class="badge badge-info"><b>Endorsement</b></span>
+                            @elseif($my_form->status == 'approval')
+                                <span class="badge badge-primary"><b>Final Approval</b></span>
+                            @elseif($my_form->status == 'approved')
+                                <span class="badge badge-success"><b>Approved</b></span>
+                            @elseif($my_form->status == 'processing')
+                                <span class="badge bg-navy"><b>For Processing</b></span>
+                            @elseif($my_form->status == 'liquidated')
+                                <span class="badge bg-navy"><b>Liquidated</b></span>
+                            @elseif($my_form->status == 'declined')
+                                <span class="badge badge-danger"><b>Declined</b></span>
+                            @elseif($my_form->status == 'cancelled')
+                                <span class="badge badge-danger"><b>Cancelled</b></span>
+                            @elseif($my_form->status == 'ready')
+                                <span class="badge bg-indigo"><b>Ready</b></span>
+                            @elseif($my_form->status == 'received')
+                                <span class="badge bg-lime"><b>Received</b></span>
+                            @elseif($my_form->status == 'partially_released')
+                                <span class="badge bg-orange"><b>Partially Released</b></span>
+                            @else
+                                <span class="badge bg-dark"><b>Pending</b></span>
+                            @endif
+                        </td>
+                        <td class="align-middle text-center">
+                            <b>
+                            @if($my_form->status == 'draft')
+                                
+                            @elseif($my_form->status == 'endorsement')
+                                @php
+                                    $endorsers = \App\Models\User::whereIn('id', $my_form->endorser ?? [])->get();
+                                @endphp
+
+                                @foreach($endorsers as $id => $endorser)
+                                    <span class="badge badge-info">
+                                        <i class="fas fa-file-signature"></i> {{ $endorser->name }}
+                                    </span>
+                                @endforeach
+                            @elseif($my_form->status == 'approval')
+                                @php
+                                    $approvers = \App\Models\User::whereIn('id', $my_form->approver ?? [])->get();
+                                @endphp
+
+                                @foreach($approvers as $id => $approver)
+                                    <span class="badge badge-primary">
+                                        <i class="fas fa-file-signature"></i> {{ $approver->name }}
+                                    </span>
+                                @endforeach
+                            @elseif($my_form->status == 'confirmation')
+                                <span class="badge badge-navy">
+                                    <i class="fas fa-file-signature"></i> {{$my_form->admin->name}}
+                                </span>
+                            @elseif($my_form->status == 'processing')
+                                {{$my_form->processed->name}}
+                            @elseif($my_form->status == 'approved')
+                                <span class="badge badge-success"><b>Completed</b></span>
+                            @elseif($my_form->status == 'ready')
+                                <span class="badge bg-indigo"><b>Ready for pick-up</b></span>
+                            @elseif($my_form->status == 'received')
+                                <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                            @elseif($my_form->status == 'liquidated')
+                                <span class="badge bg-navy"><b>Received & Liquidated</b></span>
+                            @elseif($my_form->status == 'declined')
+                                <span class="badge badge-danger"><b>Declined</b></span>
+                            @elseif($my_form->status == 'cancelled')
+                                <span class="badge badge-danger"><b>Cancelled</b></span>
+                            @else
+                                <span class="badge bg-dark"><b>Pending</b></span>
+                            @endif
+                            </b>
+                        </td>
+                        <td class="align-middle text-right">
+                            @if($my_form->status == 'draft' || $my_form->status == 'declined')
+                                <a href="{{ route('myforms.edit', encrypt($my_form->id)) }}" title="edit" class="btn-edit btn bg-warning btn-xs mb-0 ml-0 ">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                            @endif
+                            <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
+                                <i class="fa fa-eye"></i> View
+                            </a>
+                            @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'ready')
+                                <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
+                                    <i class="fa fa-file-contract"></i> Show
+                                </a>
+                            @endif
+                            <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
+                                <i class="fa fa-file-signature"></i> Approvers
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    <div class="chart tab-pane" id="beva-table">
+        
+    </div>
+    <div class="chart tab-pane" id="bigi-table">
+        
+    </div>
+    <div class="chart tab-pane" id="dashboard">
+        
+    </div>
+</div>
+
+{{ $my_forms->appends(request()->query())->links() }}

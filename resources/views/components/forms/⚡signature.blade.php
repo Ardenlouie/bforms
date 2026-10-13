@@ -61,7 +61,7 @@ new class extends Component
                             @endif
                         </td>
                     </tr>
-                    @if(!empty($forms->admin_id) && $forms->form->prefix != 'psrf')
+                    @if(!empty($forms->admin_id) && $forms->form->prefix != 'psrf' && $forms->form->prefix != 'psst')
                     <tr>
                         <td>Admin In-charge</td>
                         <td>{{ $forms->admin->name ?? ''}}</td>

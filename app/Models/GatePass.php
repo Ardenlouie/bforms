@@ -33,6 +33,7 @@ class GatePass extends Model
         'date_submitted',
         'numberof',
         'balance',
+        'office',
         'control_number',
         'psrf_form_id',
         'image',

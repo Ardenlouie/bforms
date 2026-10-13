@@ -235,7 +235,8 @@
         <h1>AKNOWLEDGEMENT RECEIPT</h1>
     </div>
 
-    <!-- Info Section -->
+    @if($forms->form->prefix == 'gate' || $forms->form->prefix == 'pgp')
+
     <table class="info-table">
         <tr>
             <td class="label">Purpose:</td>
@@ -296,22 +297,92 @@
         </tbody>
         @endif
     </table>
+
+    @elseif($forms->form->prefix == 'rca')
+
+    <table class="info-table">
+        <tr>
+            <td class="label">Name:</td>
+            <td>{{ $forms->model->name }}</td>
+            <td class="label">Department:</td>
+            <td>{{ $forms->model->department->name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Purpose:</td>
+            <td>{{ $forms->model->purpose }}</td>
+            <td class="label">Itenerary:</td>
+            <td>{{ $forms->model->itenerary }}</td>
+        </tr>
+        <tr>
+            <td class="label">Date:</td>
+            <td>{{ date('F d, Y', strtotime($forms->model->rca_date ?? '')) }}</td>
+            <td class="label">Cost Center:</td>
+            <td>{{ $forms->model->cost_center  }}</td>
+        </tr>
+        <tr>
+            <td class="label">Travel With:</td>
+            <td>{{ $forms->model->travel  }}</td>
+            <td class="label">Date Submitted:</td>
+            <td>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</td>
+        </tr>
+        <tr>
+            <td class="label">Location:</td>
+            <td>{{ $forms->model->location }}</td>
+            <td class="label">Total Budget of CA:</td>
+            <td>{{  number_format($forms->model->total_amount ?? 0.00 , 2) }}</td>
+        </tr>
+
+    </table>
+
+    <table class="data">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Item Description</th>
+                <th>Budget Amount</th>
+                <th>No. of Days</th>
+                <th style="width: 50px;">Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($forms->model->rca_form_item()->get() as $index => $item)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item['item_description'] ?? '' }}</td>
+                <td>{{ number_format($item['amount'] ?? 0, 0) }}</td>
+                <td>{{ $item['days'] ?? '' }}</td>
+                <td>{{ $item['remarks'] ?? '' }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+        
+    </table>
+
+    @endif
     <p></p>
 
     <p></p>
 
     <div class="signature-wrapper">
         <div class="sig-column">
-            <img src="{{ public_path($forms->user->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
+            <img src="{{ public_path($forms->processed->signature ?? '/images/nosign.png')}}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->model->date_submitted }}</div>
-            <div class="sig-name">{{ $forms->user->name }}</div>
+            @if($forms->form->prefix == 'gate' || $forms->form->prefix == 'pgp')
+                <div class="sig-name">{{ $forms->user->name }}</div>
+            @elseif($forms->form->prefix == 'rca')
+                <div class="sig-name">{{ $forms->processed->name }}</div>
+            @endif
             <div class="sig-line">Released By</div>
         </div>
 
         <div class="sig-column">
             <img src="{{ public_path('uploads/gate-pass-images/receiver-signature/'.$forms->model->control_number.'-receiver-signature.png') }}" alt="sign photo" class="sign-img" height="75" width="150">
             <div >{{ $forms->date_received }}</div>
-            <div class="sig-name">{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</div>
+            @if($forms->form->prefix == 'gate' || $forms->form->prefix == 'pgp')
+                <div class="sig-name">{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</div>
+            @elseif($forms->form->prefix == 'rca')
+                <div class="sig-name">{{ $forms->model->name }}</div>
+            @endif
             <div class="sig-line">Received By</div>
         </div>
     </div>

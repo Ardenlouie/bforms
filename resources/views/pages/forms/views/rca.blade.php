@@ -14,11 +14,15 @@
             @elseif($forms->status == 'approved')
                 <span class="badge badge-success"><b>Approved</b></span>
             @elseif($forms->status == 'processing')
-                <span class="badge bg-navy"><b>For Processing</b></span>
+                <span class="badge bg-orange"><b>For Processing</b></span>
             @elseif($forms->status == 'checked')
                 <span class="badge bg-purple"><b>Checked</b></span>
             @elseif($forms->status == 'liquidated')
                 <span class="badge bg-navy"><b>Liquidated</b></span>
+            @elseif($forms->status == 'ready')
+                <span class="badge bg-indigo"><b>Ready For Pick-up</b></span>
+            @elseif($forms->status == 'received')
+                <span class="badge bg-lime"><b>Received</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'cancelled')
@@ -140,30 +144,68 @@
                 <a type="button" href="{{route( 'printPDF', encrypt($forms->id) )}}" target="_blank" class="btn bg-gradient-navy" style="margin-right: 5px;">
                     <i class="fas fa-download"></i> Generate PDF
                 </a>
+                @if($forms->status == 'received')
+                <a type="button" href="{{route( 'aknoPDF', encrypt($forms->id) )}}" target="_blank" class="btn bg-gradient-lime" style="margin-right: 5px;">
+                    <i class="fas fa-download"></i> Generate PDF (Aknowledgement Receipt)
+                </a>
+                @endif
                 
             </div>
             <div class="col-6 text-right">
-                @if($forms->status == 'approved' || $forms->status == 'liquidated')
-                    @can('bforms finance')
-                    @if(!empty($sct_number))
+                <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
+                    @csrf          
+                    <div class="form-group">
+                        <input type="hidden" id="status" name="status" form="approve" value="endorsement">
+
                         <small class="form-text text-muted mb-3">
-                            APInvoice has been created: 
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
+                                You are endorser of this Form.
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
+                                You are approver of this Form.
+                            @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
+                                You are admin in-charge of this Form.
+                            @elseif(in_array($user->id, $forms->processor ?? []) && $forms->status == 'approved')
+                                You are processor of this Form.
+                            @elseif($forms->processed_id == $user->id && $forms->status == 'processing')
+                                You processing this Form.
+                            @else
+                                
+                            @endif
                         </small>
-                        <label class="form-text text-bold text-xl">
-                            
+                        <label>
+                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
+                                <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
+                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
+                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
+                                <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
+                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
+                            @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
+                                <a href="#" title="admin" class="btn-admin btn bg-success btn-lg">APPROVE</a>
+                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
+                            @elseif(in_array($user->id, $forms->processor ?? []) && $forms->status == 'approved')
+                                <a href="#" title="processor" class="btn-processor btn bg-orange btn-lg">CONFIRM</a>
+                            @elseif($forms->processed_id == $user->id && $forms->status == 'processing')
+                                <a href="#" title="ready" class="btn-ready btn bg-indigo btn-lg">READY</a>
+                            @else
+
+                            @endif
                         </label>
-                    @else
+                    </div>
+                    <input type="hidden" id="remarks" name="remarks" form="approve" >
+                    <input type="hidden" id="processor" name="processor" form="approve" >
+
+                </form>
+                @if($forms->status == 'approved' || $forms->status == 'liquidated' || $forms->status == 'received' || $forms->status == 'ready')
+                    @can('bforms finance')
                         <small class="form-text text-muted mb-3">
                             This Form has been APPROVED. <br>Click the button below to download XML for APInvoice posting.
                         </small>
                         <a type="button" href="{{route( 'rca.xml', encrypt($forms->model->id) )}}" class="btn bg-gradient-lightblue" style="margin-right: 5px;">
                             <i class="fas fa-file-download"></i> Download XML for APInvoice Posting
                         </a>
-                        
-                    @endif
                     @endcan
                 @endif
-                @if($forms->status == 'approved' || $forms->status == 'liquidated' && $forms->user_id == $user->id)
+                @if($forms->status == 'received' && $forms->user_id == $user->id || $forms->status == 'liquidated' && $forms->user_id == $user->id)
                     @php
                         $rca_lca = DB::table('lca_forms')->where('rca_form_id', $forms->model->id)->first();
                     @endphp
@@ -180,41 +222,7 @@
                         </a>
                     @endif
                 @endif
-                <form action="{{ route('approve.form',encrypt($forms->id)) }}" method="POST" id="approve">
-                    @csrf          
-                    <div class="form-group">
-                        <input type="hidden" id="status" name="status" form="approve" value="endorsement">
-
-                        <small class="form-text text-muted mb-3">
-                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
-                                You are endorser of this Form.
-                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
-                                You are approver of this Form.
-                            @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
-                                You are admin in-charge of this Form.
-                            @else
-                                
-                            @endif
-                        </small>
-                        <label>
-                            @if(in_array($user->id, $forms->endorser ?? []) && $forms->status == 'endorsement')
-                                <a href="#" title="endorse" class="btn-endorse btn bg-success btn-lg">APPROVE</a>
-                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif(in_array($user->id, $forms->approver ?? []) && $forms->status == 'approval')
-                                <a href="#" title="approve" class="btn-approve btn bg-success btn-lg">APPROVE</a>
-                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @elseif($forms->admin_id == $user->id && $forms->status == 'confirmation')
-                                <a href="#" title="admin" class="btn-admin btn bg-success btn-lg">APPROVE</a>
-                                <a href="#" title="decline" class="btn-decline btn bg-danger btn-sm">DECLINE</a>
-                            @else
-
-                            @endif
-                        </label>
-                    </div>
-                    <input type="hidden" id="remarks" name="remarks" form="approve" >
-                    <input type="hidden" id="processor" name="processor" form="approve" >
-
-                </form>
+                
                 @if($forms->status == 'declined')
                 <div class="form-group">
                     <small class="form-text text-muted mb-3">
@@ -268,10 +276,25 @@
                 @endif
                 
             </div>
+            <div class="col-12 text-center">
+                
+                @if($forms->status == 'ready')
+                <div class="form-group text">    
+                    <small class="form-text text-muted mb-3">
+                        For Receiving, Please press the button below.
+                    </small>
+
+                    <a type="button" href="{{route('receive', encrypt($forms->id) )}}" class="btn bg-gradient-green" style="margin-right: 5px;">
+                        <i class="fas fa-reply"></i> For Receiving
+                    </a>
+
+                </div>
+                @endif
+            </div>
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved' || $forms->status == 'processing')
+        @if($forms->status == 'approved' || $forms->status == 'ready' || $forms->status == 'received' || $forms->status == 'liquidated')
         <div class="row ">
             <div class="col-6">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">
@@ -305,7 +328,7 @@
                 <div class="line"></div>
                 <h4>Endorsed By</h4>
             </div>
-       
+
             <div class="col-6">
                 <img src="{{ asset($forms->signed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
                 <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
@@ -316,33 +339,36 @@
                 <div class="line"></div>
                 <h4>Approved By</h4>
             </div>
+            @if(!empty($forms->date_processed))
+            <div class="col-6">
+                <img src="{{ asset($forms->processed->signature ?? 'images/nosign1.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_processed ?? '' )}}</h6>
+                <h3><b>{{ ($forms->processed->name ?? '' )}}</b></h3>
+
+                <div class="line"></div>
+                <h4>Processed By</h4>
+            </div>
+            @endif
+            @if(!empty($forms->date_received))
+            <div class="col-6">
+                <img src="{{ asset('uploads/gate-pass-images/receiver-signature/'.$forms->model->control_number.'-receiver-signature.png') }}" height="50" width="100">
+                <h4><span class="badge badge-success"><b>SIGNED</b></span></h4>
+
+                <h6>{{ ($forms->date_received ?? '' )}}</h6>
+                <h3><b>{{ ($forms->model->name ?? '' )}}</b></h3>
+
+                <div class="line"></div>
+                <h4>Received By</h4>
+            </div>
+            @endif
+
         </div>
         @endif
     </div>
 </div>
 
 @push('js')
-<!-- <script>
-$(function() {
-    $('body').on('click', '.btn-processor', function(e) {
-        e.preventDefault();
 
-        
-        Swal.fire({
-        title: 'Select Finance Personnel',
-        input: 'select',
-        inputOptions: userOptions,
-        inputPlaceholder: 'Select a user...',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        }).then((result) => {
-        if (result.isConfirmed) {
-            $('#processor').val(result.value);
-            $('#status').val('processing');
-            $('#approve').submit();
-        }
-        });
-    });
-});
-</script> -->
 @endpush

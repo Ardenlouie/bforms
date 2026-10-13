@@ -60,8 +60,10 @@
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
                         <span class="badge badge-danger"><b>Cancelled</b></span>
-                    @elseif($my_form->status == 'checked')
-                        <span class="badge bg-purple"><b>Received & Checked</b></span>
+                    @elseif($my_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>Ready</b></span>
+                    @elseif($my_form->status == 'received')
+                        <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($my_form->status == 'partially_released')
                         <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
@@ -100,8 +102,10 @@
                         {{$my_form->processed->name}}
                     @elseif($my_form->status == 'approved')
                         <span class="badge badge-success"><b>Completed</b></span>
-                    @elseif($my_form->status == 'checked')
-                        <span class="badge badge-success"><b>Completed</b></span>
+                    @elseif($my_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>Ready for pick-up</b></span>
+                    @elseif($my_form->status == 'received')
+                        <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($my_form->status == 'liquidated')
                         <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($my_form->status == 'declined')
@@ -122,7 +126,7 @@
                     <a href="#" title="view" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-view btn bg-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received')
+                    @if($my_form->status == 'approved' || $my_form->status == 'declined' || $my_form->status == 'partially_released' || $my_form->status == 'checked' || $my_form->status == 'received' || $my_form->status == 'ready')
                         <a href="{{ route('myforms.show', encrypt($my_form->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>

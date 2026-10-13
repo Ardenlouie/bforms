@@ -35,6 +35,7 @@ class RequestCash extends Model
         'location',
         'file_name',
         'path',
+        'advance_notice_note',
     ];
 
     public function form() {

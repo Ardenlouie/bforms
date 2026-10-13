@@ -20,6 +20,7 @@ class AllForm extends Model
     protected $casts = [
         'approver' => 'array', 
         'endorser' => 'array', 
+        'processor' => 'array', 
         'brands' => 'array', 
         'group_brands' => 'array', 
         'bm_signs' => 'array', 
@@ -39,6 +40,7 @@ class AllForm extends Model
         'group_brands',
         'endorser',
         'approver',
+        'processed_id',
         'noted_id',
         'signed_id',
         'declined_id',
@@ -72,6 +74,10 @@ class AllForm extends Model
         return $this->belongsTo('App\Models\User');
     }
 
+    public function processed() {
+        return $this->belongsTo('App\Models\User');
+    }
+
     public function signed() {
         return $this->belongsTo('App\Models\User');
     }
@@ -88,9 +94,13 @@ class AllForm extends Model
         return $this->belongsTo('App\Models\Department');
     }
 
-
-    public function processed() {
+    public function process() {
         return $this->belongsTo('App\Models\User', 'processor', 'id');
+    }
+
+    public function hasProcessor($userId)
+    {
+        return in_array($userId, $this->processor ?? []);
     }
 
     public function approved() {

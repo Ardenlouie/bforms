@@ -100,6 +100,7 @@ new class extends Component
                     <h5>Purpose: <b>{{ ($data['purpose'] ?? '' )}}</b></h5>
                     <h5>No. of Receiver/s: <b>{{ ($data['numberof'] ?? '' )}}</b></h5>
                     <h5>Received By: <b>{{ ($data['received_by'] ?? '' )}}</b></h5>
+                    <h5>Office Location: <b>{{ ($data['office'] ?? '' )}}</b></h5>
                 </div>
                 <div class="col-6">
                     <h5>Category: 

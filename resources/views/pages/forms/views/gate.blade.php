@@ -57,6 +57,7 @@
                 <h4>Purpose: <b>{{ ($forms->model->purpose ?? '' )}}</b></h4>
                 <h4>Received By: <b>{{ is_array($forms->model->received_by) ? implode(', ', $forms->model->received_by) : $forms->model->received_by }}</b></h4>
                 <h4>Release Date: <b>{{ date('F d, Y', strtotime($forms->model->release_date ?? '')) }}</b></h4>
+                <h4>Office Location: <b>{{ ($forms->model->office ?? '' )}}</b></h4>
 
             </div>
             <div class="col-6 text-right">
@@ -64,6 +65,7 @@
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
+                <h4>Submitted by: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
                 <h4>Note: <b>{{ ($forms->model->note ?? '' )}}</b></h4>
 
             </div>

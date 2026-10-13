@@ -3,6 +3,7 @@
         <tr class="text-center">
             <th>Reference No.</th>
             <th>Form Name</th>
+            <th>Purpose/Objective</th>
             <th>Created By</th>
             <th>Date Submitted</th>
             <th>Status</th>
@@ -36,6 +37,9 @@
                     {{$approval->form->name}}
                 </td>
                 <td class="align-middle text-center">
+                    {{$approval->model->purpose ?? $approval->model->objective ?? ''}}
+                </td>
+                <td class="align-middle text-center">
                     {{$approval->user->name}}
                 </td>
                 <td class="align-middle text-center">
@@ -56,9 +60,11 @@
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Approved</span>
                     @elseif($approval->status == 'processing')
-                        <span class="badge bg-navy"><b>For Processing</b></span>
+                        <span class="badge bg-orange"><b>For Processing</b></span>
                     @elseif($approval->status == 'checked')
                         <span class="badge bg-purple"><b>Checked</b></span>
+                    @elseif($approval->status == 'ready')
+                        <span class="badge bg-indigo"><b>Ready</b></span>
                     @elseif($approval->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($approval->status == 'liquidated')
@@ -124,13 +130,15 @@
                             @endif
                         @endforeach
                     @elseif($approval->status == 'processing')
-                        {{$approval->processed->name}}
+                        <span class="badge bg-orange"><b> {{ $approval->processed->name }}</b></span>
                     @elseif($approval->status == 'approved')
                         <span class="badge badge-success">Completed</span>
                     @elseif($approval->status == 'checked')
                         <span class="badge bg-purple"><b>For Receiving</b></span>
                     @elseif($approval->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                    @elseif($approval->status == 'ready')
+                        <span class="badge bg-indigo"><b>For Releasing</b></span>
                     @elseif($approval->status == 'liquidated')
                         <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($approval->status == 'declined')
@@ -163,13 +171,17 @@
                          <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
                             <i class="fa fa-pen-alt"></i> Sign
                         </a>
+                    @elseif(in_array($user_id, $approval->processor ?? []) && $approval->status == 'approved')
+                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="approve" class="btn bg-purple btn-xs mb-0 ml-0">
+                            <i class="fa fa-pen-alt"></i> Process
+                        </a>
                     @else
                     @endif
 
                     <a href="#" title="view" data-id="{{$approval->id}}" data-form="{{$approval->form_id}}" class="btn btn-view btn-dark btn-xs mb-0 ml-0">
                         <i class="fa fa-eye"></i> View
                     </a>
-                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked' || $approval->status == 'received' || $approval->status == 'liquidated')
+                    @if($approval->status == 'approved' || $approval->status == 'partially_released' || $approval->status == 'checked' || $approval->status == 'received' || $approval->status == 'liquidated' || $approval->status == 'ready')
                         <a href="{{ route('approver.show', encrypt($approval->id)) }}" title="show" class="btn bg-orange btn-xs mb-0 ml-0">
                             <i class="fa fa-file-contract"></i> Show
                         </a>

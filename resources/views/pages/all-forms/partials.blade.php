@@ -3,6 +3,7 @@
         <tr class="text-center">
             <th>Reference No.</th>
             <th>Form Name</th>
+            <th>Purpose/Objective</th>
             <th>Created By</th>
             <th>Date Submitted</th>
             <th>Status</th>
@@ -36,6 +37,9 @@
                     {{$all_form->form->name}}
                 </td>
                 <td class="align-middle text-center">
+                    {{$all_form->model->purpose ?? $all_form->model->objective ?? ''}}
+                </td>
+                <td class="align-middle text-center">
                     {{$all_form->user->name}}
                 </td>
                 <td class="align-middle text-center">
@@ -61,6 +65,10 @@
                         <span class="badge bg-purple"><b>Checked</b></span>
                     @elseif($all_form->status == 'received')
                         <span class="badge bg-lime"><b>Received</b></span>
+                    @elseif($all_form->status == 'processing')
+                        <span class="badge bg-orange"><b>For Processing</b></span>
+                    @elseif($all_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>Ready</b></span>
                     @elseif($all_form->status == 'liquidated')
                         <span class="badge bg-navy"><b>Liquidated</b></span>
                     @elseif($all_form->status == 'declined')
@@ -125,10 +133,14 @@
                         @endforeach
                     @elseif($all_form->status == 'approved')
                         <span class="badge badge-success">Completed</span>
+                    @elseif($all_form->status == 'processing')
+                        <span class="badge bg-orange"><b> {{ $all_form->processed->name }}</b></span>
                     @elseif($all_form->status == 'checked')
                         <span class="badge bg-purple"><b>For Receiving</b></span>
                     @elseif($all_form->status == 'received')
                         <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
+                    @elseif($all_form->status == 'ready')
+                        <span class="badge bg-indigo"><b>For Releasing</b></span>
                     @elseif($all_form->status == 'liquidated')
                         <span class="badge bg-navy"><b>Received & Liquidated</b></span>
                     @elseif($all_form->status == 'draft')

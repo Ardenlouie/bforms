@@ -22,6 +22,7 @@ use App\Models\PettyCash;
 use App\Models\PettyCashItem;
 use App\Models\PettyLiquid;
 use App\Models\PettyLiquidItem;
+use App\Models\WarehouseAccess;
 use App\Models\Company;
 use App\Models\Product;
 use App\Models\PriceCode;
@@ -31,6 +32,7 @@ use App\Models\EmployeeCostCenter;
 use App\Models\CustomerCostCenter;
 use App\Models\StockCostCenter;
 use App\Models\ExpenseAccount;
+use App\Models\Position;
 use App\Models\User;
 
 use App\Http\Requests\FormAddRequest;
@@ -43,6 +45,7 @@ use App\Http\Requests\RCAStoreRequest;
 use App\Http\Requests\LCAStoreRequest;
 use App\Http\Requests\PCAStoreRequest;
 use App\Http\Requests\PCLStoreRequest;
+use App\Http\Requests\WARFStoreRequest;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -50,6 +53,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\Rule;
+
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Traits\SettingTrait;
 use App\Http\Traits\PsstXmlTrait;
@@ -66,6 +71,7 @@ use App\Notifications\DeclineFormNotification;
 
 use App\Helpers\FileSavingHelper;
 use Auth;
+use Carbon\Carbon;
 
 class FormController extends Controller
 {
@@ -641,6 +647,9 @@ class FormController extends Controller
         $forms = AllForm::findOrFail(decrypt($id)); 
         $prefix = $forms->form->prefix;
 
+        ini_set('memory_limit', '512M'); 
+        set_time_limit(300);
+
         $pdf = PDF::loadView('pages.forms.pdfs.'.$prefix, [
             'forms' => $forms,
         ]);
@@ -776,6 +785,10 @@ class FormController extends Controller
             }
         }
 
+        $customer_service = Position::where('position', 'Customer Service')->first();
+        $cs_user_ids = User::where('position_id', $customer_service->id)->pluck('id');
+        $processor = $cs_user_ids->toArray();
+
         $endorser = $user->department->approver_ids;
         $department_ids = [9, 2];
 
@@ -788,7 +801,8 @@ class FormController extends Controller
 
             $brands = Brand::whereIn('brand', $brandNames)->get();
 
-            $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
+            $bm_ids = $brands->pluck('bm_id')->unique()->values()->toArray();
+
             // $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
         } 
 
@@ -811,6 +825,7 @@ class FormController extends Controller
             'group_brands' => $gbm_ids ?? null,
             'bm_signs' => $bm_ids ?? null,
             // 'gbm_signs' => $gbm_ids ?? null,
+            'processor' => $processor,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -913,15 +928,29 @@ class FormController extends Controller
             }
         }
 
+        if($psst->company->name == 'BEVI') {
+            $admin = $user->department->admin_id;
+        } elseif($psst->company->name == 'BEVA') {
+            $admin = $user->department->admin2_id;
+        } else {
+            $admin = $user->department->admin_id;
+        }
+
+        $customer_service = Position::where('position', 'Customer Service')->first();
+        $cs_user_ids = User::where('position_id', $customer_service->id)->pluck('id');
+        $processor = $cs_user_ids->toArray();
+
         $endorser = $user->department->approver_ids;
         $department_ids = [9];
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
+            'admin_id' => $admin,
             'model_id' => $psst->id,
             'model_type' => 'App\Models\ProductTransfer',
             'department_id' => $department_ids,
+            'processor' => $processor,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -980,6 +1009,7 @@ class FormController extends Controller
             'form_id' => $form->id,
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
+            'office' => $request->office,
             'received_by' => $received_by,
             'receivers' => $received_by,
             'psrf_form_id' => $request->psrf_form_id ?? null,
@@ -994,15 +1024,17 @@ class FormController extends Controller
 
         if(!empty($gate_item)){
             foreach ($gate_item['items'] as $key => $items){
-                $gate_items = new GatePassItem([
-                    'gate_pass_id' => $gate->id,
-                    'item_description' => $items['desc'],
-                    'uom' =>  $items['uom'],
-                    'quantity' =>  $items['qty'],
-                    'quantity_release' =>  $items['qty'],
-                    'balance' =>  $items['qty'],
-                    'remarks' =>  $items['remarks'],
-                ]);
+                if($items['qty'] != 0){
+                    $gate_items = new GatePassItem([
+                        'gate_pass_id' => $gate->id,
+                        'item_description' => $items['desc'],
+                        'uom' =>  $items['uom'],
+                        'quantity' =>  $items['qty'],
+                        'quantity_release' =>  $items['qty'],
+                        'balance' =>  $items['qty'],
+                        'remarks' =>  $items['remarks'],
+                    ]);
+                }
                 $gate_items->save();
             }
         }
@@ -1071,10 +1103,18 @@ class FormController extends Controller
 
         $all_forms->save();
 
+
+
         if($all_forms->status == 'approval') {
+            $psrf_allforms =  AllForm::where('model_type', 'App\Models\ProductSample')->where('model_id', $gate->psrf_form_id)->first();
+
             $gate->update([
                 'control_number' => $gate_item['control_number'],
                 'date_submitted' => $date_submitted,
+            ]);
+
+            $psrf_allforms->update([
+                'status' => 'received',
             ]);
 
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
@@ -1149,6 +1189,14 @@ class FormController extends Controller
             ]);
         }
 
+        $ap_specialist = Position::where('position', 'AP Specialist')->first();
+        $gl_tax = Position::where('position', 'GL and Tax Associate')->first();
+        $ap_user_ids = User::where('position_id', $ap_specialist->id)->pluck('id');
+        $gl_tax_ids = User::where('position_id', $gl_tax->id)->pluck('id');
+
+        $ap_user_ids_array = $ap_user_ids->toArray();
+        $gl_tax_ids_array = $gl_tax_ids->toArray();
+
         if($rfp->company->name == 'BEVI') {
             $approver = $rfp->department->bevi_approver;
         } elseif($rfp->company->name == 'BEVA') {
@@ -1164,6 +1212,7 @@ class FormController extends Controller
             'model_type' => 'App\Models\RequestPayment',
             'department_id' => [$form->department->id],
             'approver' => $approver,
+            'processor' => $ap_user_ids_array,
             'status' => $request->status,
         ]);
 
@@ -1205,6 +1254,24 @@ class FormController extends Controller
 
         $rca_item = Session::get('rca_item');
 
+        $twoWeeksAdvance = Carbon::now()->startOfDay()->addWeeks(2)->format('Y-m-d');
+
+        $request->validate([
+            'rca_date' => 'required|date',
+            
+            // Note is required ONLY IF rca_date is earlier than 14 days from today
+            'advance_notice_note' => [
+                'nullable',
+                'string',
+                'max:1000',
+                Rule::requiredIf(function () use ($request, $twoWeeksAdvance) {
+                    return $request->rca_date && Carbon::parse($request->rca_date)->lt(Carbon::parse($twoWeeksAdvance));
+                }),
+            ],
+        ], [
+            'advance_notice_note.required' => 'A justification note is required for requests submitted without 2 weeks advance notice.',
+        ]);
+
         $rca = new RequestCash([
             'form_id' => $form->id,
             'company_id' => $request->company_id,
@@ -1214,6 +1281,7 @@ class FormController extends Controller
             'travel' => $request->travel,
             'cost_center' => $request->cost_center,
             'rca_date' => $request->rca_date,
+            'advance_notice_note' => $request->advance_notice_note,
             'itenerary' => $request->itenerary,
             'location' => $request->location,
             'total_amount' => $rca_item['total_amount'],
@@ -1250,6 +1318,11 @@ class FormController extends Controller
             }
         }
 
+        $ap_specialist = Position::where('position', 'AP Specialist')->first();
+        $ap_user_ids = User::where('position_id', $ap_specialist->id)->pluck('id');
+
+        $ap_user_ids_array = $ap_user_ids->toArray();
+
         if($rca->company->name == 'BEVI') {
             $endorser = $user->department->bevi_approver;
             $admin = $user->department->admin_id;
@@ -1268,6 +1341,7 @@ class FormController extends Controller
             'model_type' => 'App\Models\RequestCash',
             'department_id' => [$form->department->id],
             'admin_id' => $admin,
+            'processor' => $ap_user_ids_array,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -1344,6 +1418,11 @@ class FormController extends Controller
             }
         }
 
+        $ap_specialist = Position::where('position', 'AP Specialist')->first();
+        $ap_user_ids = User::where('position_id', $ap_specialist->id)->pluck('id');
+
+        $ap_user_ids_array = $ap_user_ids->toArray();
+
         if($lca->company->name == 'BEVI') {
             $endorser = $user->department->bevi_approver;
         } elseif($lca->company->name == 'BEVA') {
@@ -1357,6 +1436,8 @@ class FormController extends Controller
             'user_id' => $user->id,
             'model_id' => $lca->id,
             'model_type' => 'App\Models\LiquidCash',
+            'department_id' => [$form->department->id],
+            'processor' => $ap_user_ids_array,
             'endorser' => $endorser,
             'approver' => $form->department->approver_ids,
             'status' => $request->status,
@@ -1445,6 +1526,10 @@ class FormController extends Controller
             }
         }
         
+        $ap_specialist = Position::where('position', 'AP Specialist')->first();
+        $ap_user_ids = User::where('position_id', $ap_specialist->id)->pluck('id');
+
+        $ap_user_ids_array = $ap_user_ids->toArray();
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
@@ -1454,6 +1539,7 @@ class FormController extends Controller
             'model_type' => 'App\Models\PettyCash',
             'department_id' => [$form->department->id],
             'approver' => $form->department->approver_ids,
+            'processor' => $ap_user_ids_array,
             'status' => $request->status,
         ]);
 
@@ -1533,13 +1619,20 @@ class FormController extends Controller
             }
         }
         
+        $ap_specialist = Position::where('position', 'AP Specialist')->first();
+        $ap_user_ids = User::where('position_id', $ap_specialist->id)->pluck('id');
+
+        $ap_user_ids_array = $ap_user_ids->toArray();
+        
         
         $all_forms = new AllForm([
             'form_id' => $form->id,
             'user_id' => $user->id,
             'model_id' => $pcl->id,
             'model_type' => 'App\Models\PettyLiquid',
+            'department_id' => [$form->department->id],
             'approver' => $form->department->approver_ids,
+            'processor' => $ap_user_ids_array,
             'status' => $request->status,
         ]);
 
@@ -1579,6 +1672,82 @@ class FormController extends Controller
         ]);
     }
 
-    
+    public function store_warf($id, WARFStoreRequest $request)
+    {
+        $user = Auth::user();
+        $form = Form::findOrFail(decrypt($id));
+        $date_submitted = date('Y-m-d');
+        $date_code = date('Y');
+
+        $warf_item = Session::get('warf_item');
+
+        $warf = new WarehouseAccess([
+            'form_id' => $form->id,
+            'company_id' => $request->company_id,
+            'purpose' => $request->purpose,
+            'date_access' => $request->date_access,
+            'time_in' => $request->time_in,
+            'time_out' => $request->time_out,
+        ]);
+
+        $warf->save();
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $warf->id, 'warf-attachments');
+
+            $warf->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
+        $all_forms = new AllForm([
+            'form_id' => $form->id,
+            'user_id' => $user->id,
+            'model_id' => $warf->id,
+            'model_type' => 'App\Models\WarehouseAccess',
+            'model_type' => 'App\Models\WarehouseAccess',
+            'department_id' => [$form->department->id],
+            'endorser' => $user->department->approver_ids,
+            'approver' => $form->department->approver_ids,
+            'status' => $request->status,
+        ]);
+
+        $all_forms->save();
+
+        if($all_forms->status == 'endorser') {
+            $warf->update([
+                'control_number' => $warf_item['control_number'],
+                'date_submitted' => $date_submitted,
+            ]);
+
+            $endorsers = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('create')
+        ->performedOn($warf)
+        ->log(':causer.name has created '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was created'
+        ]);
+    }
 
 }

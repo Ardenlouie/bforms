@@ -117,7 +117,7 @@ new class extends Component
             $all_forms->user->notify(new CheckedFormNotification($all_forms));
 
             $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
-            $madam_jazz = User::where('email', 'jazz.burila@kojiesan.com')->first();
+            // $madam_jazz = User::where('email', 'jazz.burila@kojiesan.com')->first();
 
             if ($approvers->isNotEmpty()) {
                 Notification::send($approvers, new CheckedFormNotification($all_forms));

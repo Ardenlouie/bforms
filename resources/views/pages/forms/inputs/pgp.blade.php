@@ -98,7 +98,7 @@
     <div class="card-footer text-right">
 
         <input type="hidden" id="status" name="status" form="add_gate" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
         <!-- <a href="#" title="multiple" class="btn-multiple btn bg-success">Multiple Receivers</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
@@ -391,4 +391,18 @@ $(document).ready(function() {
 });
 </script>
 
+
+<script>
+    $(document).ready(function() {
+        $('input[name="received_by"]').on('keydown', function(e) {
+            // Block keypresses for '/' and '\'
+            if (e.key === '/' || e.key === '\\' || e.code === 'NumpadDivide') {
+                e.preventDefault();
+            }
+        }).on('input', function() {
+            // Strip out slashes if pasted
+            $(this).val($(this).val().replace(/[\/\\]/g, ''));
+        });
+    });
+</script>
 @endpush

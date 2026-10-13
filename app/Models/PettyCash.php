@@ -19,7 +19,7 @@ class PettyCash extends Model
         return Session::get('db_connection', 'mysql'); // Default to 'mysql' if not set
     }
 
-     protected $fillable = [
+    protected $fillable = [
         'control_number',
         'form_id',
         'company_id',

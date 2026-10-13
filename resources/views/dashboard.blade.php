@@ -36,8 +36,8 @@
                 <div class="small-box bg-white border-left-primary shadow-sm rounded">
                     <div class="inner p-3">
                         <span class="text-uppercase text-muted font-weight-bold text-xs">Total Created Forms</span>
-                        <h2 class="font-weight-bold my-1 text-dark">{{ $totalFormsCount ?? 0 }}</h2>
-                        <p class="mb-0 text-xs text-success">
+                        <h2 class="font-weight-bold my-1 text-primary">{{ $totalFormsCount ?? 0 }}</h2>
+                        <p class="mb-0 text-xs text-primary">
                             <i class="fas fa-arrow-up mr-1"></i>All system forms
                         </p>
                     </div>
@@ -95,7 +95,7 @@
         <div class="row">
             <!-- Checked Forms -->
             <div class="col-lg-4 col-6">
-                <div class="small-box bg-white border-left-success shadow-sm rounded">
+                <div class="small-box bg-white border-left shadow-sm rounded">
                     <div class="inner p-3">
                         <span class="text-uppercase text-muted font-weight-bold text-xs">Checked</span>
                         <h2 class="font-weight-bold my-1 text-purple">{{ $checkedFormsCount ?? 0 }}</h2>
@@ -111,7 +111,7 @@
 
             <!-- Received Forms -->
             <div class="col-lg-4 col-6">
-                <div class="small-box bg-white border-left-success shadow-sm rounded">
+                <div class="small-box bg-white border-left shadow-sm rounded">
                     <div class="inner p-3">
                         <span class="text-uppercase text-muted font-weight-bold text-xs">Acknowledged/Received</span>
                         <h2 class="font-weight-bold my-1 text-lime">{{ $receivedFormsCount ?? 0 }}</h2>
@@ -125,14 +125,16 @@
 
             <!-- Liquidated Forms -->
             <div class="col-lg-4 col-6">
-                <div class="small-box bg-white border-left-success shadow-sm rounded">
+                <div class="small-box bg-white border-left shadow-sm rounded">
                     <div class="inner p-3">
                         <span class="text-uppercase text-muted font-weight-bold text-xs">Liquidated</span>
-                        <h2 class="font-weight-bold my-1 text-lime">{{ $liquidatedFormsCount ?? 0 }}</h2>
-                        <p class="mb-0 text-xs text-muted">Cash/PettyCash Advance Liquidate</p>
+                        <h2 class="font-weight-bold my-1 text-navy">{{ $liquidatedFormsCount ?? 0 }}</h2>
+                        <p class="mb-0 text-xs text-navy">
+                            <i class="fas fa-dollar-sign mr-1"></i>Cash/PettyCash Advance Liquidate
+                        </p>
                     </div>
                     <div class="icon">
-                        <i class="fas fa-dollar-sign text-lime opacity-25"></i>
+                        <i class="fas fa-credit-card text-navy opacity-25"></i>
                     </div>
                 </div>
             </div>

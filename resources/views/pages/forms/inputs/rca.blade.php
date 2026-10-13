@@ -39,9 +39,35 @@
             </div>
             <div class="col-lg-4">
                 <div class="form-group">
-                    <label class="mb-0">Date <small class="text-danger font-italic text-bold">(required)</small></label>
-                    <input type="date" class="form-control" name="rca_date" form="add_rca" value="{{ date('Y-m-d') }}"> 
-                    <small class="text-danger">{{$errors->first('rca_date')}}</small>
+                    <label for="rca_date">Event Date <small class="text-danger font-italic text-bold">(required)</small></label>
+                    <input 
+                        type="date" 
+                        class="form-control" 
+                        id="rca_date" 
+                        name="rca_date" 
+                        form="add_rca" 
+                        value="{{ date('Y-m-d') }}"
+                    >
+                    @error('rca_date')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group d-none" id="note_container">
+                    <label for="advance_notice_note" class="font-weight-bold text-warning">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> Justification Note <span class="text-danger">*</span>
+                    </label>
+                    <textarea 
+                        class="form-control {{ $errors->has('advance_notice_note') ? 'is-invalid' : '' }}" 
+                        id="advance_notice_note" 
+                        name="advance_notice_note" 
+                        form="add_rca" 
+                        rows="3" 
+                        placeholder="Please state the reason why this request is filed less than 2 weeks in advance..."
+                    >{{ old('advance_notice_note') }}</textarea>
+                    <small class="form-text text-muted">A justification note is required for requests submitted without 2 weeks advance notice.</small>
+                    @error('advance_notice_note')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
             <div class="col-lg-4">
@@ -129,7 +155,7 @@
     </div>
     <div class="card-footer text-right">
         <input type="hidden" id="status" name="status" form="add_rca" value="pending">
-        <a class="btn-draft btn btn-secondary">Save as Draft</a>
+        <!-- <a class="btn-draft btn btn-secondary">Save as Draft</a> -->
 
         <a href="#" title="preview" class="btn-preview btn btn-primary">Preview</a>
 
@@ -329,4 +355,51 @@
         });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const rcaDateInput = document.getElementById('rca_date');
+    const noteContainer = document.getElementById('note_container');
+    const noteInput = document.getElementById('advance_notice_note');
+
+    function validateAdvanceDate() {
+        if (!rcaDateInput.value) {
+            hideNoteField();
+            return;
+        }
+
+        const selectedDate = new Date(rcaDateInput.value);
+        const today = new Date();
+        
+        // Zero out time components for precise day comparison
+        selectedDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        // Compute 14 days ahead of today
+        const minAdvanceDate = new Date(today);
+        minAdvanceDate.setDate(today.getDate() + 14);
+
+        // If selected date is BEFORE the 2-week advance date -> Show required note field
+        if (selectedDate < minAdvanceDate) {
+            noteContainer.classList.remove('d-none');
+            noteInput.setAttribute('required', 'required');
+        } else {
+            hideNoteField();
+        }
+    }
+
+    function hideNoteField() {
+        noteContainer.classList.add('d-none');
+        noteInput.removeAttribute('required');
+        noteInput.value = ''; // Reset note value when 2+ weeks advance is selected
+    }
+
+    // Event listener for date changes
+    rcaDateInput.addEventListener('change', validateAdvanceDate);
+
+    // Initial check on page load (in case of old input or default date)
+    validateAdvanceDate();
+});
+</script>
+
 @endpush

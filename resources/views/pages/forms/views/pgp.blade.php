@@ -64,6 +64,8 @@
                 @if(!empty($forms->model->date_submitted))
                 <h4>Date Submitted: <b>{{ date('F d, Y', strtotime($forms->model->date_submitted ?? '')) }}</b></h4>
                 @endif
+                <h4>Submitted by: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
+
                 <h4>Category: <b>{{ ($forms->model->category ?? '' )}}</b></h4>
 
                 @if(!empty($forms->model->psrf_form_id))

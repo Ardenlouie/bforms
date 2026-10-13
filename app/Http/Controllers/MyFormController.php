@@ -24,7 +24,9 @@ use App\Models\PettyLiquid;
 use App\Models\PettyLiquidItem;
 use App\Models\Company;
 use App\Models\Product;
+use App\Models\PriceCode;
 use App\Models\User;
+use App\Models\Position;
 
 use App\Http\Requests\PSRFUpdateRequest;
 use App\Http\Requests\PSSTUpdateRequest;
@@ -34,12 +36,14 @@ use App\Http\Requests\RCAUpdateRequest;
 use App\Http\Requests\LCAUpdateRequest;
 use App\Http\Requests\PCAUpdateRequest;
 use App\Http\Requests\PCLUpdateRequest;
+use App\Http\Requests\WARFUpdateRequest;
 use App\Http\Requests\AllFormEditRequest;
 use Illuminate\Http\Request;
 
 use App\Notifications\SubmitFormNotification;
 use App\Notifications\ApproveFormNotification;
 use App\Notifications\DeclineFormNotification;
+use App\Notifications\ReadyFormNotification;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -75,10 +79,29 @@ class MyFormController extends Controller
                 'model',
                 ['App\Models\ProductSample', 'App\Models\RequestPayment', 'App\Models\ProductTransfer',
                 'App\Models\GatePass', 'App\Models\RequestCash', 'App\Models\LiquidCash', 
-                'App\Models\PettyCash', 'App\Models\PettyLiquid'], 
+                'App\Models\PettyCash', 'App\Models\PettyLiquid' , 'App\Models\WarehouseAccess'], 
                 function ($query, $type) use($search) {
                     $query->where('control_number', 'like', '%'.$search.'%')
                         ->orWhere('form_id', 'like', '%'.$search.'%');
+
+                    $modelsWithPurpose = [
+                        'App\Models\GatePass',
+                        'App\Models\RequestCash',
+                        'App\Models\WarehouseAccess',
+                    ];
+
+                    $modelsWithObjective = [
+                        'App\Models\ProductTransfer',
+                        'App\Models\ProductSample',
+                    ];
+
+                    if (in_array($type, $modelsWithPurpose)) {
+                        $query->orWhere('purpose', 'like', '%'.$search.'%');
+                    }
+
+                    if (in_array($type, $modelsWithObjective)) {
+                        $query->orWhere('objective', 'like', '%'.$search.'%');
+                    }
                 }
             )
             ->when($status, function($q) use ($status) {
@@ -189,6 +212,46 @@ class MyFormController extends Controller
         ]);
     }
 
+    public function quantity($id) {
+        $all_form = AllForm::findOrFail(decrypt($id));
+
+        $form = Form::findOrFail($all_form->form->id);
+
+        $users = User::all();
+        $users_arr = [];
+        foreach($users as $user) {
+            $users_arr[$user->id] = $user->name;
+        }
+
+        $companies = Company::all();
+        $companies_arr = [];
+        foreach($companies as $company) {
+            $companies_arr[$company->id] = $company->name;
+        }
+
+        $departments = Department::all();
+        $departments_arr = [];
+        foreach($departments as $department) {
+            $departments_arr[$department->id] = $department->name;
+        }
+
+        $brands = Brand::all();
+        $brands_arr = [];
+        foreach($brands as $brand) {
+            $brands_arr[$brand->id] = $brand->brand;
+        }
+
+        return view('pages.my-forms.quantity')->with([
+            'all_form' => $all_form,
+            'form' => $form,
+            'companies' => $companies_arr,
+            'departments' => $departments_arr,
+            'users' => $users_arr,
+            'brands' => $brands_arr,
+
+        ]);
+    }
+
     public function cancel($id, AllFormEditRequest $request) 
     {
         $all_forms = AllForm::findOrFail(decrypt($id)); 
@@ -276,7 +339,8 @@ class MyFormController extends Controller
 
             $brands = Brand::whereIn('brand', $brandNames)->get();
 
-            $bm_ids = $brands->pluck('bm_id')->unique()->toArray();
+            $bm_ids = $brands->pluck('bm_id')->unique()->values()->toArray();
+
             // $gbm_ids = $brands->pluck('gbm_id')->unique()->toArray();
         }
 
@@ -318,6 +382,24 @@ class MyFormController extends Controller
             if ($brands->isNotEmpty()) {
                 Notification::send($brands, new SubmitFormNotification($all_forms));
             }
+        } elseif ($all_forms->status == 'ready') {
+            $all_forms->update([
+                'brands' => $bm_ids ?? null,
+                'group_brands' => $gbm_ids ?? null,
+                'bm_signs' => $bm_ids ?? null,
+                // 'gbm_signs' => $gbm_ids ?? null,
+            ]);
+
+            $all_forms->model->update([
+                'control_number' => $psrf_item['control_number'],
+                'date_submitted' => $request->date_submitted,
+            ]);
+
+            $brands = User::whereIn('id', $all_forms->brands ?? [])->get();
+
+            if ($brands->isNotEmpty()) {
+                Notification::send($brands, new SubmitFormNotification($all_forms));
+            }
         }
 
         $control_number = $all_forms->model->control_number;
@@ -329,6 +411,61 @@ class MyFormController extends Controller
         ->log(':causer.name has updated '.$form_name.' ['.$control_number.']');
 
         return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was updated'
+        ]);
+    }
+
+    public function scm_psrf($id, Request $request)
+    {
+        $user = Auth::user();
+        $all_forms = AllForm::findOrFail(decrypt($id));
+        $date_code = date('Y');
+        $company = $all_forms->model->company_id;
+
+        $items = $request->input('items', []);
+
+        foreach ($items as $itemData) {
+
+            $product = Product::where('stock_code', $itemData['item_code'])->first();
+
+   
+            $price_code = PriceCode::where('code', 'A')->where('company_id', $company)
+                ->where('product_id', $product->id)->first();
+
+            $amount = $price_code->selling_price * $itemData['qty'];
+            
+            
+            $all_forms->model->psrf_form_item()
+                ->where('id', $itemData['id'])
+                ->update([
+                    'quantity' => $itemData['qty'],
+                    'amount'  => $amount,
+                ]);
+
+        }
+
+        $total_amount = $all_forms->model->psrf_form_item->sum('amount');
+
+        $all_forms->model->update([
+            'total_amount' => $total_amount,
+        ]);
+
+        
+        $all_forms->update([
+            'status' => $request->status,
+        ]);
+
+        $all_forms->user->notify(new ReadyFormNotification($all_forms));
+
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        activity('update')
+        ->performedOn($all_forms)
+        ->log(':causer.name has updated '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.show', $id)->with([
             'message_success' => $form_name.' ['.$control_number.'] was updated'
         ]);
     }
@@ -445,6 +582,7 @@ class MyFormController extends Controller
             'form_id' => $all_forms->form->id,
             'company_id' => $request->company_id,
             'purpose' => $request->purpose,
+            'office' => $request->office,
             'received_by' => $received_by,
             'receivers' => $received_by,
             'release_date' => $request->release_date,
@@ -836,6 +974,40 @@ class MyFormController extends Controller
         ]);
     }
 
+    public function tax_lca($id, Request $request)
+    {
+        $user = Auth::user();
+        $all_forms = AllForm::findOrFail(decrypt($id));
+        $date_code = date('Y');
+
+        $items = $request->input('items', []);
+
+        foreach ($items as $itemData) {
+            // Target only the specific row matching this item's ID
+            $all_forms->model->lca_form_item()
+                ->where('id', $itemData['id'])
+                ->update([
+                    'tax_code' => $itemData['tax'],
+                    'wt_code'  => $itemData['wt'],
+                ]);
+        }
+
+        $all_forms->update([
+            'status' => $request->status,
+        ]);
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        activity('update')
+        ->performedOn($all_forms)
+        ->log(':causer.name has updated '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.show', $id)->with([
+            'message_success' => $form_name.' ['.$control_number.'] was updated'
+        ]);
+    }
+
     public function update_pca($id, PCAUpdateRequest $request)
     {
         $user = Auth::user();
@@ -999,5 +1171,77 @@ class MyFormController extends Controller
             'message_success' => $form_name.' ['.$control_number.'] was updated'
         ]);
     }
-    
+
+    public function update_warf($id, WARFUpdateRequest $request)
+    {
+        $all_forms = AllForm::findOrFail(decrypt($id));
+        $user = $all_forms->user;
+
+        $date_code = date('Y');
+
+        $warf_item = Session::get('warf_item');
+
+        $all_forms->model->update([
+            'form_id' => $all_forms->form->id,
+            'company_id' => $request->company_id,
+            'purpose' => $request->purpose,
+            'date_access' => $request->date_access,
+            'time_in' => $request->time_in,
+            'time_out' => $request->time_out,
+        ]);
+
+        if(!empty($request->file_name)) {
+            $request->validate([
+                'file_name' => 'required|mimes:pdf|max:5120',
+            ]);
+
+            $path = NULL;
+            $nameWithExtension = $request->file_name->getClientOriginalName();
+
+            $path = FileSavingHelper::saveFile($request->file_name, $all_forms->model->id, 'warf-attachments');
+
+            $all_forms->model->update([
+                'path' => $path,
+                'file_name' => $nameWithExtension,
+            ]);
+        }
+
+        $all_forms->update([
+            'status' => $request->status,
+        ]);
+        
+
+        if($all_forms->status == 'endorsement') {
+            if($all_forms->model->control_number == NULL){
+
+                $all_forms->model->update([
+                    'control_number' => $warf_item['control_number'],
+                    'date_submitted' => $request->date_submitted,
+
+                ]);
+            }
+                $all_forms->update([
+                    'endorser' => $endorser,
+                ]);
+            $endorser = User::whereIn('id', $all_forms->endorser ?? [])->get();
+
+            if ($endorsers->isNotEmpty()) {
+                Notification::send($endorsers, new SubmitFormNotification($all_forms));
+            }
+
+            // $all_forms->approved->notify(new SubmitFormNotification($all_forms));
+        }
+
+        $control_number = $all_forms->model->control_number;
+        $form_name = $all_forms->form->name;
+
+        
+        activity('update')
+        ->performedOn($all_forms)
+        ->log(':causer.name has updated '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('myforms.index')->with([
+            'message_success' => $form_name.' ['.$control_number.'] was updated'
+        ]);
+    }
 }
