@@ -13,8 +13,8 @@
                 <span class="badge badge-primary"><b>For Final Approval</b></span>
             @elseif($forms->status == 'approved')
                 <span class="badge badge-success"><b>Approved</b></span>
-            @elseif($forms->status == 'checked')
-                <span class="badge bg-purple"><b>Received & Checked</b></span>
+            @elseif($forms->status == 'received')
+                <span class="badge bg-lime"><b>Received</b></span>
             @elseif($forms->status == 'declined')
                 <span class="badge badge-danger"><b>Declined</b></span>
             @elseif($forms->status == 'cancelled')
@@ -205,37 +205,24 @@
                             <i class="fas fa-download"></i> Download QR Code
                     </a>
                 </div>
-                @elseif($forms->status == 'checked')
+                @elseif($forms->status == 'received')
                 <div class="form-group text">    
                     <small class="form-text text-muted mb-3">
-                        This Form has been CHECKED!<br>For Receiving, Please copy the link or show the QR CODE below.
+                        This Form has been RECEIVED by security!
                     </small>
                     
                     <div class="mb-0">
-                        <small class="text-muted d-block font-weight-bold">RECEIVER URL</small>
-                        <a href="{{ route('receive', encrypt($forms->id)) }}" class="target-link text-success font-weight-bold" target="_blank">
-                            {{ route('receive', encrypt($forms->id)) }}
-                        </a>
+                        <small class="text-muted d-block font-weight-bold">Security Guard On Duty:</small>
+                        <h1>{{ $forms->model->opened_by }}</h1>
                     </div>
-                    <button type="button" class="btn btn-success mb-3 copy-btn" data-clipboard-text="{{ route('receive', encrypt($forms->id)) }}">
-                        <i class="fa fa-copy"></i> Copy Link
-                    </button>
-                    <div class="mb-3">
-                        <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('receive', encrypt($forms->id)), 'QRCODE') }}" alt="barcode" />
-                    </div>
-
-                    <a href="data:image/png;base64,{{ DNS2D::getBarcodePNG(route('receive', encrypt($forms->id)), 'QRCODE', 10, 10) }}" 
-                        download="QR_Code_{{ $forms->model->control_number }}.png" 
-                        class="btn bg-green">
-                            <i class="fas fa-download"></i> Download QR Code
-                    </a>
+                    
                 </div>
                 @endif
             </div>
         </div>
     </div>
     <div class="card-footer text-center">
-        @if($forms->status == 'approved')
+        @if($forms->status == 'approved' || $forms->status == 'received')
         <div class="row ">
             <div class="col-4">
                 <img src="{{ asset($forms->user->signature ?? 'images/nosign1.png' )}}" height="50" width="100">

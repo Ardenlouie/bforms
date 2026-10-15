@@ -3,6 +3,7 @@
 use Livewire\Component;
 
 use App\Models\GatePass;
+use App\Models\WarehouseAccess;
 use App\Models\GatePassItem;
 use App\Models\Company;
 use App\Models\Form;
@@ -21,11 +22,13 @@ new class extends Component
     public $data = [];
     public $items = [];
     public $gate_pass;
+    public $warehouse_access;
 
     protected $listeners = [
         'checkedForm' => 'loadData',
         'submitForm' => 'submit',
         'receiveForm' => 'receive',
+        'openForm' => 'open',
     ];
 
 
@@ -35,18 +38,21 @@ new class extends Component
 
         $this->form_id = $data['id'];
         $this->forms= AllForm::where('id', $this->form_id)->first();
-        $this->items = $this->forms->model->gate_pass_item()->get()
-        ->map(function($item) {
-            return [
-                'id' => $item->id,
-                'item_description' => $item->item_description,
-                'uom' => $item->uom,
-                'remarks' => $item->remarks,
-                'balance' => $item->balance,
-                'total_requested' => $item->quantity, // The original amount
-                'quantity_release' => $item->quantity_release, // The user input
-            ];
-        })->toArray();
+        if($this->forms->form->prefix != 'warf'){
+            $this->items = $this->forms->model->gate_pass_item()->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'item_description' => $item->item_description,
+                    'uom' => $item->uom,
+                    'remarks' => $item->remarks,
+                    'balance' => $item->balance,
+                    'total_requested' => $item->quantity, // The original amount
+                    'quantity_release' => $item->quantity_release, // The user input
+                ];
+            })->toArray();
+        }
+
 
     }
 
@@ -143,6 +149,44 @@ new class extends Component
         ]);
     }
 
+    public function open($data)
+    {
+        $this->warehouse_access  = WarehouseAccess::where('id', $this->forms->model->id)->first();
+
+        if (!empty($data['guardDuty'])) {
+            $guardDuty = $data['guardDuty'];
+            
+            $this->warehouse_access->update([
+                'opened_by' => $guardDuty,
+            ]);
+
+            $this->forms->update([
+                'status' => 'received',
+                'date_received' => date('Y-m-d'),
+            ]);
+            
+            $all_forms = $this->forms;
+
+            $approvers = User::whereIn('id', $all_forms->approver ?? [])->get();
+
+            if ($approvers->isNotEmpty()) {
+                Notification::send($approvers, new CheckedFormNotification($all_forms));
+            }
+        
+        }
+
+        $control_number = $this->forms->model->control_number;
+        $form_name = $this->forms->form->name;
+
+        activity('received')
+            ->performedOn($this->forms)
+            ->log(':causer.name has received '.$form_name.' ['.$control_number.']');
+
+        return redirect()->route('security', encrypt($this->forms->id))->with([
+            'message_success' => 'The '.$form_name.' ['.$control_number.'] was received!'
+        ]);
+    }
+
 };
 ?>
 
@@ -152,6 +196,7 @@ new class extends Component
             <h4 class="modal-title text-bold">CHECKING</h4>
         </div>
         @if(!empty($forms))
+            @if($forms->form->prefix == 'pgp' || $forms->form->prefix == 'gate') 
             <form wire:submit.prevent="submit">
             <div class="modal-body">
                 <div class="table-responsive">
@@ -203,18 +248,50 @@ new class extends Component
                     </table>
                 </div>
             </div>
-                <div class="modal-footer text-right">
-                    <a href="#" title="checked" class="btn-checked btn btn-success float-right btn-lg"> 
-                        <i class="fas fa-check-circle"></i> Release Items</a>
-                    @if (session()->has('message'))
-                        <span class="text-success mr-3 float-right animate__animated animate__fadeIn">
-                            <i class="fas fa-check"></i> {{ session('message') }}
-                        </span>
-                    @endif
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-                    
-                    
+            <div class="modal-footer text-right">
+                <a href="#" title="checked" class="btn-checked btn btn-success float-right btn-lg"> 
+                    <i class="fas fa-check-circle"></i> Release Items</a>
+                @if (session()->has('message'))
+                    <span class="text-success mr-3 float-right animate__animated animate__fadeIn">
+                        <i class="fas fa-check"></i> {{ session('message') }}
+                    </span>
+                @endif
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                
+                
+            </div>
+            </form>
+            @elseif($forms->form->prefix == 'warf')
+            <form wire:submit.prevent="open">
+            <div class="modal-body">
+                <div class="row text-left">
+                    <div class="col-6">
+                        <h4>Requested By: <b>{{ ($forms->user->name ?? '' )}}</b></h4>
+                        <h4>Date of Access: <b>{{ date('F d, Y', strtotime($forms->model->date_access ?? '')) }}</b></h4>
+
+                    </div>
+                    <div class="col-6">
+                        <h4>Time In: <b>{{ $forms->model->time_in ? date('h:i A', strtotime($forms->model->time_in)) : '' }}</b></h4>
+                        <h4>Time Out: <b>{{ $forms->model->time_out ? date('h:i A', strtotime($forms->model->time_out)) : '' }}</b></h4>
+                    </div>
+            
                 </div>
+           
+            </div>
+            <div class="modal-footer text-right">
+                <a href="#" title="open" class="btn-open btn btn-success float-right btn-lg"> 
+                    <i class="fas fa-check-circle"></i> Open Warehouse</a>
+                @if (session()->has('message'))
+                    <span class="text-success mr-3 float-right animate__animated animate__fadeIn">
+                        <i class="fas fa-check"></i> {{ session('message') }}
+                    </span>
+                @endif
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                
+                
+            </div>
+            </form>
+            @endif
         @endif
     </div>
 </div>

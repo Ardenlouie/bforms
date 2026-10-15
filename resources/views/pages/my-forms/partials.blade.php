@@ -165,7 +165,7 @@
                     <a href="#" title="signatures" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-signatures btn bg-success btn-xs mb-0 ml-0">
                         <i class="fa fa-file-signature"></i> Approvers
                     </a>
-                    @if($my_form->status != 'approved' && $my_form->status != 'checked' && $my_form->status != 'received' && $my_form->status != 'cancelled' && $my_form->status != 'liquidated')
+                    @if($my_form->status == 'endorsement' || $my_form->status == 'approval' || $my_form->status == 'draft')
                     <a href="#" title="cancel" data-id="{{$my_form->id}}" data-form="{{$my_form->form_id}}" class="btn-cancel btn bg-danger btn-xs mb-0 ml-0">
                         <i class="fa fa-ban"></i> Cancel
                     </a>

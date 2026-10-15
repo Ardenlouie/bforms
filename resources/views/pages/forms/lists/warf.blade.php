@@ -60,6 +60,8 @@
                         <span class="badge badge-danger"><b>Cancelled</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge bg-purple"><b>Received & Checked</b></span>
+                    @elseif($my_form->status == 'received')
+                        <span class="badge bg-lime"><b>Received</b></span>
                     @elseif($my_form->status == 'partially_released')
                         <span class="badge bg-orange"><b>Partially Released</b></span>
                     @else
@@ -100,6 +102,8 @@
                         <span class="badge badge-success"><b>Completed</b></span>
                     @elseif($my_form->status == 'checked')
                         <span class="badge badge-success"><b>Completed</b></span>
+                    @elseif($my_form->status == 'received')
+                        <span class="badge bg-lime"><b>Acknowledged & Received</b></span>
                     @elseif($my_form->status == 'declined')
                         <span class="badge badge-danger"><b>Declined</b></span>
                     @elseif($my_form->status == 'cancelled')
