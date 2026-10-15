@@ -235,6 +235,36 @@
                 </table>
             </div>
         </div>
+
+        @elseif($all_form->form->prefix == 'warf')
+        <div class="row invoice-info mb-3 text-lg">
+            <div class="col-6 invoice-col">
+                <b>Requested By: </b><br>{{ $all_form->user->name }}<br>
+                <b>Department: </b><br>{{ $all_form->user->department->name }}<br>
+                <b>Purpose: </b><br>{{$all_form->model->purpose}}<br>
+            </div>
+            <div class="col-6 invoice-col">
+                <b>Date of Access: </b><br>{{ date('F d, Y', strtotime($all_form->model->date_access ?? '')) }}<br>
+                <b>Time In: </b><br>{{ $all_form->model->time_in ? date('h:i A', strtotime($all_form->model->time_in)) : '' }}<br>
+                <b>Time Out: </b><br>{{ $all_form->model->time_out ? date('h:i A', strtotime($all_form->model->time_out)) : '' }}<br>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-9 mb-3">
+                <h4>Attachment:</h4>
+                @if(!empty($all_form->model->path))
+                    <iframe
+                        src="{{ asset('/'.$all_form->model->path) }}"
+                        width="100%"
+                        height="600px"
+                        style="border: none;">
+                    </iframe>
+                @else
+                    NO ATTACHMENT
+                @endif
+            </div>
+        </div>
         
         @endif
     </div>
@@ -278,23 +308,31 @@
         </div>
         @endif
         
-        @if($all_form->status == 'checked' || $all_form->status == 'received')
-        <div class="form-group float-right">
-            <label class="form-text text-muted mb-3">
-                This Gate Pass is already checked by Security.
-            </label>
-        </div>
-        @elseif($all_form->model->release_date && (\Carbon\Carbon::parse($all_form->model->release_date)->isPast() || \Carbon\Carbon::parse($all_form->model->release_date)->isToday()))
-        <div class="col-12">
-            <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
-                <i class="fas fa-clipboard-check"></i> CHECK</a>
-        </div>
+        @if($all_form->form->prefix == 'pgp' || $all_form->form->prefix == 'gate')
+            @if($all_form->status == 'checked' || $all_form->status == 'received')
+            <div class="form-group float-right">
+                <label class="form-text text-muted mb-3">
+                    This Gate Pass is already checked by Security.
+                </label>
+            </div>
+            @elseif($all_form->model->release_date && (\Carbon\Carbon::parse($all_form->model->release_date)->isPast() || \Carbon\Carbon::parse($all_form->model->release_date)->isToday()))
+            <div class="col-12">
+                <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
+                    <i class="fas fa-clipboard-check"></i> CHECK</a>
+            </div>
+            @else
+            <div class="form-group float-right">
+                <label class="form-text text-muted mb-3">
+                    This Gate Pass is not for release today.
+                </label>
+            </div>
+            @endif
+        @elseif($all_form->form->prefix == 'warf' && $all_form->status != 'received')
+            <div class="col-12">
+                <a href="#" title="checking" data-id="{{$all_form->id}}" data-form="{{$all_form->form_id}}" class="btn-checking btn btn-success float-right btn-lg"> 
+                    <i class="fas fa-clipboard-check"></i> CHECK</a>
+            </div>
         @else
-        <div class="form-group float-right">
-            <label class="form-text text-muted mb-3">
-                This Gate Pass is not for release today.
-            </label>
-        </div>
         @endif
 
         <div class="modal fade" id="modal-checked">
@@ -462,6 +500,60 @@ async function takePhoto() {
                     
                 Swal.showLoading();
                 Livewire.dispatch('submitForm', {data});
+            }
+        });
+    }
+}
+</script>
+
+<script>
+$(function() {
+    $('body').on('click', '.btn-open', function(e) {
+
+        e.preventDefault();
+
+        openDoor();
+
+    });
+});
+
+async function openDoor() {
+    
+    const { value: guard } = await Swal.fire({
+        title: "Guard on Duty",
+        input: "text",
+        inputPlaceholder: "Enter name...",
+        inputLabel: "Enter name of guard on duty opening the warehouse",
+        showCancelButton: true,
+        inputValidator: (value) => {
+            if (!value) return "You must enter a name!";
+        }
+    });
+
+    if (!guard) return;
+
+    if (guard) {
+        Swal.fire({
+            title: guard,
+
+            showCancelButton: true,
+            confirmButtonText: 'Confirm & Open The Warehouse',
+
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let data = {
+                    guardDuty: guard,
+                };
+                
+                Swal.fire({
+                    allowOutsideClick: false,
+                    title: "Received!",
+                    text: "Request has been granted.",
+                    icon: "success"
+                    });
+                    
+                Swal.showLoading();
+                Livewire.dispatch('openForm', {data});
             }
         });
     }

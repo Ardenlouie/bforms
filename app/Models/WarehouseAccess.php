@@ -30,6 +30,7 @@ class WarehouseAccess extends Model
         'date_submitted',
         'file_name',
         'path',
+        'opened_by',
 
     ];
 

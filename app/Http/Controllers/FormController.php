@@ -1722,7 +1722,7 @@ class FormController extends Controller
 
         $all_forms->save();
 
-        if($all_forms->status == 'endorser') {
+        if($all_forms->status == 'endorsement') {
             $warf->update([
                 'control_number' => $warf_item['control_number'],
                 'date_submitted' => $date_submitted,
